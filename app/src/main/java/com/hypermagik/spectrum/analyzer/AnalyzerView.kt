@@ -155,6 +155,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isRunning = true
 
         info.start()
+        info.setFrequency(preferences.frequency)
+
         waterfall.start()
 
         updateFFT()

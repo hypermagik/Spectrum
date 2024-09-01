@@ -11,8 +11,8 @@ import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
 
 class ToneGenerator : Source {
-    private var initialFrequency: Long = 0
-    private var currentFrequency: Long = 0
+    private var initialFrequency: Long = 3e9.toLong()
+    private var currentFrequency: Long = initialFrequency
     private var sampleRate: Int = 0
 
     private var bufferSize: Int = 0
@@ -38,20 +38,24 @@ class ToneGenerator : Source {
     override fun open(preferences: Preferences): Boolean {
         Log.d(TAG, "Opening ${getName()}")
 
-        initialFrequency = preferences.frequency
-        currentFrequency = initialFrequency
         sampleRate = preferences.sampleRate
+        currentFrequency = preferences.frequency.coerceIn(getMinimumFrequency(), getMaximumFrequency())
+
+        if (preferences.frequency != currentFrequency) {
+            preferences.frequency = currentFrequency
+            preferences.save()
+        }
 
         bufferSize = preferences.sampleFifoBufferSize
         buffer = Array(bufferSize) { Complex32() }
 
-        signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + currentFrequency }
+        signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + initialFrequency }
 
         signals = Array(signalFrequencies.size) { CW(0, sampleRate) }
         signalGains = FloatArray(signals.size)
 
         for (i in signals.indices) {
-            signals[i].setFrequency(initialSignalFrequencies[i])
+            signals[i].setFrequency(initialSignalFrequencies[i] + initialFrequency - currentFrequency)
             signals[i].setModulatedFrequency((modulatedFrequencies[i] * sampleRate / 1e6).toLong())
             signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
         }
