@@ -6,7 +6,7 @@ import android.view.ScaleGestureDetector
 import android.view.ScaleGestureDetector.OnScaleGestureListener
 
 class GestureHandler(private val view: AnalyzerView) :
-    OnScaleGestureListener, GestureDetector.OnGestureListener {
+    OnScaleGestureListener, GestureDetector.OnGestureListener, GestureDetector.OnDoubleTapListener {
 
     override fun onScale(p0: ScaleGestureDetector): Boolean {
         view.onScale(p0.scaleFactor, p0.focusX, p0.focusY)
@@ -39,6 +39,20 @@ class GestureHandler(private val view: AnalyzerView) :
     }
 
     override fun onFling(p0: MotionEvent?, p1: MotionEvent, p2: Float, p3: Float): Boolean {
+        return true
+    }
+
+    override fun onSingleTapConfirmed(p0: MotionEvent): Boolean {
+        view.onSingleTap(p0.x, p0.y)
+        return true
+    }
+
+    override fun onDoubleTap(p0: MotionEvent): Boolean {
+        view.onDoubleTap(p0.x, p0.y)
+        return true
+    }
+
+    override fun onDoubleTapEvent(p0: MotionEvent): Boolean {
         return true
     }
 }

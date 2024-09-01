@@ -28,6 +28,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private var minFrequency: Long = 0
     private var maxFrequency: Long = 1000000
+    private var isFrequencyLocked = false
 
     private var previousgain: Int = 0
 
@@ -50,6 +51,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         scaleGestureDetector = ScaleGestureDetector(context, gestureHandler)
         gestureDetector = GestureDetector(context, gestureHandler)
+        gestureDetector.setOnDoubleTapListener(gestureHandler)
 
         info.setFrequency(preferences.frequency)
     }
@@ -137,15 +139,18 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun saveInstanceState(bundle: Bundle) {
+        bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
         bundle.putFloat("viewFrequency", viewFrequency)
         bundle.putFloat("viewBandwidth", viewBandwidth)
         fft.saveInstanceState(bundle)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
+        isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
         viewFrequency = bundle.getFloat("viewFrequency")
         viewBandwidth = bundle.getFloat("viewBandwidth")
         fft.restoreInstanceState(bundle)
+        info.setFrequencyLock(isFrequencyLocked)
         updateFFT()
     }
 
@@ -214,6 +219,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         requestRender()
     }
 
+    private fun resetFFT() {
+        viewFrequency = preferences.frequency.toFloat()
+        viewBandwidth = preferences.sampleRate.toFloat()
+
+        updateFFT()
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val scaleGestureResult = event?.let { scaleGestureDetector.onTouchEvent(it) }
         val gestureResult = event?.let { gestureDetector.onTouchEvent(it) }
@@ -221,6 +233,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
+        if (!isFrequencyLocked) {
+            return
+        }
+
         viewBandwidth = (viewBandwidth / scaleFactor)
 
         val focusFrequency = viewFrequency + (focusX / width - 0.5f)
@@ -232,7 +248,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun onScroll(delta: Float) {
         viewFrequency = (viewFrequency + viewBandwidth * delta / width)
 
-        if (isRunning && viewBandwidth.toInt() == preferences.sampleRate) {
+        // If running and not locked, update source frequency.
+        if (isRunning && !isFrequencyLocked) {
             var frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
             frequency = frequency.coerceIn(minFrequency, maxFrequency)
 
@@ -243,5 +260,30 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
 
         updateFFT()
+    }
+
+    fun onSingleTap(x: Float, y: Float) {
+        val infoArea = Info.HEIGHT * resources.displayMetrics.density * 1.5f
+        if (y < infoArea) {
+            // Info bar tapped, lock/unlock frequency.
+            isFrequencyLocked = !isFrequencyLocked
+            if (!isFrequencyLocked) {
+                resetFFT()
+            } else {
+                requestRender()
+            }
+            info.setFrequencyLock(isFrequencyLocked)
+        }
+    }
+
+    fun onDoubleTap(x: Float, y: Float) {
+        val infoArea = Info.HEIGHT * resources.displayMetrics.density * 1.5f
+        if (y < infoArea) {
+            // Info bar double-tapped, open frequency popup.
+            // TODO: open frequency popup
+        } else if (y < height / 2) {
+            // FFT area double-tapped, reset FFT scale.
+            resetFFT()
+        }
     }
 }

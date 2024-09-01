@@ -22,6 +22,7 @@ class Info(context: Context) {
     private val height = HEIGHT * context.resources.displayMetrics.density
     private val textSize = 20f * context.resources.displayMetrics.density
     private val textY = height - 8f * context.resources.displayMetrics.density
+    private val textYs = height - 18f * context.resources.displayMetrics.density
     private val decimalSymbols = DecimalFormatSymbols(Locale.ITALY)
 
     private var paint = Paint()
@@ -29,6 +30,7 @@ class Info(context: Context) {
     private lateinit var texture: Texture
 
     private var frequency = 0L
+    private var isFrequencyLocked = false
     private var gain = 0
 
     private var referenceTime = System.nanoTime()
@@ -77,11 +79,15 @@ class Info(context: Context) {
         }
     }
 
-    private fun putText(canvas: Canvas, text: String, x: Float, size: Float, color: Int, align: Paint.Align) {
+    private fun putText(canvas: Canvas, text: String, x: Float, y: Float, size: Float, color: Int, align: Paint.Align) {
         paint.color = color
         paint.textSize = size
         paint.textAlign = align
-        canvas.drawText(text, x, textY, paint)
+        canvas.drawText(text, x, y, paint)
+    }
+
+    private fun putText(canvas: Canvas, text: String, x: Float, size: Float, color: Int, align: Paint.Align) {
+        putText(canvas, text, x, textY, size, color, align)
     }
 
     private fun updateText() {
@@ -100,6 +106,8 @@ class Info(context: Context) {
         var textX = paint.measureText(text)
         text = DecimalFormat("#,###,###,###", decimalSymbols).format(frequency)
         putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
+        text = " •"
+        putText(canvas, text, textX, textYs, textSize / 2, if (isFrequencyLocked) textColor else shadowColor, Paint.Align.LEFT)
         text = " HZ"
         putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
         textX += paint.measureText(text)
@@ -146,6 +154,11 @@ class Info(context: Context) {
 
     fun setFrequency(frequency: Long) {
         this.frequency = frequency
+        isDirty = true
+    }
+
+    fun setFrequencyLock(frequencyLocked: Boolean) {
+        this.isFrequencyLocked = frequencyLocked
         isDirty = true
     }
 
