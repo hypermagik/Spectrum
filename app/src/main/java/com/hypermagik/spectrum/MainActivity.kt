@@ -261,7 +261,7 @@ class MainActivity : AppCompatActivity() {
 
         setState(State.Running)
 
-        analyzerThread = thread { analyzerThreadFn() }
+        analyzerThread = thread { analyzerThreadFn(source) }
         sourceThread = thread { sourceThreadFn() }
     }
 
@@ -338,10 +338,11 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Stopping source thread")
     }
 
-    private fun analyzerThreadFn() {
+    private fun analyzerThreadFn(source: Source) {
         Log.d(TAG, "Starting analyzer thread")
 
         analyzerView.start()
+        analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
 
         while (state == State.Running) {
             var samples: Complex32Array?

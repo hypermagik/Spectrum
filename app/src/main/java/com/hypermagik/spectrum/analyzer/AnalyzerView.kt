@@ -26,8 +26,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var fft = FFT(context, preferences.fftSize)
     private var waterfall = Waterfall(context, preferences.fftSize)
 
-    private var currentFrequency: Long = 0
-    private var currentGain: Int = 0
+    private var minFrequency: Long = 0
+    private var maxFrequency: Long = 1000000
+
+    private var previousgain: Int = 0
 
     private var viewFrequency = preferences.frequency.toFloat()
     private var viewBandwidth = preferences.sampleRate.toFloat()
@@ -48,6 +50,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         scaleGestureDetector = ScaleGestureDetector(context, gestureHandler)
         gestureDetector = GestureDetector(context, gestureHandler)
+
+        info.setFrequency(preferences.frequency)
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
@@ -113,14 +117,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     override fun onDrawFrame(unused: GL10) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        if (currentFrequency != preferences.frequency) {
-            currentFrequency = preferences.frequency
-            info.setFrequency(currentFrequency)
-        }
-
-        if (currentGain != preferences.gain) {
-            currentGain = preferences.gain
-            info.setGain(currentGain)
+        if (previousgain != preferences.gain) {
+            previousgain = preferences.gain
+            info.setGain(previousgain)
         }
 
         grid.drawBackground()
@@ -168,6 +167,11 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         info.stop(restart)
         waterfall.stop()
+    }
+
+    fun setFrequencyRange(minimumFrequency: Long, maximumFrequency: Long) {
+        minFrequency = minimumFrequency
+        maxFrequency = maximumFrequency
     }
 
     fun updateFFT(magnitudes: FloatArray) {
@@ -226,9 +230,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun onScroll(delta: Float) {
         viewFrequency = (viewFrequency + viewBandwidth * delta / width)
 
-        if (viewBandwidth.toInt() == preferences.sampleRate) {
-            preferences.frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
+        if (isRunning && viewBandwidth.toInt() == preferences.sampleRate) {
+            var frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
+            frequency = frequency.coerceIn(minFrequency, maxFrequency)
+
+            preferences.frequency = frequency
             preferences.save()
+
+            info.setFrequency(preferences.frequency)
         }
 
         updateFFT()

@@ -9,7 +9,6 @@ import com.hypermagik.spectrum.lib.gen.CW
 import com.hypermagik.spectrum.lib.gen.Noise
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
-import kotlin.math.abs
 
 class ToneGenerator : Source {
     private var initialFrequency: Long = 0
@@ -100,11 +99,11 @@ class ToneGenerator : Source {
     }
 
     override fun getMinimumFrequency(): Long {
-        return initialFrequency - sampleRate - sampleRate / 2
+        return initialFrequency - sampleRate
     }
 
     override fun getMaximumFrequency(): Long {
-        return initialFrequency + sampleRate + sampleRate / 2
+        return initialFrequency + sampleRate
     }
 
     override fun setGain(gain: Int) {
