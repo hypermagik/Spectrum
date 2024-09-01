@@ -3,8 +3,35 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_playpause"
+        android:icon="@android:drawable/ic_media_play"
         android:orderInCategory="1"
         android:title="@string/action_play"
-        android:icon="@android:drawable/ic_media_play"
         app:showAsAction="ifRoom" />
+    <item
+        android:orderInCategory="4"
+        android:title="@string/frequency_step"
+        app:showAsAction="never">
+        <menu>
+            <group
+                android:id="@+id/frequency_step_group"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/menu_fstep_1"
+                    android:title="@string/menu_fstep_1" />
+                <item
+                    android:id="@+id/menu_fstep_10"
+                    android:title="@string/menu_fstep_10" />
+                <item
+                    android:id="@+id/menu_fstep_100"
+                    android:title="@string/menu_fstep_100" />
+                <item
+                    android:id="@+id/menu_fstep_1000"
+                    android:title="@string/menu_fstep_1000" />
+                <item
+                    android:id="@+id/menu_fstep_10000"
+                    android:title="@string/menu_fstep_10000" />
+            </group>
+        </menu>
+    </item>
+
 </menu>

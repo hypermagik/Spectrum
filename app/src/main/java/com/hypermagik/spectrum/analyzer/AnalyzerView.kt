@@ -226,6 +226,11 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun onScroll(delta: Float) {
         viewFrequency = (viewFrequency + viewBandwidth * delta / width)
 
+        if (viewBandwidth.toInt() == preferences.sampleRate) {
+            preferences.frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
+            preferences.save()
+        }
+
         updateFFT()
     }
 }

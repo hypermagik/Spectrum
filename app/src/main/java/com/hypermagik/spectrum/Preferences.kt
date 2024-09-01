@@ -14,6 +14,8 @@ class Preferences(private val activity: Activity?) {
     var gain = 0
     var agc = false
 
+    var frequencyStep = 1000
+
     var sampleFifoSize = 16
     var sampleFifoBufferSize = 4096
 
@@ -37,6 +39,7 @@ class Preferences(private val activity: Activity?) {
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
             agc = getBoolean("agc", agc)
+            frequencyStep = getInt("frequencyStep", frequencyStep)
             sampleFifoSize = getInt("sampleFifoSize", sampleFifoSize)
             sampleFifoBufferSize = getInt("sampleFifoBufferSize", sampleFifoBufferSize)
             fftSize = getInt("fftSize", fftSize)
@@ -57,6 +60,7 @@ class Preferences(private val activity: Activity?) {
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)
             putBoolean("agc", agc)
+            putInt("frequencyStep", frequencyStep)
             putInt("sampleFifoSize", sampleFifoSize)
             putInt("sampleFifoBufferSize", sampleFifoBufferSize)
             putInt("fftSize", fftSize)

@@ -15,6 +15,14 @@ class Constants {
             61440000 to R.id.menu_sr_61_44M,
         )
 
+        val frequencyStepToMenuItem = mapOf(
+            1 to R.id.menu_fstep_1,
+            10 to R.id.menu_fstep_10,
+            100 to R.id.menu_fstep_100,
+            1000 to R.id.menu_fstep_1000,
+            10000 to R.id.menu_fstep_10000,
+        )
+
         val fftSizeToMenuItem = mapOf(
             256 to R.id.menu_fft_256,
             512 to R.id.menu_fft_512,

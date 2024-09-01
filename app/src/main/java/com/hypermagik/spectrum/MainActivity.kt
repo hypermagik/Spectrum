@@ -162,6 +162,10 @@ class MainActivity : AppCompatActivity() {
             menu.findItem(it)?.setChecked(true)
         }
 
+        Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
+
         Constants.fftSizeToMenuItem[fft.size]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -186,6 +190,11 @@ class MainActivity : AppCompatActivity() {
                 preferences.sampleRate = sampleRate
                 preferences.saveNow()
             }
+        } else if (item.groupId == R.id.frequency_step_group) {
+            val frequencyStep = Constants.frequencyStepToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.frequencyStep = frequencyStep
+            preferences.saveNow()
+            item.setChecked(true)
         } else if (item.groupId == R.id.fft_size_group) {
             val fftSize = Constants.fftSizeToMenuItem.filterValues { it == item.itemId }.keys.first()
             if (fftSize != fft.size) {
