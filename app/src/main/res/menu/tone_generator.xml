@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group
+        android:id="@+id/tone_generator_group"
+        android:orderInCategory="2">
+        <item
+            android:orderInCategory="2"
+            android:title="@string/menu_sample_rate"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/sample_rate_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_sr_1M"
+                        android:title="@string/menu_sr_1M" />
+                    <item
+                        android:id="@+id/menu_sr_2M"
+                        android:title="@string/menu_sr_2M" />
+                    <item
+                        android:id="@+id/menu_sr_5M"
+                        android:title="@string/menu_sr_5M" />
+                    <item
+                        android:id="@+id/menu_sr_10M"
+                        android:title="@string/menu_sr_10M" />
+                    <item
+                        android:id="@+id/menu_sr_20M"
+                        android:title="@string/menu_sr_20M" />
+                    <item
+                        android:id="@+id/menu_sr_30M"
+                        android:title="@string/menu_sr_30M" />
+                    <item
+                        android:id="@+id/menu_sr_40M"
+                        android:title="@string/menu_sr_40M" />
+                    <item
+                        android:id="@+id/menu_sr_61_44M"
+                        android:title="@string/menu_sr_61_44M" />
+                </group>
+            </menu>
+        </item>
+    </group>
+</menu>

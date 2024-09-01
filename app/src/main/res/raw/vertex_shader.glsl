@@ -1,0 +1,79 @@
+attribute vec4 vPosition;
+
+attribute vec2 aTexCoord;
+varying vec2 vTexCoord;
+
+uniform int sampleTexture;
+
+uniform int fftSize;
+
+uniform float fftXscale;
+uniform float fftXtranslate;
+uniform float fftMinY;
+uniform float fftMaxY;
+const float dbMin = -120.0;
+const float dbMax = 0.0;
+
+uniform int waterfallOffset;
+uniform int waterfallHeight;
+
+const float M_1_OVER_LN10 = 0.43429544250362636694490528016399;
+
+void drawFFT();
+void drawWaterfall();
+
+void main() {
+    if (vPosition.z > 0.0) {
+        drawFFT();
+    } else if (sampleTexture == 2) {
+        drawWaterfall();
+    } else {
+        gl_Position = vPosition;
+        vTexCoord = vec2(aTexCoord.s, 1.0 - aTexCoord.t);
+    }
+}
+
+void drawFFT() {
+    float x = vPosition.x;
+    float y = vPosition.y;
+    float z = vPosition.z;
+    float w = vPosition.w;
+
+    if (vPosition.z == 1.0) {
+        // Convert to dB.
+        float value = 20.0 * log(y) * M_1_OVER_LN10;
+
+        // Convert sample index to coord.
+        x = x / (float(fftSize) - 1.0);
+
+        // Clamp and scale value.
+        value = clamp(value, dbMin, dbMax);
+        value = (value - dbMin) / (dbMax - dbMin);
+
+        // Scale and translate into view.
+        y = fftMinY + value * (fftMaxY - fftMinY);
+    }
+
+    // Scale and translate to view.
+    x = x * fftXscale - fftXtranslate;
+
+    gl_Position = vec4(x, y, 0.0, w);
+}
+
+void drawWaterfall() {
+    float x = vPosition.x;
+    float y = vPosition.y;
+    float z = vPosition.z;
+    float w = vPosition.w;
+
+    // Scale and translate to view.
+    x = x * fftXscale - fftXtranslate;
+
+    gl_Position = vec4(x, y, z, w);
+
+    // Start sampling from the last set of samples and wrap around.
+    float s = aTexCoord.s;
+    float t = 1.0 - aTexCoord.t - float(waterfallOffset) / float(waterfallHeight);
+
+    vTexCoord = vec2(s, t);
+}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group
+        android:id="@+id/fft_group"
+        android:orderInCategory="3">
+        <item
+            android:title="@string/menu_fft_size"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/fft_size_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_fft_256"
+                        android:title="@string/menu_fft_256" />
+                    <item
+                        android:id="@+id/menu_fft_512"
+                        android:title="@string/menu_fft_512" />
+                    <item
+                        android:id="@+id/menu_fft_1024"
+                        android:title="@string/menu_fft_1024" />
+                    <item
+                        android:id="@+id/menu_fft_2048"
+                        android:title="@string/menu_fft_2048" />
+                    <item
+                        android:id="@+id/menu_fft_4096"
+                        android:title="@string/menu_fft_4096" />
+                    <item
+                        android:id="@+id/menu_fft_8192"
+                        android:title="@string/menu_fft_8192" />
+                    <item
+                        android:id="@+id/menu_fft_16384"
+                        android:title="@string/menu_fft_16384" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:id="@+id/menu_fft"
+            android:title="@string/menu_fft_window"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/fft_window_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_fft_flat_top"
+                        android:title="@string/menu_fft_flat_top" />
+                    <item
+                        android:id="@+id/menu_fft_blackman_harris"
+                        android:title="@string/menu_fft_blackman_harris" />
+                    <item
+                        android:id="@+id/menu_fft_hamming"
+                        android:title="@string/menu_fft_hamming" />
+                </group>
+            </menu>
+        </item>
+    </group>
+</menu>
