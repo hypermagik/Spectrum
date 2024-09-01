@@ -23,8 +23,9 @@ class ToneGenerator : Source {
     private var noiseGain: Float = 2 * Utils.db2mag(-90f)
     private val noise = Noise()
 
-    private val initialSignalFrequencyOffsets = floatArrayOf(-3/5f, -1/5f, 1/5f, 3/5f)
+    private val initialSignalFrequencies = longArrayOf(-300000, -100000, 100000, 300000)
     private val initialSignalGains = floatArrayOf(-60f, -80f, -70f, -90f)
+    private val modulatedFrequencies = longArrayOf(100, 200, 400, 800)
 
     private lateinit var signals: Array<CW>
     private lateinit var signalFrequencies: LongArray
@@ -46,14 +47,15 @@ class ToneGenerator : Source {
         bufferSize = preferences.sampleFifoBufferSize
         buffer = Array(bufferSize) { Complex32() }
 
-        signals = Array(initialSignalFrequencyOffsets.size) { CW(0, sampleRate) }
+        signals = Array(initialSignalFrequencies.size) { CW(0, sampleRate) }
         signalFrequencies = LongArray(signals.size)
         signalGains = FloatArray(signals.size)
 
         for (i in signals.indices) {
-            signalFrequencies[i] = (initialSignalFrequencyOffsets[i] * sampleRate / 2).toLong()
-            signalGains[i] = 2 * Utils.db2mag(initialSignalGains[i] + preferences.gain)
+            signalFrequencies[i] = initialSignalFrequencies[i]
+            signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
             signals[i].setFrequency(signalFrequencies[i])
+            signals[i].setModulatedFrequency((modulatedFrequencies[i] * sampleRate / 1e6).toLong())
         }
 
         throttle = Throttle(bufferSize, preferences.sampleRate)
@@ -87,7 +89,7 @@ class ToneGenerator : Source {
     }
 
     override fun getMinimumSampleRate(): Int {
-        return 100000
+        return 1000000
     }
 
     override fun getMaximumSampleRate(): Int {
@@ -114,7 +116,7 @@ class ToneGenerator : Source {
 
     override fun setGain(gain: Int) {
         for (i in signalGains.indices) {
-            signalGains[i] = 2 * Utils.db2mag(initialSignalGains[i] + gain)
+            signalGains[i] = Utils.db2mag(initialSignalGains[i] + gain)
         }
     }
 

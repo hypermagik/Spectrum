@@ -11,12 +11,21 @@ class CW(frequency: Long, private val sampleRate: Int) {
     private var cos = 1f
     private var sin = 0f
 
+    private var fm = 0f
+    private var phi2 = 0f
+    private var omega2 = 0f
+
     init {
         setFrequency(frequency)
     }
 
     fun setFrequency(frequency: Long) {
         omega = (2 * PI * frequency / sampleRate).toFloat()
+    }
+
+    fun setModulatedFrequency(frequency: Long) {
+        fm = 10e3f / frequency
+        omega2 = (2 * PI * frequency / sampleRate).toFloat()
     }
 
     fun addSignal(sample: Complex32, scale: Float) {
@@ -30,7 +39,21 @@ class CW(frequency: Long, private val sampleRate: Int) {
             phi = (phi + 2 * PI).toFloat()
         }
 
-        cos = cos(phi)
-        sin = sin(phi)
+        var mod = 0f
+
+        if (omega2 != 0.0f) {
+            phi2 += omega2
+
+            if (phi2 >= 2 * PI) {
+                phi2 = (phi2 - 2 * PI).toFloat()
+            } else if (phi2 < 0) {
+                phi2 = (phi2 + 2 * PI).toFloat()
+            }
+
+            mod = fm * sin(phi2)
+        }
+
+        cos = cos(phi + mod)
+        sin = sin(phi + mod)
     }
 }
