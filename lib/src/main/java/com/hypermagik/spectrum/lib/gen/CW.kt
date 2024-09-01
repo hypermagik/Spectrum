@@ -6,14 +6,14 @@ import kotlin.math.cos
 import kotlin.math.sin
 
 class CW(frequency: Long, private val sampleRate: Int) {
-    private var phi = 0f
-    private var omega = 0f
-    private var cos = 1f
-    private var sin = 0f
+    private var phi = 0.0f
+    private var omega = 0.0f
+    private var cos = 1.0f
+    private var sin = 0.0f
 
-    private var fm = 0f
-    private var phi2 = 0f
-    private var omega2 = 0f
+    private var fm = 0.0f
+    private var phi2 = 0.0f
+    private var omega2 = 0.0f
 
     init {
         setFrequency(frequency)
@@ -39,7 +39,7 @@ class CW(frequency: Long, private val sampleRate: Int) {
             phi = (phi + 2 * PI).toFloat()
         }
 
-        var mod = 0f
+        var mod = 0.0f
 
         if (omega2 != 0.0f) {
             phi2 += omega2

@@ -3,7 +3,7 @@ package com.hypermagik.spectrum.lib.data
 import kotlin.math.sqrt
 
 data class Complex32(var re: Float, var im: Float) {
-    constructor() : this(0f, 0f)
+    constructor() : this(0.0f, 0.0f)
     constructor(re: Double, im: Double) : this(re.toFloat(), im.toFloat())
 
     fun set(other: Complex32) {

@@ -64,7 +64,7 @@ class MainActivity : AppCompatActivity() {
 
         analyzerBuffer = Complex32Array(preferences.fftSize) { Complex32() }
         analyzerThrottle = Throttle(1e9 / preferences.fpsLimit)
-        analyzerMagnitudes = FloatArray(preferences.fftSize) { 0f }
+        analyzerMagnitudes = FloatArray(preferences.fftSize) { 0.0f }
 
         analyzerView = AnalyzerView(this, preferences)
 
@@ -253,7 +253,7 @@ class MainActivity : AppCompatActivity() {
 
         if (fft.size != analyzerMagnitudes.size) {
             Log.d(TAG, "Resizing magnitude buffer")
-            analyzerMagnitudes = FloatArray(fft.size) { 0f }
+            analyzerMagnitudes = FloatArray(fft.size) { 0.0f }
         }
 
         Log.i(TAG, "Starting source")

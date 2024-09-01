@@ -18,11 +18,11 @@ class ToneGenerator : Source {
     private var bufferSize: Int = 0
     private var buffer: Complex32Array? = null
 
-    private var noiseGain: Float = 2 * Utils.db2mag(-90f)
+    private var noiseGain: Float = 2 * Utils.db2mag(-90.0f)
     private val noise = Noise()
 
     private val initialSignalFrequencies = longArrayOf(-300000, -100000, 100000, 300000)
-    private val initialSignalGains = floatArrayOf(-60f, -80f, -70f, -90f)
+    private val initialSignalGains = floatArrayOf(-60.0f, -80.0f, -70.0f, -90.0f)
     private val modulatedFrequencies = longArrayOf(100, 200, 400, 800)
 
     private lateinit var signals: Array<CW>

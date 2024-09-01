@@ -21,7 +21,7 @@ class Noise {
         val sample = Complex32()
 
         benchmarkRule.measureRepeated {
-            noise.getNoise(sample, 1f)
+            noise.getNoise(sample, 1.0f)
         }
     }
 }

@@ -66,15 +66,15 @@ class FFT(private val context: Context, private var fftSize: Int) {
         } else for (i in 0 until fftSize) {
             // Initialize to zero samples.
             fftVertexBuffer.putFloat(i.toFloat())
-            fftVertexBuffer.putFloat(0f)
-            fftVertexBuffer.putFloat(1f)
+            fftVertexBuffer.putFloat(0.0f)
+            fftVertexBuffer.putFloat(1.0f)
         }
 
         // Extra vertices at (i, yMin) for drawing fill area.
         for (i in 0 until fftSize) {
-            fftVertexBuffer.putFloat(1f * i / (fftSize - 1))
+            fftVertexBuffer.putFloat(1.0f * i / (fftSize - 1))
             fftVertexBuffer.putFloat(minY)
-            fftVertexBuffer.putFloat(2f)
+            fftVertexBuffer.putFloat(2.0f)
         }
 
         fftVertexBuffer.rewind()
@@ -157,7 +157,7 @@ class FFT(private val context: Context, private var fftSize: Int) {
         for (i in magnitudes.indices) {
             fftVertexBuffer.putFloat(i.toFloat())
             fftVertexBuffer.putFloat(magnitudes[i])
-            fftVertexBuffer.putFloat(1f)
+            fftVertexBuffer.putFloat(1.0f)
         }
 
         fftVertexBuffer.rewind()

@@ -21,7 +21,7 @@ class CW {
         val sample = Complex32()
 
         benchmarkRule.measureRepeated {
-            signal.addSignal(sample, 1f)
+            signal.addSignal(sample, 1.0f)
         }
     }
 }

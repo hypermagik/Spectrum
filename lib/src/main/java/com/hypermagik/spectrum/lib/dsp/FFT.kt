@@ -41,7 +41,7 @@ class FFT(val size: Int = 256, val windowType: WindowType = WindowType.FLAT_TOP)
                         0.14128f * cos(4 * PI * i / (size - 1)) -
                         0.01168f * cos(6 * PI * i / (size - 1))
 
-                WindowType.FLAT_TOP -> 1f -
+                WindowType.FLAT_TOP -> 1.0f -
                         1.930f * cos(2 * PI * i / (size - 1)) +
                         1.290f * cos(4 * PI * i / (size - 1)) -
                         0.388f * cos(6 * PI * i / (size - 1)) +
@@ -110,7 +110,7 @@ class FFT(val size: Int = 256, val windowType: WindowType = WindowType.FLAT_TOP)
 
     fun magnitudes(data: Complex32Array, output: FloatArray) {
         val half = size / 2
-        val scale = 1f / size
+        val scale = 1.0f / size
 
         for (i in output.indices) {
             output[(i + half) % size] = data[i].mag(scale)

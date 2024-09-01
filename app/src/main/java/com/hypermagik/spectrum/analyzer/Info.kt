@@ -11,7 +11,7 @@ import kotlin.math.roundToInt
 
 class Info(context: Context) {
     companion object {
-        const val HEIGHT = 30f
+        const val HEIGHT = 30.0f
     }
 
     private val textColor = context.resources.getColor(R.color.fft_info_text, null)
@@ -20,9 +20,9 @@ class Info(context: Context) {
     private val backgroundColor = context.resources.getColor(R.color.fft_info_background, null)
 
     private val height = HEIGHT * context.resources.displayMetrics.density
-    private val textSize = 20f * context.resources.displayMetrics.density
-    private val textY = height - 8f * context.resources.displayMetrics.density
-    private val textYs = height - 18f * context.resources.displayMetrics.density
+    private val textSize = 20.0f * context.resources.displayMetrics.density
+    private val textY = height - 8.0f * context.resources.displayMetrics.density
+    private val textYs = height - 18.0f * context.resources.displayMetrics.density
     private val decimalSymbols = DecimalFormatSymbols(Locale.ITALY)
 
     private var paint = Paint()
@@ -35,7 +35,7 @@ class Info(context: Context) {
 
     private var referenceTime = System.nanoTime()
     private var frameCounter = 0
-    private var fps = 0.0
+    private var fps = 0.0f
 
     private var isRunning = false
     private var isDirty = true
@@ -72,7 +72,7 @@ class Info(context: Context) {
         val delta = now - referenceTime
 
         if (delta >= 1e9) {
-            fps = frameCounter * 1e9 / delta
+            fps = frameCounter * 1e9f / delta
             referenceTime = now
             frameCounter = 0
             isDirty = true
@@ -96,13 +96,13 @@ class Info(context: Context) {
         val canvas = texture.getCanvas()
 
         paint.color = backgroundColor
-        canvas.drawRect(0f, 0f, texture.width.toFloat(), height, paint)
+        canvas.drawRect(0.0f, 0.0f, texture.width.toFloat(), height, paint)
 
         paint.color = borderColor
-        canvas.drawLine(0f, height - 1, texture.width.toFloat(), height - 1, paint)
+        canvas.drawLine(0.0f, height - 1, texture.width.toFloat(), height - 1, paint)
 
         var text = " 0.000.000.000"
-        putText(canvas, text, 0f, textSize, shadowColor, Paint.Align.LEFT)
+        putText(canvas, text, 0.0f, textSize, shadowColor, Paint.Align.LEFT)
         var textX = paint.measureText(text)
         text = DecimalFormat("#,###,###,###", decimalSymbols).format(frequency)
         putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
@@ -146,7 +146,7 @@ class Info(context: Context) {
 
     fun stop(restart: Boolean) {
         if (!restart) {
-            fps = 0.0
+            fps = 0.0f
         }
         isRunning = false
         isDirty = true
