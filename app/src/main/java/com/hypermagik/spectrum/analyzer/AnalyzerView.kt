@@ -157,6 +157,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         info.start()
         waterfall.start()
+
+        updateFFT()
     }
 
     fun stop(restart: Boolean) {
@@ -186,11 +188,20 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateFFT() {
+        val minViewBandwidth = preferences.sampleRate / (preferences.fftSize / 128.0f)
+        val maxViewBandwidth = preferences.sampleRate / 1.0f
+
+        viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
+
         val frequency0 = preferences.frequency - preferences.sampleRate / 2f
-        val viewFrequency0 = viewFrequency - viewBandwidth / 2f
+        val frequency1 = preferences.frequency + preferences.sampleRate / 2f
+        val viewFrequency0 = frequency0 + viewBandwidth / 2f
+        val viewFrequency1 = frequency1 - viewBandwidth / 2f
+
+        viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
         val scale = preferences.sampleRate / viewBandwidth
-        val translate = (viewFrequency0 - frequency0) / preferences.sampleRate * scale
+        val translate = (viewFrequency - viewBandwidth / 2f - frequency0) / preferences.sampleRate * scale
 
         fft.update(scale, translate)
 
@@ -206,34 +217,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
         viewBandwidth = (viewBandwidth / scaleFactor)
 
-        val minViewBandwidth = preferences.sampleRate / (preferences.fftSize / 128.0f)
-        val maxViewBandwidth = preferences.sampleRate / 1.0f
-
-        viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
-
         val focusFrequency = viewFrequency + (focusX / width - 0.5f)
-
         viewFrequency = focusFrequency + (viewFrequency - focusFrequency) / scaleFactor
-
-        val frequency0 = preferences.frequency - preferences.sampleRate / 2f
-        val frequency1 = preferences.frequency + preferences.sampleRate / 2f
-        val viewFrequency0 = frequency0 + viewBandwidth / 2f
-        val viewFrequency1 = frequency1 - viewBandwidth / 2f
-
-        viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
         updateFFT()
     }
 
     fun onScroll(delta: Float) {
         viewFrequency = (viewFrequency + viewBandwidth * delta / width)
-
-        val frequency0 = preferences.frequency - preferences.sampleRate / 2f
-        val frequency1 = preferences.frequency + preferences.sampleRate / 2f
-        val viewFrequency0 = frequency0 + viewBandwidth / 2f
-        val viewFrequency1 = frequency1 - viewBandwidth / 2f
-
-        viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
         updateFFT()
     }
