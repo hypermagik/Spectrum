@@ -30,10 +30,19 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var maxFrequency: Long = 1000000
     private var isFrequencyLocked = false
 
+    private var minDB = -140.0f
+    private var maxDB = 20.0f
+    private var minDBRange = 10.0f
+    private var maxDBRange = maxDB - minDB
+    private var defaultDBCenter = -60.0f
+    private var defaultDBRange = 120.0f
+
     private var previousgain: Int = 0
 
     private var viewFrequency = preferences.frequency.toFloat()
     private var viewBandwidth = preferences.sampleRate.toFloat()
+    private var viewDBCenter = defaultDBCenter
+    private var viewDBRange = defaultDBRange
 
     private var isReady = false
     private var isRunning = false
@@ -54,6 +63,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         gestureDetector.setOnDoubleTapListener(gestureHandler)
 
         info.setFrequency(preferences.frequency)
+        info.setFrequencyLock(isFrequencyLocked)
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
@@ -142,6 +152,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
         bundle.putFloat("viewFrequency", viewFrequency)
         bundle.putFloat("viewBandwidth", viewBandwidth)
+        bundle.putFloat("viewDBCenter", viewDBCenter)
+        bundle.putFloat("viewDBRange", viewDBRange)
         fft.saveInstanceState(bundle)
     }
 
@@ -149,6 +161,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
         viewFrequency = bundle.getFloat("viewFrequency")
         viewBandwidth = bundle.getFloat("viewBandwidth")
+        viewDBCenter = bundle.getFloat("viewDBCenter")
+        viewDBRange = bundle.getFloat("viewDBRange")
         fft.restoreInstanceState(bundle)
         info.setFrequencyLock(isFrequencyLocked)
         updateFFT()
@@ -161,6 +175,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         info.start()
         info.setFrequency(preferences.frequency)
+        info.setFrequencyLock(isFrequencyLocked)
 
         waterfall.start()
 
@@ -214,16 +229,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val scale = preferences.sampleRate / viewBandwidth
         val translate = (viewFrequency - viewBandwidth / 2f - frequency0) / preferences.sampleRate * scale
 
-        fft.update(scale, translate)
+        fft.updateX(scale, translate)
+
+        viewDBRange = viewDBRange.coerceIn(minDBRange, maxDBRange)
+        viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
+
+        fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
 
         requestRender()
-    }
-
-    private fun resetFFT() {
-        viewFrequency = preferences.frequency.toFloat()
-        viewBandwidth = preferences.sampleRate.toFloat()
-
-        updateFFT()
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -233,30 +246,46 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
-        if (!isFrequencyLocked) {
-            return
+        if (focusX < grid.leftScaleSize * 1.5f && focusY < height / 2) {
+            // Scale the Y axis.
+            viewDBRange /= scaleFactor
+
+            val focusDB = viewDBCenter + (focusY / (height / 2) - 0.5f)
+            viewDBCenter = focusDB + (viewDBCenter - focusDB) / scaleFactor
+        } else {
+            // Scale the X axis.
+            if (!isFrequencyLocked) {
+                return
+            }
+
+            viewBandwidth /= scaleFactor
+
+            val focusFrequency = viewFrequency + (focusX / width - 0.5f)
+            viewFrequency = focusFrequency + (viewFrequency - focusFrequency) / scaleFactor
         }
-
-        viewBandwidth = (viewBandwidth / scaleFactor)
-
-        val focusFrequency = viewFrequency + (focusX / width - 0.5f)
-        viewFrequency = focusFrequency + (viewFrequency - focusFrequency) / scaleFactor
 
         updateFFT()
     }
 
-    fun onScroll(delta: Float) {
-        viewFrequency = (viewFrequency + viewBandwidth * delta / width)
+    fun onScroll(x: Float, y: Float, deltaX: Float, deltaY: Float) {
+        if (x < grid.leftScaleSize * 1.5f && y < height / 2) {
+            // Scroll the Y axis.
+            viewDBCenter -= viewDBRange * deltaY / (height / 2)
+            viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
+        } else {
+            // Scroll the X axis.
+            viewFrequency += viewBandwidth * deltaX / width
 
-        // If running and not locked, update source frequency.
-        if (isRunning && !isFrequencyLocked) {
-            var frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
-            frequency = frequency.coerceIn(minFrequency, maxFrequency)
+            // If running and not locked, update source frequency.
+            if (isRunning && !isFrequencyLocked) {
+                var frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
+                frequency = frequency.coerceIn(minFrequency, maxFrequency)
 
-            preferences.frequency = frequency
-            preferences.save()
+                preferences.frequency = frequency
+                preferences.save()
 
-            info.setFrequency(preferences.frequency)
+                info.setFrequency(preferences.frequency)
+            }
         }
 
         updateFFT()
@@ -268,7 +297,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             // Info bar tapped, lock/unlock frequency.
             isFrequencyLocked = !isFrequencyLocked
             if (!isFrequencyLocked) {
-                resetFFT()
+                // When unlocked, reset the X axis.
+                viewFrequency = preferences.frequency.toFloat()
+                viewBandwidth = preferences.sampleRate.toFloat()
+                updateFFT()
             } else {
                 requestRender()
             }
@@ -281,9 +313,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         if (y < infoArea) {
             // Info bar double-tapped, open frequency popup.
             // TODO: open frequency popup
-        } else if (y < height / 2) {
-            // FFT area double-tapped, reset FFT scale.
-            resetFFT()
+        } else if (x < grid.leftScaleSize * 1.5f && y < height / 2) {
+            // Reset the Y axis.
+            viewDBCenter = defaultDBCenter
+            viewDBRange = defaultDBRange
+            updateFFT()
+        } else {
+            // Reset the X axis.
+            viewFrequency = preferences.frequency.toFloat()
+            viewBandwidth = preferences.sampleRate.toFloat()
+            updateFFT()
         }
     }
 }

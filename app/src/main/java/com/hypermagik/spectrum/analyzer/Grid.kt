@@ -18,9 +18,10 @@ class Grid(val context: Context) {
     private var width = 0f
     private var height = 0f
     private var padding = 16f
-    private var leftMarginSize = 0f
-    private var bottomMarginSize = 0f
-    private var verticalTextCenterOffset = 0f
+    private var textVerticalCenterOffset = 0f
+
+    var leftScaleSize = 0f
+        private set
 
     private var isDirty = true
 
@@ -51,9 +52,8 @@ class Grid(val context: Context) {
         val rect = Rect()
         paint.getTextBounds("-199", 0, 4, rect)
 
-        leftMarginSize = 0f
-        bottomMarginSize = 0f
-        verticalTextCenterOffset = rect.height() / 2f
+        textVerticalCenterOffset = rect.height() / 2.0f
+        leftScaleSize = rect.width().toFloat()
 
         update()
     }
@@ -77,10 +77,10 @@ class Grid(val context: Context) {
         paint.color = lineColor
         paint.pathEffect = DashPathEffect(floatArrayOf(20f, 10f), 0f)
         for (i in x.indices) {
-            canvas.drawLine(x[i], top, x[i], height - bottomMarginSize, paint)
+            canvas.drawLine(x[i], top, x[i], height, paint)
         }
         for (i in y.indices) {
-            canvas.drawLine(leftMarginSize, top + y[i], width, top + y[i], paint)
+            canvas.drawLine(0f, top + y[i], width, top + y[i], paint)
         }
 
         paint.pathEffect = null
@@ -99,7 +99,7 @@ class Grid(val context: Context) {
         }
         paint.textAlign = Paint.Align.LEFT
         for (i in y.indices) {
-            canvas.drawText(yText[i], padding, top + y[i] + verticalTextCenterOffset, paint)
+            canvas.drawText(yText[i], padding, top + y[i] + textVerticalCenterOffset, paint)
         }
 
         paint.setShadowLayer(0f, 0f, 0f, backgroundColor)

@@ -30,7 +30,9 @@ class GestureHandler(private val view: AnalyzerView) :
     }
 
     override fun onScroll(p0: MotionEvent?, p1: MotionEvent, p2: Float, p3: Float): Boolean {
-        view.onScroll(p2)
+        if (p0 != null) {
+            view.onScroll(p0.x, p0.y, p2, p3)
+        }
         return true
     }
 

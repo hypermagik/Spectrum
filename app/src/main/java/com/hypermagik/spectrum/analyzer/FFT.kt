@@ -20,6 +20,8 @@ class FFT(private val context: Context, private var fftSize: Int) {
     private var uFFTXTranslate: Int = 0
     private var uFFTMinY: Int = 0
     private var uFFTMaxY: Int = 0
+    private var uFFTMinDB: Int = 0
+    private var uFFTMaxDB: Int = 0
 
     private var coordsPerVertex = 3
 
@@ -36,6 +38,8 @@ class FFT(private val context: Context, private var fftSize: Int) {
     private var xTranslate = 0.0f
     private var minY = 0.0f
     private var maxY = 1.0f
+    private var minDB = 0.0f
+    private var maxDB = 100.0f
     private var sizeChanged = true
     private var scaleChanged = true
     private var restoredState: FloatArray? = null
@@ -111,6 +115,8 @@ class FFT(private val context: Context, private var fftSize: Int) {
         uFFTXTranslate = GLES20.glGetUniformLocation(program, "fftXtranslate")
         uFFTMinY = GLES20.glGetUniformLocation(program, "fftMinY")
         uFFTMaxY = GLES20.glGetUniformLocation(program, "fftMaxY")
+        uFFTMinDB = GLES20.glGetUniformLocation(program, "fftMinDB")
+        uFFTMaxDB = GLES20.glGetUniformLocation(program, "fftMaxDB")
     }
 
     fun onSurfaceChanged(height: Int) {
@@ -157,9 +163,15 @@ class FFT(private val context: Context, private var fftSize: Int) {
         fftVertexBuffer.rewind()
     }
 
-    fun update(xScale: Float, xTranslate: Float) {
-        this.xScale = xScale
-        this.xTranslate = xTranslate
+    fun updateX(scale: Float, translate: Float) {
+        this.xScale = scale
+        this.xTranslate = translate
+        scaleChanged = true
+    }
+
+    fun updateY(minDB: Float, maxDB: Float) {
+        this.minDB = minDB
+        this.maxDB = maxDB
         scaleChanged = true
     }
 
@@ -175,6 +187,8 @@ class FFT(private val context: Context, private var fftSize: Int) {
             GLES20.glUniform1f(uFFTXTranslate, xTranslate)
             GLES20.glUniform1f(uFFTMinY, minY)
             GLES20.glUniform1f(uFFTMaxY, maxY)
+            GLES20.glUniform1f(uFFTMinDB, minDB)
+            GLES20.glUniform1f(uFFTMaxDB, maxDB)
         }
 
         GLES20.glEnableVertexAttribArray(vPosition)

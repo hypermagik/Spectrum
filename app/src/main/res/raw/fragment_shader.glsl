@@ -2,15 +2,15 @@ precision highp float;
 
 uniform vec4 vColor;
 
-uniform highp int sampleTexture;
-
 varying vec2 vTexCoord;
 uniform sampler2D uTexture;
 
-uniform sampler2D waterfallSampler;
+uniform highp int sampleTexture;
 
-const float dbMin = -120.0;
-const float dbMax = 0.0;
+uniform float fftMinDB;
+uniform float fftMaxDB;
+
+uniform sampler2D waterfallSampler;
 
 const float M_1_OVER_LN10 = 0.43429544250362636694490528016399;
 const float M_2_TO_MINUS_23 = 0.00000011920929;
@@ -37,8 +37,8 @@ void drawWaterfall() {
     value = 20.0 * log(value) * M_1_OVER_LN10;
 
     // Clamp and scale.
-    value = clamp(value, dbMin, dbMax);
-    value = (value - dbMin) / (dbMax - dbMin);
+    value = clamp(value, fftMinDB, fftMaxDB);
+    value = (value - fftMinDB) / (fftMaxDB - fftMinDB);
 
     gl_FragColor = texture2D(waterfallSampler, vec2(value, 0.0));
 }

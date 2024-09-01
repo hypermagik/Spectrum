@@ -6,13 +6,12 @@ varying vec2 vTexCoord;
 uniform int sampleTexture;
 
 uniform int fftSize;
-
 uniform float fftXscale;
 uniform float fftXtranslate;
 uniform float fftMinY;
 uniform float fftMaxY;
-const float dbMin = -120.0;
-const float dbMax = 0.0;
+uniform float fftMinDB;
+uniform float fftMaxDB;
 
 uniform int waterfallOffset;
 uniform int waterfallHeight;
@@ -47,8 +46,8 @@ void drawFFT() {
         x = x / (float(fftSize) - 1.0);
 
         // Clamp and scale value.
-        value = clamp(value, dbMin, dbMax);
-        value = (value - dbMin) / (dbMax - dbMin);
+        value = clamp(value, fftMinDB, fftMaxDB);
+        value = (value - fftMinDB) / (fftMaxDB - fftMinDB);
 
         // Scale and translate into view.
         y = fftMinY + value * (fftMaxY - fftMinY);
