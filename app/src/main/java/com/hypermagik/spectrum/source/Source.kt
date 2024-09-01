@@ -14,9 +14,6 @@ interface Source {
 
     fun read(buffer: Complex32Array)
 
-    fun getMinimumSampleRate(): Int
-    fun getMaximumSampleRate(): Int
-
     fun setFrequency(frequency: Long)
     fun getMinimumFrequency(): Long
     fun getMaximumFrequency(): Long

@@ -89,14 +89,6 @@ class ToneGenerator : Source {
         }
     }
 
-    override fun getMinimumSampleRate(): Int {
-        return 1000000
-    }
-
-    override fun getMaximumSampleRate(): Int {
-        return 61440000
-    }
-
     override fun setFrequency(frequency: Long) {
         currentFrequency = frequency
 
