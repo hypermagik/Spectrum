@@ -13,9 +13,8 @@ import kotlin.math.abs
 
 class ToneGenerator : Source {
     private var initialFrequency: Long = 0
+    private var currentFrequency: Long = 0
     private var sampleRate: Int = 0
-
-    private var oob: Boolean = false
 
     private var bufferSize: Int = 0
     private var buffer: Complex32Array? = null
@@ -41,21 +40,21 @@ class ToneGenerator : Source {
         Log.d(TAG, "Opening ${getName()}")
 
         initialFrequency = preferences.frequency
+        currentFrequency = initialFrequency
         sampleRate = preferences.sampleRate
-        oob = false
 
         bufferSize = preferences.sampleFifoBufferSize
         buffer = Array(bufferSize) { Complex32() }
 
-        signals = Array(initialSignalFrequencies.size) { CW(0, sampleRate) }
-        signalFrequencies = LongArray(signals.size)
+        signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + currentFrequency }
+
+        signals = Array(signalFrequencies.size) { CW(0, sampleRate) }
         signalGains = FloatArray(signals.size)
 
         for (i in signals.indices) {
-            signalFrequencies[i] = initialSignalFrequencies[i]
-            signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
-            signals[i].setFrequency(signalFrequencies[i])
+            signals[i].setFrequency(initialSignalFrequencies[i])
             signals[i].setModulatedFrequency((modulatedFrequencies[i] * sampleRate / 1e6).toLong())
+            signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
         }
 
         throttle = Throttle(bufferSize, preferences.sampleRate)
@@ -77,12 +76,14 @@ class ToneGenerator : Source {
     override fun read(buffer: Complex32Array) {
         throttle.sync()
 
+        val frequencyRange = LongRange(currentFrequency - sampleRate / 2, currentFrequency + sampleRate / 2)
+
         for (sample in buffer) {
             noise.getNoise(sample, noiseGain)
 
-            if (!oob) {
-                for (j in signals.indices) {
-                    signals[j].addSignal(sample, signalGains[j])
+            for (i in signals.indices) {
+                if (signalFrequencies[i] in frequencyRange) {
+                    signals[i].addSignal(sample, signalGains[i])
                 }
             }
         }
@@ -97,12 +98,12 @@ class ToneGenerator : Source {
     }
 
     override fun setFrequency(frequency: Long) {
-        val delta = frequency - initialFrequency
+        currentFrequency = frequency
 
-        if (abs(delta) >= sampleRate / 2) {
-            for (i in signals.indices) {
-                signals[i].setFrequency(signalFrequencies[i] * sampleRate + delta)
-            }
+        val frequencyOffset = initialFrequency - currentFrequency
+
+        for (i in signals.indices) {
+            signals[i].setFrequency(initialSignalFrequencies[i] + frequencyOffset)
         }
     }
 
