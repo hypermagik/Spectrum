@@ -6,6 +6,8 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Rect
 import com.hypermagik.spectrum.R
+import java.util.Locale
+import kotlin.math.round
 
 class Grid(val context: Context) {
     private val lineColor: Int = context.resources.getColor(R.color.fft_grid_line, null)
@@ -14,14 +16,22 @@ class Grid(val context: Context) {
 
     private var paint: Paint = Paint()
 
-    private var top = 0f
-    private var width = 0f
-    private var height = 0f
-    private var padding = 16f
-    private var textVerticalCenterOffset = 0f
+    private var top = 0.0f
+    private var width = 0.0f
+    private var height = 0.0f
+    private var padding = 0.0f
+    private var textVerticalCenterOffset = 0.0f
+    private var bottomScaleSize = 0.0f
 
-    var leftScaleSize = 0f
+    var leftScaleSize = 0.0f
         private set
+
+    private var xCoord = FloatArray(8)
+    private var yCoord = FloatArray(12)
+    private var xText = Array(8) { "" }
+    private var yText = Array(12) { "" }
+    private var xCount = 0
+    private var yCount = 0
 
     private var isDirty = true
 
@@ -45,15 +55,17 @@ class Grid(val context: Context) {
 
         this.top = Info.HEIGHT * context.resources.displayMetrics.density
         this.width = width.toFloat()
-        this.height = if (isLandscape) height.toFloat() else height / 2f
+        this.height = if (isLandscape) height.toFloat() else height / 2.0f
+        this.padding = 4.0f * context.resources.displayMetrics.density
 
-        paint.textSize = 12f * context.resources.displayMetrics.density
+        paint.textSize = 10.0f * context.resources.displayMetrics.density
 
         val rect = Rect()
         paint.getTextBounds("-199", 0, 4, rect)
 
         textVerticalCenterOffset = rect.height() / 2.0f
         leftScaleSize = rect.width().toFloat()
+        bottomScaleSize = rect.height().toFloat()
 
         update()
     }
@@ -63,24 +75,18 @@ class Grid(val context: Context) {
         var canvas = background.getCanvas()
 
         paint.color = backgroundColor
-        canvas.drawRect(0f, 0f, width, height, paint)
+        canvas.drawRect(0.0f, 0.0f, width, height, paint)
 
         paint.color = lineColor
-        canvas.drawLine(0f, height - 1, width, height - 1, paint)
-
-        val x = floatArrayOf(1 * width / 4f, 2 * width / 4f, 3 * width / 4f)
-        val y = floatArrayOf(1 * (height - top) / 4f, 2 * (height - top) / 4f, 3 * (height - top) / 4f)
-
-        val xText = arrayOf("99.0M", "100.0M", "101.0M")
-        val yText = arrayOf("-30", "-60", "-90")
+        canvas.drawLine(0.0f, height - 1, width, height - 1, paint)
 
         paint.color = lineColor
-        paint.pathEffect = DashPathEffect(floatArrayOf(20f, 10f), 0f)
-        for (i in x.indices) {
-            canvas.drawLine(x[i], top, x[i], height, paint)
+        paint.pathEffect = DashPathEffect(floatArrayOf(20.0f, 10.0f), 0.0f)
+        for (i in 0 until xCount) {
+            canvas.drawLine(xCoord[i], top, xCoord[i], height, paint)
         }
-        for (i in y.indices) {
-            canvas.drawLine(0f, top + y[i], width, top + y[i], paint)
+        for (i in 0 until yCount) {
+            canvas.drawLine(0.0f, yCoord[i], width, yCoord[i], paint)
         }
 
         paint.pathEffect = null
@@ -91,26 +97,28 @@ class Grid(val context: Context) {
         canvas = labels.getCanvas()
 
         paint.color = textColor
-        paint.setShadowLayer(3f, 0f, 0f, backgroundColor)
+        paint.setShadowLayer(3.0f, 0.0f, 0.0f, backgroundColor)
 
         paint.textAlign = Paint.Align.CENTER
-        for (i in x.indices) {
-            canvas.drawText(xText[i], x[i], height - padding, paint)
+        for (i in 0 until xCount) {
+            canvas.drawText(xText[i], xCoord[i], height - padding, paint)
         }
         paint.textAlign = Paint.Align.LEFT
-        for (i in y.indices) {
-            canvas.drawText(yText[i], padding, top + y[i] + textVerticalCenterOffset, paint)
+        for (i in 0 until yCount) {
+            canvas.drawText(yText[i], padding, yCoord[i] + textVerticalCenterOffset, paint)
         }
 
-        paint.setShadowLayer(0f, 0f, 0f, backgroundColor)
+        paint.setShadowLayer(0.0f, 0.0f, 0.0f, backgroundColor)
 
         labels.update()
     }
 
     fun drawBackground() {
         if (isDirty) {
-            isDirty = false
-            update()
+            synchronized(this) {
+                isDirty = false
+                update()
+            }
         }
 
         background.draw()
@@ -118,5 +126,56 @@ class Grid(val context: Context) {
 
     fun drawLabels() {
         labels.draw()
+    }
+
+    @Synchronized
+    fun setFrequencyRange(start: Float, end: Float) {
+        var step = 1000
+        val range = end - start
+        while (range / step > xCoord.size) {
+            step *= 2
+        }
+
+        xCount = 0
+        val pixelsPerUnit = width / (end - start)
+
+        var i = ((start + step - 1) / step).toInt() * step.toFloat()
+        while (i < end) {
+            val x = (i - start) * pixelsPerUnit
+            xCoord[xCount] = x
+            xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0f)
+            xCount += 1
+            i += step
+        }
+
+        isDirty = true
+    }
+
+    @Synchronized
+    fun setDBRange(start: Float, end: Float) {
+        var step = 1
+        val range = round(end - start)
+        while (range / step > yCoord.size) {
+            step += 1
+        }
+
+        yCount = 0
+        val usableHeight = height - top
+        val pixelsPerUnit = usableHeight / (end - start)
+
+        var i = end - (end - (step - 1) + step * if (end > 0) 1 else 0).toInt() / step * step.toFloat()
+        while (i < range) {
+            // Don't draw over the other axis' labels.
+            val y = top + i * pixelsPerUnit
+            if (y > height - bottomScaleSize - 3 * padding) {
+                break
+            }
+            yCoord[yCount] = y
+            yText[yCount] = String.format(Locale.getDefault(), "%.0f", end - i)
+            yCount += 1
+            i += step
+        }
+
+        isDirty = true
     }
 }

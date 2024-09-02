@@ -1,6 +1,7 @@
 package com.hypermagik.spectrum.analyzer
 
 import android.content.Context
+import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.os.Bundle
@@ -30,11 +31,11 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var maxFrequency: Long = 1000000
     private var isFrequencyLocked = false
 
-    private var minDB = -140.0f
-    private var maxDB = 20.0f
+    private var minDB = -135.0f
+    private var maxDB = 15.0f
     private var minDBRange = 10.0f
     private var maxDBRange = maxDB - minDB
-    private var defaultDBCenter = -60.0f
+    private var defaultDBCenter = -55.0f
     private var defaultDBRange = 120.0f
 
     private var previousgain: Int = 0
@@ -98,7 +99,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         GLES20.glEnable(GL10.GL_BLEND)
         GLES20.glBlendFunc(GL10.GL_SRC_ALPHA, GL10.GL_ONE_MINUS_SRC_ALPHA)
 
-        GLES20.glClearColor(0f, 0f, 0f, 1.0f)
+        GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
 
         grid.onSurfaceCreated(program)
         info.onSurfaceCreated(program)
@@ -123,6 +124,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         fft.onSurfaceChanged(height)
         waterfall.onSurfaceChanged(height)
 
+        updateFFTandGrid()
+
         isReady = true
     }
 
@@ -135,17 +138,17 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
 
         grid.drawBackground()
-        info.draw()
 
         synchronized(fft) {
             fft.draw()
         }
 
+        grid.drawLabels()
+        info.draw()
+
         synchronized(waterfall) {
             waterfall.draw()
         }
-
-        grid.drawLabels()
     }
 
     fun saveInstanceState(bundle: Bundle) {
@@ -165,7 +168,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewDBRange = bundle.getFloat("viewDBRange")
         fft.restoreInstanceState(bundle)
         info.setFrequencyLock(isFrequencyLocked)
-        updateFFT()
     }
 
     fun start() {
@@ -179,7 +181,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         waterfall.start()
 
-        updateFFT()
+        if (isReady) {
+            updateFFTandGrid()
+        }
     }
 
     fun stop(restart: Boolean) {
@@ -213,21 +217,21 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         requestRender()
     }
 
-    private fun updateFFT() {
+    private fun updateFFTandGrid() {
         val minViewBandwidth = preferences.sampleRate / (preferences.fftSize / 128.0f)
         val maxViewBandwidth = preferences.sampleRate / 1.0f
 
         viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
 
-        val frequency0 = preferences.frequency - preferences.sampleRate / 2f
-        val frequency1 = preferences.frequency + preferences.sampleRate / 2f
-        val viewFrequency0 = frequency0 + viewBandwidth / 2f
-        val viewFrequency1 = frequency1 - viewBandwidth / 2f
+        val frequency0 = preferences.frequency - preferences.sampleRate / 2.0f
+        val frequency1 = preferences.frequency + preferences.sampleRate / 2.0f
+        val viewFrequency0 = frequency0 + viewBandwidth / 2.0f
+        val viewFrequency1 = frequency1 - viewBandwidth / 2.0f
 
         viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
         val scale = preferences.sampleRate / viewBandwidth
-        val translate = (viewFrequency - viewBandwidth / 2f - frequency0) / preferences.sampleRate * scale
+        val translate = (viewFrequency - viewBandwidth / 2.0f - frequency0) / preferences.sampleRate * scale
 
         fft.updateX(scale, translate)
 
@@ -235,6 +239,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
 
         fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
+
+        grid.setFrequencyRange(viewFrequency - viewBandwidth / 2, viewFrequency + viewBandwidth / 2)
+        grid.setDBRange(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
 
         requestRender()
     }
@@ -246,11 +253,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
-        if (focusX < grid.leftScaleSize * 1.5f && focusY < height / 2) {
+        val fftHeight = if (context.resources.configuration.orientation == ORIENTATION_LANDSCAPE) height else height / 2
+
+        if (focusX < grid.leftScaleSize * 1.5f && focusY < fftHeight) {
             // Scale the Y axis.
             viewDBRange /= scaleFactor
 
-            val focusDB = viewDBCenter + (focusY / (height / 2) - 0.5f)
+            val focusDB = viewDBCenter + (focusY / fftHeight - 0.5f)
             viewDBCenter = focusDB + (viewDBCenter - focusDB) / scaleFactor
         } else {
             // Scale the X axis.
@@ -264,13 +273,15 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             viewFrequency = focusFrequency + (viewFrequency - focusFrequency) / scaleFactor
         }
 
-        updateFFT()
+        updateFFTandGrid()
     }
 
     fun onScroll(x: Float, y: Float, deltaX: Float, deltaY: Float) {
-        if (x < grid.leftScaleSize * 1.5f && y < height / 2) {
+        val fftHeight = if (context.resources.configuration.orientation == ORIENTATION_LANDSCAPE) height else height / 2
+
+        if (x < grid.leftScaleSize * 1.5f && y < fftHeight) {
             // Scroll the Y axis.
-            viewDBCenter -= viewDBRange * deltaY / (height / 2)
+            viewDBCenter -= viewDBRange * deltaY / fftHeight
             viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
         } else {
             // Scroll the X axis.
@@ -288,7 +299,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             }
         }
 
-        updateFFT()
+        updateFFTandGrid()
     }
 
     fun onSingleTap(x: Float, y: Float) {
@@ -300,7 +311,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 // When unlocked, reset the X axis.
                 viewFrequency = preferences.frequency.toFloat()
                 viewBandwidth = preferences.sampleRate.toFloat()
-                updateFFT()
+                updateFFTandGrid()
             } else {
                 requestRender()
             }
@@ -317,12 +328,12 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             // Reset the Y axis.
             viewDBCenter = defaultDBCenter
             viewDBRange = defaultDBRange
-            updateFFT()
+            updateFFTandGrid()
         } else {
             // Reset the X axis.
             viewFrequency = preferences.frequency.toFloat()
             viewBandwidth = preferences.sampleRate.toFloat()
-            updateFFT()
+            updateFFTandGrid()
         }
     }
 }
