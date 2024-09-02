@@ -26,9 +26,16 @@ class Texture(program: Int) {
         1.0f, 0.0f,
         1.0f, 1.0f,
     )
-    private val drawOrder = shortArrayOf(0, 1, 2, 0, 2, 3)
+    private val drawOrder = shortArrayOf(0, 1, 2, 3)
+    private val coords = floatArrayOf(
+        0.0f, 0.0f,
+        0.0f, 1.0f,
+        1.0f, 1.0f,
+        1.0f, 0.0f,
+    )
 
     private var vertexBuffer: ByteBuffer
+    private var coordsBuffer: ByteBuffer
     private val drawOrderBuffer: ByteBuffer
 
     private var textures: IntArray = IntArray(1) { GLES20.GL_NONE }
@@ -40,6 +47,9 @@ class Texture(program: Int) {
 
         vertexBuffer = ByteBuffer.allocateDirect(vertices.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
         vertexBuffer.asFloatBuffer().apply { put(vertices) }
+
+        coordsBuffer = ByteBuffer.allocateDirect(coords.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
+        coordsBuffer.asFloatBuffer().apply { put(coords) }
 
         drawOrderBuffer = ByteBuffer.allocateDirect(drawOrder.size * Short.SIZE_BYTES).order(ByteOrder.nativeOrder())
         drawOrderBuffer.asShortBuffer().apply { put(drawOrder) }
@@ -75,7 +85,7 @@ class Texture(program: Int) {
 
         GLES20.glEnableVertexAttribArray(aTexCoord)
         GLES20.glVertexAttribPointer(
-            aTexCoord, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, vertexBuffer
+            aTexCoord, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, coordsBuffer
         )
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
@@ -85,7 +95,7 @@ class Texture(program: Int) {
 
         GLES20.glUniform1i(uSampleTexture, 1)
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
+        GLES20.glDrawElements(GLES20.GL_TRIANGLE_FAN, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
 
         GLES20.glUniform1i(uSampleTexture, 0)
 

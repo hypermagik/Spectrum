@@ -22,14 +22,16 @@ void drawFFT();
 void drawWaterfall();
 
 void main() {
+    if (sampleTexture == 2) {
+        drawWaterfall();
+        return;
+    }
     if (vPosition.z > 0.0) {
         drawFFT();
-    } else if (sampleTexture == 2) {
-        drawWaterfall();
     } else {
         gl_Position = vPosition;
-        vTexCoord = vec2(aTexCoord.s, 1.0 - aTexCoord.t);
     }
+    vTexCoord = vec2(aTexCoord.s, aTexCoord.t);
 }
 
 void drawFFT() {
@@ -72,7 +74,7 @@ void drawWaterfall() {
 
     // Start sampling from the last set of samples and wrap around.
     float s = aTexCoord.s;
-    float t = 1.0 - aTexCoord.t - float(waterfallOffset) / float(waterfallHeight);
+    float t = aTexCoord.t - float(waterfallOffset) / float(waterfallHeight);
 
     vTexCoord = vec2(s, t);
 }

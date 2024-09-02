@@ -27,14 +27,14 @@ class Waterfall(context: Context, private var fftSize: Int) {
     )
     private var vertexBuffer: ByteBuffer
 
-    private val drawOrder = shortArrayOf(0, 1, 2, 0, 2, 3)
+    private val drawOrder = shortArrayOf(0, 1, 2, 3)
     private var drawOrderBuffer: ByteBuffer
 
     private val texCoords = floatArrayOf(
-        0.0f, 1.0f,
         0.0f, 0.0f,
-        1.0f, 0.0f,
+        0.0f, 1.0f,
         1.0f, 1.0f,
+        1.0f, 0.0f,
     )
     private var texCoordsBuffer: ByteBuffer
 
@@ -187,7 +187,7 @@ class Waterfall(context: Context, private var fftSize: Int) {
 
         GLES20.glUniform1i(uSampleTexture, 2)
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
+        GLES20.glDrawElements(GLES20.GL_TRIANGLE_FAN, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
 
         GLES20.glUniform1i(uSampleTexture, 0)
 

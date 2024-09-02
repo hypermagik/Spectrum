@@ -20,10 +20,7 @@ void drawWaterfall();
 void main() {
     if (sampleTexture == 2) {
         drawWaterfall();
-        return;
-    }
-
-    if (sampleTexture == 1) {
+    } else if (sampleTexture == 1) {
         gl_FragColor = texture2D(uTexture, vTexCoord);
     } else {
         gl_FragColor = vColor;
