@@ -40,8 +40,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private var previousgain: Int = 0
 
-    private var viewFrequency = preferences.frequency.toFloat()
-    private var viewBandwidth = preferences.sampleRate.toFloat()
+    private var viewFrequency = preferences.frequency.toDouble()
+    private var viewBandwidth = preferences.sampleRate.toDouble()
     private var viewDBCenter = defaultDBCenter
     private var viewDBRange = defaultDBRange
 
@@ -153,8 +153,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     fun saveInstanceState(bundle: Bundle) {
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
-        bundle.putFloat("viewFrequency", viewFrequency)
-        bundle.putFloat("viewBandwidth", viewBandwidth)
+        bundle.putDouble("viewFrequency", viewFrequency)
+        bundle.putDouble("viewBandwidth", viewBandwidth)
         bundle.putFloat("viewDBCenter", viewDBCenter)
         bundle.putFloat("viewDBRange", viewDBRange)
         fft.saveInstanceState(bundle)
@@ -162,8 +162,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     fun restoreInstanceState(bundle: Bundle) {
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
-        viewFrequency = bundle.getFloat("viewFrequency")
-        viewBandwidth = bundle.getFloat("viewBandwidth")
+        viewFrequency = bundle.getDouble("viewFrequency")
+        viewBandwidth = bundle.getDouble("viewBandwidth")
         viewDBCenter = bundle.getFloat("viewDBCenter")
         viewDBRange = bundle.getFloat("viewDBRange")
         fft.restoreInstanceState(bundle)
@@ -218,22 +218,22 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateFFTandGrid() {
-        val minViewBandwidth = preferences.sampleRate / (preferences.fftSize / 128.0f)
-        val maxViewBandwidth = preferences.sampleRate / 1.0f
+        val minViewBandwidth = preferences.sampleRate / (preferences.fftSize / 128.0)
+        val maxViewBandwidth = preferences.sampleRate / 1.0
 
         viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
 
-        val frequency0 = preferences.frequency - preferences.sampleRate / 2.0f
-        val frequency1 = preferences.frequency + preferences.sampleRate / 2.0f
-        val viewFrequency0 = frequency0 + viewBandwidth / 2.0f
-        val viewFrequency1 = frequency1 - viewBandwidth / 2.0f
+        val frequency0 = preferences.frequency - preferences.sampleRate / 2.0
+        val frequency1 = preferences.frequency + preferences.sampleRate / 2.0
+        val viewFrequency0 = frequency0 + viewBandwidth / 2.0
+        val viewFrequency1 = frequency1 - viewBandwidth / 2.0
 
         viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
         val scale = preferences.sampleRate / viewBandwidth
-        val translate = (viewFrequency - viewBandwidth / 2.0f - frequency0) / preferences.sampleRate * scale
+        val translate = (viewFrequency - viewBandwidth / 2.0 - frequency0) / preferences.sampleRate * scale
 
-        fft.updateX(scale, translate)
+        fft.updateX(scale.toFloat(), translate.toFloat())
 
         viewDBRange = viewDBRange.coerceIn(minDBRange, maxDBRange)
         viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
@@ -269,7 +269,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
             viewBandwidth /= scaleFactor
 
-            val focusFrequency = viewFrequency + (focusX / width - 0.5f)
+            val focusFrequency = viewFrequency + (focusX / width - 0.5)
             viewFrequency = focusFrequency + (viewFrequency - focusFrequency) / scaleFactor
         }
 
@@ -309,8 +309,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             isFrequencyLocked = !isFrequencyLocked
             if (!isFrequencyLocked) {
                 // When unlocked, reset the X axis.
-                viewFrequency = preferences.frequency.toFloat()
-                viewBandwidth = preferences.sampleRate.toFloat()
+                viewFrequency = preferences.frequency.toDouble()
+                viewBandwidth = preferences.sampleRate.toDouble()
                 updateFFTandGrid()
             } else {
                 requestRender()
@@ -331,8 +331,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             updateFFTandGrid()
         } else {
             // Reset the X axis.
-            viewFrequency = preferences.frequency.toFloat()
-            viewBandwidth = preferences.sampleRate.toFloat()
+            viewFrequency = preferences.frequency.toDouble()
+            viewBandwidth = preferences.sampleRate.toDouble()
             updateFFTandGrid()
         }
     }

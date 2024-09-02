@@ -132,7 +132,7 @@ class Grid(val context: Context) {
     }
 
     @Synchronized
-    fun setFrequencyRange(start: Float, end: Float) {
+    fun setFrequencyRange(start: Double, end: Double) {
         var step = 1000
         val range = end - start
         while (range / step > xMaxLines) {
@@ -142,18 +142,18 @@ class Grid(val context: Context) {
         xCount = 0
         val pixelsPerUnit = width / (end - start)
 
-        val labelWidth = paint.measureText(String.format(Locale.getDefault(), " %.3fM ", end / 1000000.0f)).toInt()
+        val labelWidth = paint.measureText(String.format(Locale.getDefault(), " %.3fM ", end / 1000000.0)).toInt()
         val numLabels = (end - start).toInt() / step
         val maxLabels = min(numLabels, width.toInt() / labelWidth)
         val labelStep = (numLabels + maxLabels) / maxLabels
 
-        var i = ((start + step - 1) / step).toLong() * step.toFloat()
+        var i = ((start + step - 1) / step).toLong() * step.toDouble()
         while (i < end) {
             val x = (i - start) * pixelsPerUnit
-            xCoord[xCount] = x
+            xCoord[xCount] = x.toFloat()
             // Hide some labels if they are overlapping.
             if (round(i / step).toLong() % labelStep == 0L) {
-                xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0f)
+                xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0)
             } else {
                 xText[xCount] = ""
             }
