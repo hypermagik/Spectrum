@@ -7,6 +7,7 @@ import android.graphics.Paint
 import android.graphics.Rect
 import com.hypermagik.spectrum.R
 import java.util.Locale
+import kotlin.math.min
 import kotlin.math.round
 
 class Grid(val context: Context) {
@@ -26,10 +27,12 @@ class Grid(val context: Context) {
     var leftScaleSize = 0.0f
         private set
 
-    private var xCoord = FloatArray(8)
-    private var yCoord = FloatArray(12)
-    private var xText = Array(8) { "" }
-    private var yText = Array(12) { "" }
+    private var xMaxLines = 12
+    private var yMaxLines = 12
+    private var xCoord = FloatArray(xMaxLines)
+    private var yCoord = FloatArray(yMaxLines)
+    private var xText = Array(xMaxLines) { "" }
+    private var yText = Array(yMaxLines) { "" }
     private var xCount = 0
     private var yCount = 0
 
@@ -132,18 +135,28 @@ class Grid(val context: Context) {
     fun setFrequencyRange(start: Float, end: Float) {
         var step = 1000
         val range = end - start
-        while (range / step > xCoord.size) {
+        while (range / step > xMaxLines) {
             step *= 2
         }
 
         xCount = 0
         val pixelsPerUnit = width / (end - start)
 
-        var i = ((start + step - 1) / step).toInt() * step.toFloat()
+        val labelWidth = paint.measureText(String.format(Locale.getDefault(), " %.3fM ", end / 1000000.0f)).toInt()
+        val numLabels = (end - start).toInt() / step
+        val maxLabels = min(numLabels, width.toInt() / labelWidth)
+        val labelStep = (numLabels + maxLabels) / maxLabels
+
+        var i = ((start + step - 1) / step).toLong() * step.toFloat()
         while (i < end) {
             val x = (i - start) * pixelsPerUnit
             xCoord[xCount] = x
-            xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0f)
+            // Hide some labels if they are overlapping.
+            if (round(i / step).toLong() % labelStep == 0L) {
+                xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0f)
+            } else {
+                xText[xCount] = ""
+            }
             xCount += 1
             i += step
         }
@@ -155,7 +168,7 @@ class Grid(val context: Context) {
     fun setDBRange(start: Float, end: Float) {
         var step = 1
         val range = round(end - start)
-        while (range / step > yCoord.size) {
+        while (range / step > yMaxLines) {
             step += 1
         }
 
