@@ -4,12 +4,14 @@ import android.content.Context
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.opengl.GLES20
 import android.os.Bundle
+import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hypermagik.spectrum.R
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.max
 
 class FFT(private val context: Context, private var fftSize: Int) {
     private var vPosition: Int = 0
@@ -25,11 +27,13 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
     private var coordsPerVertex = 3
 
-    private var fftColor: FloatArray
-    private var fftFillColor: FloatArray
-    private lateinit var fftVertexBuffer: ByteBuffer
-    private lateinit var fftDrawOrderBuffer: ByteBuffer
-    private lateinit var fftFillDrawOrderBuffer: ByteBuffer
+    private var color: FloatArray
+    private var fillColor: FloatArray
+    private var peakHoldColor: FloatArray
+    private lateinit var vertexBuffer: ByteBuffer
+    private lateinit var peakHoldVertexBuffer: ByteBuffer
+    private lateinit var drawOrderBuffer: ByteBuffer
+    private lateinit var fillDrawOrderBuffer: ByteBuffer
 
     private val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
 
@@ -40,70 +44,90 @@ class FFT(private val context: Context, private var fftSize: Int) {
     private var maxY = 1.0f
     private var minDB = 0.0f
     private var maxDB = 100.0f
+    private var isPeakHoldEnabled = true
     private var sizeChanged = true
     private var scaleChanged = true
-    private var restoredState: FloatArray? = null
+    private var restoredVertices: FloatArray? = null
+    private var restoredPeakHoldVertices: FloatArray? = null
 
     init {
         val color = context.resources.getColor(R.color.fft, null)
-        fftColor = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, 1.0f)
-        fftFillColor = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, 0.05f)
+        this.color = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+        fillColor = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, 0.05f * color.alpha / 255f)
+
+        val peakHoldColor = context.resources.getColor(R.color.fft_peak_hold, null)
+        this.peakHoldColor = floatArrayOf(peakHoldColor.red / 255f, peakHoldColor.green / 255f, peakHoldColor.blue / 255f, peakHoldColor.alpha / 255f)
     }
 
     private fun createBuffers() {
-        if (restoredState != null) {
-            fftSize = restoredState!!.size / coordsPerVertex
+        if (restoredVertices != null) {
+            fftSize = restoredVertices!!.size / coordsPerVertex
         }
 
         val vboCapacity = fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
-        fftVertexBuffer = ByteBuffer.allocateDirect(vboCapacity).order(ByteOrder.nativeOrder())
+        vertexBuffer = ByteBuffer.allocateDirect(vboCapacity).order(ByteOrder.nativeOrder())
 
-        if (restoredState != null) {
+        if (restoredVertices != null) {
             // Restore from saved state.
-            fftVertexBuffer.asFloatBuffer().put(restoredState)
-            fftVertexBuffer.position(fftSize * coordsPerVertex * Float.SIZE_BYTES)
-            restoredState = null
+            vertexBuffer.asFloatBuffer().put(restoredVertices)
+            vertexBuffer.position(fftSize * coordsPerVertex * Float.SIZE_BYTES)
         } else for (i in 0 until fftSize) {
             // Initialize to zero samples.
-            fftVertexBuffer.putFloat(i.toFloat())
-            fftVertexBuffer.putFloat(0.0f)
-            fftVertexBuffer.putFloat(1.0f)
+            vertexBuffer.putFloat(i.toFloat())
+            vertexBuffer.putFloat(0.0f)
+            vertexBuffer.putFloat(1.0f)
         }
 
         // Extra vertices at (i, yMin) for drawing fill area.
         for (i in 0 until fftSize) {
-            fftVertexBuffer.putFloat(1.0f * i / (fftSize - 1))
-            fftVertexBuffer.putFloat(minY)
-            fftVertexBuffer.putFloat(2.0f)
+            vertexBuffer.putFloat(1.0f * i / (fftSize - 1))
+            vertexBuffer.putFloat(minY)
+            vertexBuffer.putFloat(2.0f)
         }
 
-        fftVertexBuffer.rewind()
+        restoredVertices = null
+        vertexBuffer.rewind()
+
+        if (isPeakHoldEnabled) {
+            peakHoldVertexBuffer = ByteBuffer.allocateDirect(vboCapacity / 2).order(ByteOrder.nativeOrder())
+
+            if (restoredPeakHoldVertices != null) {
+                peakHoldVertexBuffer.asFloatBuffer().put(restoredPeakHoldVertices)
+            } else for (i in 0 until fftSize) {
+                peakHoldVertexBuffer.putFloat(i.toFloat())
+                peakHoldVertexBuffer.putFloat(0.0f)
+                peakHoldVertexBuffer.putFloat(1.0f)
+            }
+
+            restoredPeakHoldVertices = null
+            peakHoldVertexBuffer.rewind()
+        }
 
         var vdoCapacity = (fftSize - 1) * 2 /* vertices */ * Int.SIZE_BYTES
-        fftDrawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
+        drawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
 
         // Line segments.
         for (i in 0 until fftSize - 1) {
-            fftDrawOrderBuffer.putInt(i)
-            fftDrawOrderBuffer.putInt(i + 1)
+            drawOrderBuffer.putInt(i)
+            drawOrderBuffer.putInt(i + 1)
         }
 
-        fftDrawOrderBuffer.rewind()
+        drawOrderBuffer.rewind()
 
         vdoCapacity = (fftSize - 1) * 6 /* vertices */ * Int.SIZE_BYTES
-        fftFillDrawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
+        fillDrawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
 
         // Fill triangles.
         for (i in 0 until fftSize - 1) {
-            fftFillDrawOrderBuffer.putInt(i)
-            fftFillDrawOrderBuffer.putInt(i + fftSize)
-            fftFillDrawOrderBuffer.putInt(i + 1 + fftSize)
-            fftFillDrawOrderBuffer.putInt(i)
-            fftFillDrawOrderBuffer.putInt(i + 1 + fftSize)
-            fftFillDrawOrderBuffer.putInt(i + 1)
+            fillDrawOrderBuffer.putInt(i)
+            fillDrawOrderBuffer.putInt(i + fftSize)
+            fillDrawOrderBuffer.putInt(i + 1 + fftSize)
+            fillDrawOrderBuffer.putInt(i)
+            fillDrawOrderBuffer.putInt(i + 1 + fftSize)
+            fillDrawOrderBuffer.putInt(i + 1)
         }
 
-        fftFillDrawOrderBuffer.rewind()
+        fillDrawOrderBuffer.rewind()
     }
 
     fun onSurfaceCreated(program: Int) {
@@ -134,12 +158,16 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
     fun saveInstanceState(bundle: Bundle) {
         val vertices = FloatArray(fftSize * coordsPerVertex)
-        fftVertexBuffer.asFloatBuffer().get(vertices)
+        vertexBuffer.asFloatBuffer().get(vertices)
         bundle.putFloatArray("vertices", vertices)
+        val peakHoldVertices = FloatArray(fftSize * coordsPerVertex)
+        peakHoldVertexBuffer.asFloatBuffer().get(peakHoldVertices)
+        bundle.putFloatArray("peakHoldVertices", peakHoldVertices)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
-        restoredState = bundle.getFloatArray("vertices") ?: return
+        restoredVertices = bundle.getFloatArray("vertices") ?: return
+        restoredPeakHoldVertices = bundle.getFloatArray("peakHoldVertices") ?: return
     }
 
     fun update(magnitudes: FloatArray) {
@@ -155,12 +183,22 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
         // Scaling is done in the vertex shader.
         for (i in magnitudes.indices) {
-            fftVertexBuffer.putFloat(i.toFloat())
-            fftVertexBuffer.putFloat(magnitudes[i])
-            fftVertexBuffer.putFloat(1.0f)
+            val bufferIndex = (i * coordsPerVertex + 1) * Float.SIZE_BYTES
+            val magnitude = magnitudes[i]
+
+            vertexBuffer.putFloat(bufferIndex, magnitude)
+
+            if (isPeakHoldEnabled) {
+                var peak = peakHoldVertexBuffer.getFloat(bufferIndex)
+                peakHoldVertexBuffer.putFloat(bufferIndex, max(peak * 0.95f, magnitude))
+            }
         }
 
-        fftVertexBuffer.rewind()
+        vertexBuffer.rewind()
+
+        if (isPeakHoldEnabled) {
+            peakHoldVertexBuffer.rewind()
+        }
     }
 
     fun updateX(scale: Float, translate: Float) {
@@ -193,16 +231,27 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
         GLES20.glEnableVertexAttribArray(vPosition)
         GLES20.glVertexAttribPointer(
-            vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, fftVertexBuffer
+            vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, vertexBuffer
         )
 
         // Draw fill area below the lines.
-        GLES20.glUniform4fv(vColor, 1, fftFillColor, 0)
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, (fftSize - 1) * 6, GLES20.GL_UNSIGNED_INT, fftFillDrawOrderBuffer)
+        GLES20.glUniform4fv(vColor, 1, fillColor, 0)
+        GLES20.glDrawElements(GLES20.GL_TRIANGLES, (fftSize - 1) * 6, GLES20.GL_UNSIGNED_INT, fillDrawOrderBuffer)
 
-        // Draw lines.
-        GLES20.glUniform4fv(vColor, 1, fftColor, 0)
-        GLES20.glDrawElements(GLES20.GL_LINES, (fftSize - 1) * 2, GLES20.GL_UNSIGNED_INT, fftDrawOrderBuffer)
+        // Draw the FFT lines.
+        GLES20.glUniform4fv(vColor, 1, color, 0)
+        GLES20.glDrawElements(GLES20.GL_LINES, (fftSize - 1) * 2, GLES20.GL_UNSIGNED_INT, drawOrderBuffer)
+
+        // Draw the FFT hold peaks.
+        if (isPeakHoldEnabled) {
+            GLES20.glEnableVertexAttribArray(vPosition)
+            GLES20.glVertexAttribPointer(
+                vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, peakHoldVertexBuffer
+            )
+
+            GLES20.glUniform4fv(vColor, 1, peakHoldColor, 0)
+            GLES20.glDrawElements(GLES20.GL_LINES, (fftSize - 1) * 2, GLES20.GL_UNSIGNED_INT, drawOrderBuffer)
+        }
 
         GLES20.glDisableVertexAttribArray(vPosition)
     }
