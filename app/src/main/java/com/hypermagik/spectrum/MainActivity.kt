@@ -133,6 +133,7 @@ class MainActivity : AppCompatActivity() {
         menuInflater.inflate(R.menu.main, menu)
         menuInflater.inflate(R.menu.tone_generator, menu)
         menuInflater.inflate(R.menu.fft, menu)
+        menuInflater.inflate(R.menu.waterfall, menu)
         updateOptionsMenu()
         return true
     }
@@ -161,20 +162,19 @@ class MainActivity : AppCompatActivity() {
         Constants.sampleRateToMenuItem[preferences.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-
         Constants.fpsLimitToMenuItem[preferences.fpsLimit]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-
         Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-
         Constants.fftSizeToMenuItem[fft.size]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-
         Constants.fftWindowToMenuItem[fft.windowType]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
+        Constants.wfColormapToMenuItem[preferences.wfColorMap]?.also {
             menu.findItem(it)?.setChecked(true)
         }
     }
@@ -222,6 +222,12 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             item.setChecked(true)
+        } else if (item.groupId == R.id.wf_colormap_group) {
+            val colorMap = Constants.wfColormapToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.wfColorMap = colorMap
+            preferences.saveNow()
+            item.setChecked(true)
+            analyzerView.requestRender()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -369,7 +375,7 @@ class MainActivity : AppCompatActivity() {
 
                 try {
                     Thread.sleep(1)
-                } catch (e: InterruptedException) {
+                } catch (_: InterruptedException) {
                     break
                 }
             }

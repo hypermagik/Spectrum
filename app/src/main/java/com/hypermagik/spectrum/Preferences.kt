@@ -21,6 +21,7 @@ class Preferences(private val activity: Activity?) {
 
     var fftSize = 256
     var fftWindowType = WindowType.FLAT_TOP
+    var wfColorMap = 0
 
     var fpsLimit = 120
 
@@ -44,6 +45,7 @@ class Preferences(private val activity: Activity?) {
             sampleFifoBufferSize = getInt("sampleFifoBufferSize", sampleFifoBufferSize)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
+            wfColorMap = getInt("wfColorMap", wfColorMap)
             fpsLimit = getInt("fpsLimit", fpsLimit)
         }
     }
@@ -65,6 +67,7 @@ class Preferences(private val activity: Activity?) {
             putInt("sampleFifoBufferSize", sampleFifoBufferSize)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
+            putInt("wfColorMap", wfColorMap)
             putInt("fpsLimit", fpsLimit)
             apply()
         }

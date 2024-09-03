@@ -47,5 +47,19 @@ class Constants {
             FFT.WindowType.BLACKMAN_HARRIS to R.id.menu_fft_blackman_harris,
             FFT.WindowType.HAMMING to R.id.menu_fft_hamming,
         )
+
+        val wfColormapToMenuItem = mapOf(
+            0 to R.id.menu_wf_colormap_classic,
+            1 to R.id.menu_wf_colormap_classic_green,
+            2 to R.id.menu_wf_colormap_gqrx,
+            3 to R.id.menu_wf_colormap_vivid,
+        )
+
+        val wfColormapToResource = mapOf(
+            0 to R.raw.colormap_classic,
+            1 to R.raw.colormap_classic_green,
+            2 to R.raw.colormap_gqrx,
+            3 to R.raw.colormap_vivid,
+        )
     }
 }

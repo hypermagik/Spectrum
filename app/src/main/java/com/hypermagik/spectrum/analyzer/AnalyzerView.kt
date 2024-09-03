@@ -26,7 +26,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var info = Info(context)
     private var fft = FFT(context, preferences.fftSize)
     private var peaks = Peaks(context)
-    private var waterfall = Waterfall(context, preferences.fftSize)
+    private var waterfall = Waterfall(context, preferences)
 
     private var minFrequency: Long = 0
     private var maxFrequency: Long = 1000000

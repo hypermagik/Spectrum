@@ -7,12 +7,14 @@ import android.graphics.Color
 import android.opengl.GLES10
 import android.opengl.GLES20
 import android.opengl.GLUtils
+import android.util.JsonReader
+import com.hypermagik.spectrum.Constants
+import com.hypermagik.spectrum.Preferences
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.opengles.GL10
 
-
-class Waterfall(context: Context, private var fftSize: Int) {
+class Waterfall(private val context: Context, private val preferences: Preferences) {
     private var vPosition: Int = 0
     private var aTexCoord: Int = 0
     private var uSampleTexture: Int = 0
@@ -40,8 +42,11 @@ class Waterfall(context: Context, private var fftSize: Int) {
 
     private var textures: IntArray = IntArray(2)
 
+    private var fftSize = preferences.fftSize
     private var sampleBuffer: ByteBuffer
-    private var colors: IntArray
+
+    private var colorMap = -1
+    private var colors = intArrayOf(Color.RED)
 
     private var height = 0
     private var currentLine = 0
@@ -63,23 +68,31 @@ class Waterfall(context: Context, private var fftSize: Int) {
         texCoordsBuffer.asFloatBuffer().apply { put(texCoords) }
 
         sampleBuffer = ByteBuffer.allocateDirect(fftSize * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
+    }
 
-        colors = IntArray(256)
-        for (i in 0..255) {
-            if (i < 20) {
-                colors[i] = Color.argb(255, 0, 0, 0)
-            } else if (i in 20..69) {
-                colors[i] = Color.argb(255, 0, 0, 140 * (i - 20) / 50)
-            } else if (i in 70..99) {
-                colors[i] = Color.argb(255, 60 * (i - 70) / 30, 125 * (i - 70) / 30, 115 * (i - 70) / 30 + 140)
-            } else if (i in 100..149) {
-                colors[i] = Color.argb(255, 195 * (i - 100) / 50 + 60, 130 * (i - 100) / 50 + 125, 255 - (255 * (i - 100) / 50))
-            } else if (i in 150..249) {
-                colors[i] = Color.argb(255, 255, 255 - 255 * (i - 150) / 100, 0)
+    private fun loadColorMap(context: Context, id: Int): IntArray {
+        val text = context.resources.openRawResource(id).bufferedReader().readText()
+        val reader = JsonReader(text.reader())
+
+        val list = ArrayList<Int>()
+
+        reader.beginObject()
+        while (reader.hasNext()) {
+            val name = reader.nextName()
+            if (name == "map") {
+                reader.beginArray()
+                while (reader.hasNext()) {
+                    list.add(Color.parseColor(reader.nextString()))
+                }
+                reader.endArray()
+                break
             } else {
-                colors[i] = Color.argb(255, 255, 255 * (i - 250) / 5, 255 * (i - 250) / 5)
+                reader.skipValue()
             }
         }
+        reader.endObject()
+
+        return if (list.isEmpty()) intArrayOf(Color.RED) else list.toIntArray()
     }
 
     fun onSurfaceCreated(program: Int) {
@@ -91,14 +104,6 @@ class Waterfall(context: Context, private var fftSize: Int) {
         uWaterfallHeight = GLES20.glGetUniformLocation(program, "waterfallHeight")
 
         GLES20.glGenTextures(2, textures, 0)
-
-        // Create texture with color LUT.
-        GLES20.glActiveTexture(GLES20.GL_TEXTURE1)
-        GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[1])
-
-        val bitmap = Bitmap.createBitmap(colors.size, 1, Bitmap.Config.ARGB_8888)
-        bitmap.setPixels(colors, 0, colors.size, 0, 0, colors.size, 1)
-        GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0)
 
         GLES20.glUniform1i(uWaterfallSampler, 1)
     }
@@ -112,7 +117,7 @@ class Waterfall(context: Context, private var fftSize: Int) {
             this.height = height / 2
             currentLine = 0
 
-            clearBuffer = ByteBuffer.allocateDirect(fftSize * this.height * Float.SIZE_BYTES)
+            clearBuffer = ByteBuffer.allocateDirect(fftSize * this.height * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
             GLES20.glUniform1i(uWaterfallHeight, this.height)
 
@@ -183,7 +188,16 @@ class Waterfall(context: Context, private var fftSize: Int) {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[1])
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST)
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST)
-        GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE)
+
+        if (colorMap != preferences.wfColorMap) {
+            colorMap = preferences.wfColorMap
+
+            colors = loadColorMap(context, Constants.wfColormapToResource[colorMap]!!)
+            val bitmap = Bitmap.createBitmap(colors.size, 1, Bitmap.Config.ARGB_8888)
+            bitmap.setPixels(colors, 0, colors.size, 0, 0, colors.size, 1)
+
+            GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0)
+        }
 
         GLES20.glUniform1i(uSampleTexture, 2)
 

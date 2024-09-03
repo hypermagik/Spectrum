@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <group
+        android:id="@+id/waterfall_group"
+        android:orderInCategory="4">
+        <item
+            android:title="@string/menu_wf_colormap"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/wf_colormap_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_wf_colormap_classic"
+                        android:title="@string/menu_wf_colormap_classic" />
+                    <item
+                        android:id="@+id/menu_wf_colormap_classic_green"
+                        android:title="@string/menu_wf_colormap_classic_green" />
+                    <item
+                        android:id="@+id/menu_wf_colormap_gqrx"
+                        android:title="@string/menu_wf_colormap_gqrx" />
+                    <item
+                        android:id="@+id/menu_wf_colormap_vivid"
+                        android:title="@string/menu_wf_colormap_vivid" />
+                </group>
+            </menu>
+        </item>
+    </group>
+</menu>
