@@ -15,6 +15,15 @@ class Constants {
             61440000 to R.id.menu_sr_61_44M,
         )
 
+        val fpsLimitToMenuItem = mapOf(
+            0 to R.id.menu_fps_unlimited,
+            10 to R.id.menu_fps_10,
+            20 to R.id.menu_fps_20,
+            30 to R.id.menu_fps_30,
+            60 to R.id.menu_fps_60,
+            120 to R.id.menu_fps_120,
+        )
+
         val frequencyStepToMenuItem = mapOf(
             1 to R.id.menu_fstep_1,
             10 to R.id.menu_fstep_10,

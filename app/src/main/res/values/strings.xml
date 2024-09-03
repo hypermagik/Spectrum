@@ -14,13 +14,6 @@
     <string name="menu_sr_40M">40.00 Msps</string>
     <string name="menu_sr_61_44M">61.44 Msps</string>
 
-    <string name="frequency_step">Frequency Step</string>
-    <string name="menu_fstep_1">1 Hz</string>
-    <string name="menu_fstep_10">10 Hz</string>
-    <string name="menu_fstep_100">100 Hz</string>
-    <string name="menu_fstep_1000">1 kHz</string>
-    <string name="menu_fstep_10000">10 kHz</string>
-
     <string name="menu_fft_size">FFT Size</string>
     <string name="menu_fft_window">FFT Window</string>
     <string name="menu_fft_256">256</string>
@@ -33,4 +26,19 @@
     <string name="menu_fft_flat_top">Flat-top</string>
     <string name="menu_fft_blackman_harris">Blackman-Harris</string>
     <string name="menu_fft_hamming">Hamming</string>
+
+    <string name="frequency_step">Frequency Step</string>
+    <string name="menu_fstep_1">1 Hz</string>
+    <string name="menu_fstep_10">10 Hz</string>
+    <string name="menu_fstep_100">100 Hz</string>
+    <string name="menu_fstep_1000">1 kHz</string>
+    <string name="menu_fstep_10000">10 kHz</string>
+
+    <string name="fps_limit">FPS Limit</string>
+    <string name="menu_fps_10">10 FPS</string>
+    <string name="menu_fps_20">20 FPS</string>
+    <string name="menu_fps_30">30 FPS</string>
+    <string name="menu_fps_60">60 FPS</string>
+    <string name="menu_fps_120">120 FPS</string>
+    <string name="menu_fps_unlimited">Unlimited</string>
 </resources>

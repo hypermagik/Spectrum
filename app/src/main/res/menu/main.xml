@@ -8,7 +8,7 @@
         android:title="@string/action_play"
         app:showAsAction="ifRoom" />
     <item
-        android:orderInCategory="4"
+        android:orderInCategory="11"
         android:title="@string/frequency_step"
         app:showAsAction="never">
         <menu>
@@ -33,5 +33,33 @@
             </group>
         </menu>
     </item>
-
+    <item
+        android:orderInCategory="12"
+        android:title="@string/fps_limit"
+        app:showAsAction="never">
+        <menu>
+            <group
+                android:id="@+id/fps_limit_group"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/menu_fps_10"
+                    android:title="@string/menu_fps_10" />
+                <item
+                    android:id="@+id/menu_fps_20"
+                    android:title="@string/menu_fps_20" />
+                <item
+                    android:id="@+id/menu_fps_30"
+                    android:title="@string/menu_fps_30" />
+                <item
+                    android:id="@+id/menu_fps_60"
+                    android:title="@string/menu_fps_60" />
+                <item
+                    android:id="@+id/menu_fps_120"
+                    android:title="@string/menu_fps_120" />
+                <item
+                    android:id="@+id/menu_fps_unlimited"
+                    android:title="@string/menu_fps_unlimited" />
+            </group>
+        </menu>
+    </item>
 </menu>

@@ -162,6 +162,10 @@ class MainActivity : AppCompatActivity() {
             menu.findItem(it)?.setChecked(true)
         }
 
+        Constants.fpsLimitToMenuItem[preferences.fpsLimit]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
+
         Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -190,6 +194,11 @@ class MainActivity : AppCompatActivity() {
                 preferences.sampleRate = sampleRate
                 preferences.saveNow()
             }
+        } else if (item.groupId == R.id.fps_limit_group) {
+            val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.fpsLimit = fpsLimit
+            preferences.saveNow()
+            item.setChecked(true)
         } else if (item.groupId == R.id.frequency_step_group) {
             val frequencyStep = Constants.frequencyStepToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.frequencyStep = frequencyStep
@@ -255,6 +264,8 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "Resizing magnitude buffer")
             analyzerMagnitudes = FloatArray(fft.size) { 0.0f }
         }
+
+        analyzerThrottle = Throttle(if (preferences.fpsLimit == 0) 0.0 else 1e9 / preferences.fpsLimit)
 
         Log.i(TAG, "Starting source")
         source.start()
@@ -344,6 +355,8 @@ class MainActivity : AppCompatActivity() {
         analyzerView.start()
         analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
 
+        var previousFPSLimit = preferences.fpsLimit
+
         while (state == State.Running) {
             var samples: Complex32Array?
 
@@ -369,6 +382,12 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 sampleFifo.pop()
+            }
+
+            val newFPSLimit = preferences.fpsLimit
+            if (previousFPSLimit != newFPSLimit) {
+                previousFPSLimit = newFPSLimit
+                analyzerThrottle = Throttle(if (newFPSLimit == 0) 0.0 else 1e9 / newFPSLimit)
             }
         }
 

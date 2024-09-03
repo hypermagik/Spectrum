@@ -7,6 +7,10 @@ class Throttle(private val interval: Long) {
     private var t0: Long = System.nanoTime()
 
     fun sync() {
+        if (interval <= 0) {
+            return
+        }
+
         val t1 = System.nanoTime()
         val dt = t1 - t0
 
