@@ -37,7 +37,7 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
     private val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
 
-    private var height = 0
+    private var viewHeight = 0
     private var xScale = 1.0f
     private var xTranslate = 0.0f
     private var minY = 0.0f
@@ -47,8 +47,6 @@ class FFT(private val context: Context, private var fftSize: Int) {
     private var isPeakHoldEnabled = true
     private var sizeChanged = true
     private var scaleChanged = true
-    private var restoredVertices: FloatArray? = null
-    private var restoredPeakHoldVertices: FloatArray? = null
 
     init {
         val color = context.resources.getColor(R.color.fft, null)
@@ -57,21 +55,15 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
         val peakHoldColor = context.resources.getColor(R.color.fft_peak_hold, null)
         this.peakHoldColor = floatArrayOf(peakHoldColor.red / 255f, peakHoldColor.green / 255f, peakHoldColor.blue / 255f, peakHoldColor.alpha / 255f)
+
+        createBuffers()
     }
 
     private fun createBuffers() {
-        if (restoredVertices != null) {
-            fftSize = restoredVertices!!.size / coordsPerVertex
-        }
-
         val vboCapacity = fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
         vertexBuffer = ByteBuffer.allocateDirect(vboCapacity).order(ByteOrder.nativeOrder())
 
-        if (restoredVertices != null) {
-            // Restore from saved state.
-            vertexBuffer.asFloatBuffer().put(restoredVertices)
-            vertexBuffer.position(fftSize * coordsPerVertex * Float.SIZE_BYTES)
-        } else for (i in 0 until fftSize) {
+        for (i in 0 until fftSize) {
             // Initialize to zero samples.
             vertexBuffer.putFloat(i.toFloat())
             vertexBuffer.putFloat(0.0f)
@@ -85,21 +77,17 @@ class FFT(private val context: Context, private var fftSize: Int) {
             vertexBuffer.putFloat(2.0f)
         }
 
-        restoredVertices = null
         vertexBuffer.rewind()
 
         if (isPeakHoldEnabled) {
             peakHoldVertexBuffer = ByteBuffer.allocateDirect(vboCapacity / 2).order(ByteOrder.nativeOrder())
 
-            if (restoredPeakHoldVertices != null) {
-                peakHoldVertexBuffer.asFloatBuffer().put(restoredPeakHoldVertices)
-            } else for (i in 0 until fftSize) {
+            for (i in 0 until fftSize) {
                 peakHoldVertexBuffer.putFloat(i.toFloat())
                 peakHoldVertexBuffer.putFloat(0.0f)
                 peakHoldVertexBuffer.putFloat(1.0f)
             }
 
-            restoredPeakHoldVertices = null
             peakHoldVertexBuffer.rewind()
         }
 
@@ -144,38 +132,55 @@ class FFT(private val context: Context, private var fftSize: Int) {
     }
 
     fun onSurfaceChanged(height: Int) {
-        if (this.height != height) {
-            this.height = height
+        if (viewHeight != height) {
+            viewHeight = height
 
             // FFT is set to full height in landscape mode
             // and to half height in portrait mode.
             minY = if (isLandscape) 0.0f else 0.5f
             maxY = 1.0f - Info.HEIGHT * context.resources.displayMetrics.density / height
-
-            createBuffers()
         }
+
+        updateFFTSize(fftSize)
     }
 
     fun saveInstanceState(bundle: Bundle) {
         val vertices = FloatArray(fftSize * coordsPerVertex)
         vertexBuffer.asFloatBuffer().get(vertices)
         bundle.putFloatArray("vertices", vertices)
+
         val peakHoldVertices = FloatArray(fftSize * coordsPerVertex)
         peakHoldVertexBuffer.asFloatBuffer().get(peakHoldVertices)
         bundle.putFloatArray("peakHoldVertices", peakHoldVertices)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
-        restoredVertices = bundle.getFloatArray("vertices") ?: return
-        restoredPeakHoldVertices = bundle.getFloatArray("peakHoldVertices") ?: return
+        val restoredVertices = bundle.getFloatArray("vertices")
+        val restoredPeakHoldVertices = bundle.getFloatArray("peakHoldVertices")
+
+        if (restoredVertices != null) {
+            updateFFTSize(restoredVertices.size / coordsPerVertex)
+
+            // Restore from saved state.
+            vertexBuffer.asFloatBuffer().put(restoredVertices)
+
+            restoredPeakHoldVertices?.also {
+                peakHoldVertexBuffer.asFloatBuffer().put(it)
+            }
+        }
     }
 
-    fun update(magnitudes: FloatArray) {
-        if (fftSize != magnitudes.size) {
-            fftSize = magnitudes.size
+    private fun updateFFTSize(size: Int) {
+        val bufferSize = vertexBuffer.capacity() / coordsPerVertex / 2 / Float.SIZE_BYTES
+        if (bufferSize != size) {
+            fftSize = size
             createBuffers()
             sizeChanged = true
         }
+    }
+
+    fun update(magnitudes: FloatArray) {
+        updateFFTSize(magnitudes.size)
 
         // TODO: compute entire FFT on the GPU.
         // - https://community.khronos.org/t/spectrogram-and-fft-using-opengl/76933/13
