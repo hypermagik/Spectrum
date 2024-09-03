@@ -21,8 +21,8 @@ class Info(context: Context) {
 
     private val height = HEIGHT * context.resources.displayMetrics.density
     private val textSize = 20.0f * context.resources.displayMetrics.density
-    private val textY = height - 8.0f * context.resources.displayMetrics.density
-    private val textYs = height - 18.0f * context.resources.displayMetrics.density
+    private val textY = height - 7.0f * context.resources.displayMetrics.density
+    private val textYs = height - 17.0f * context.resources.displayMetrics.density
     private val decimalSymbols = DecimalFormatSymbols(Locale.ITALY)
 
     private var paint = Paint()
@@ -101,9 +101,12 @@ class Info(context: Context) {
         paint.color = borderColor
         canvas.drawLine(0.0f, height - 1, texture.width.toFloat(), height - 1, paint)
 
-        var text = " 0.000.000.000"
-        putText(canvas, text, 0.0f, textSize, shadowColor, Paint.Align.LEFT)
-        var textX = paint.measureText(text)
+        paint.textSize = textSize / 2
+        var textX = paint.measureText(" ")
+
+        var text = "0.000.000.000"
+        putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
+        textX += paint.measureText(text)
         text = DecimalFormat("#,###,###,###", decimalSymbols).format(frequency)
         putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
         text = " •"

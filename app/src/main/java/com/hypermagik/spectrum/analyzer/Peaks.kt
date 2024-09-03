@@ -73,11 +73,11 @@ class Peaks(private val context: Context) {
 
         bitmap.eraseColor(Color.TRANSPARENT)
 
-        paint.color = Color.YELLOW
+        paint.color = context.resources.getColor(R.color.fft_peak, null)
         paint.strokeWidth = 2.0f
         paint.textAlign = Paint.Align.CENTER
-        paint.textSize = 10.0f * context.resources.displayMetrics.density
-        paint.typeface = context.resources.getFont(R.font.cursed)
+        paint.textSize = 11f * context.resources.displayMetrics.density
+        // paint.typeface = context.resources.getFont(R.font.cursed)
     }
 
     fun onSurfaceCreated(program: Int) {

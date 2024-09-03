@@ -42,7 +42,7 @@ class Grid(val context: Context) {
     private lateinit var labels: Texture
 
     init {
-        paint.typeface = context.resources.getFont(R.font.cursed)
+        // paint.typeface = context.resources.getFont(R.font.cursed)
     }
 
     fun onSurfaceCreated(program: Int) {
@@ -61,7 +61,7 @@ class Grid(val context: Context) {
         this.height = if (isLandscape) height.toFloat() else height / 2.0f
         this.padding = 4.0f * context.resources.displayMetrics.density
 
-        paint.textSize = 10.0f * context.resources.displayMetrics.density
+        paint.textSize = 11.0f * context.resources.displayMetrics.density
 
         val rect = Rect()
         paint.getTextBounds("-199", 0, 4, rect)
