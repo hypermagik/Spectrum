@@ -238,6 +238,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             waterfall.update(magnitudes)
         }
 
+        info.updateFPS()
+
         requestRender()
     }
 

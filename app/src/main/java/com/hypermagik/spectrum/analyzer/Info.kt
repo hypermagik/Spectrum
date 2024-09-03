@@ -55,8 +55,6 @@ class Info(context: Context) {
     }
 
     fun draw() {
-        updateFPS()
-
         if (isDirty) {
             isDirty = false
             updateText()
@@ -65,7 +63,7 @@ class Info(context: Context) {
         texture.draw()
     }
 
-    private fun updateFPS() {
+    fun updateFPS() {
         frameCounter++
 
         val now = System.nanoTime()
