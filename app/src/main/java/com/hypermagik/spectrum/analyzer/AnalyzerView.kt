@@ -39,7 +39,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var defaultDBCenter = -55.0f
     private var defaultDBRange = 120.0f
 
-    private var previousgain: Int = 0
+    private var previousSampleRate = 0
+    private var previousGain = 0
 
     private var viewFrequency = preferences.frequency.toDouble()
     private var viewBandwidth = preferences.sampleRate.toDouble()
@@ -135,9 +136,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     override fun onDrawFrame(unused: GL10) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        if (previousgain != preferences.gain) {
-            previousgain = preferences.gain
-            info.setGain(previousgain)
+        if (previousGain != preferences.gain) {
+            previousGain = preferences.gain
+            info.setGain(previousGain)
         }
 
         grid.drawBackground()
@@ -189,6 +190,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         info.start()
         waterfall.start()
+
+        if (previousSampleRate != preferences.sampleRate) {
+            previousSampleRate = preferences.sampleRate
+            viewFrequency = preferences.frequency.toDouble()
+            viewBandwidth = preferences.sampleRate.toDouble()
+            viewDBCenter = defaultDBCenter
+            viewDBRange = defaultDBRange
+        }
 
         if (isReady) {
             updateFFTandGrid()
