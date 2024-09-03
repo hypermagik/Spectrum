@@ -34,29 +34,37 @@ void main() {
     vTexCoord = vec2(aTexCoord.s, aTexCoord.t);
 }
 
+const float zFFT = 1.0;
+const float zFill = 2.0;
+const float zPeaks = 3.0;
+
 void drawFFT() {
     float x = vPosition.x;
     float y = vPosition.y;
     float z = vPosition.z;
     float w = vPosition.w;
 
-    if (vPosition.z == 1.0) {
+    if (vPosition.z == zFFT) {
+        // Convert sample index to coord.
+        x = x / (float(fftSize) - 1.0);
+    }
+
+    // Scale and translate to view.
+    x = x * fftXscale - fftXtranslate;
+
+    if (vPosition.z != zFill) {
         // Convert to dB.
         float value = 20.0 * log(y) * M_1_OVER_LN10;
 
-        // Convert sample index to coord.
-        x = x / (float(fftSize) - 1.0);
-
         // Clamp and scale value.
-        value = clamp(value, fftMinDB, fftMaxDB);
+        if (vPosition.z != zPeaks) {
+            value = clamp(value, fftMinDB, fftMaxDB);
+        }
         value = (value - fftMinDB) / (fftMaxDB - fftMinDB);
 
         // Scale and translate into view.
         y = fftMinY + value * (fftMaxY - fftMinY);
     }
-
-    // Scale and translate to view.
-    x = x * fftXscale - fftXtranslate;
 
     gl_Position = vec4(x, y, 0.0, w);
 }

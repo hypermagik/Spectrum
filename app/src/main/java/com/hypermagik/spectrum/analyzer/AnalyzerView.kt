@@ -25,6 +25,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var grid = Grid(context)
     private var info = Info(context)
     private var fft = FFT(context, preferences.fftSize)
+    private var peaks = Peaks(context)
     private var waterfall = Waterfall(context, preferences.fftSize)
 
     private var minFrequency: Long = 0
@@ -104,6 +105,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         grid.onSurfaceCreated(program)
         info.onSurfaceCreated(program)
         fft.onSurfaceCreated(program)
+        peaks.onSurfaceCreated(program)
         waterfall.onSurfaceCreated(program)
     }
 
@@ -122,6 +124,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         grid.onSurfaceChanged(width, height)
         info.onSurfaceChanged(width, height)
         fft.onSurfaceChanged(height)
+        peaks.onSurfaceChanged(width, height)
         waterfall.onSurfaceChanged(height)
 
         updateFFTandGrid()
@@ -143,6 +146,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.draw()
         }
 
+        synchronized(peaks) {
+            peaks.draw()
+        }
+
         grid.drawLabels()
         info.draw()
 
@@ -159,6 +166,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putFloat("viewDBRange", viewDBRange)
 
         fft.saveInstanceState(bundle)
+        peaks.saveInstanceState(bundle)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
@@ -169,6 +177,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewDBRange = bundle.getFloat("viewDBRange")
 
         fft.restoreInstanceState(bundle)
+        peaks.restoreInstanceState(bundle)
 
         updateInfoBar()
     }
@@ -212,6 +221,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.update(magnitudes)
         }
 
+        synchronized(peaks) {
+            peaks.update(magnitudes)
+        }
+
         synchronized(waterfall) {
             waterfall.update(magnitudes)
         }
@@ -242,8 +255,17 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
 
-        grid.setFrequencyRange(viewFrequency - viewBandwidth / 2, viewFrequency + viewBandwidth / 2)
-        grid.setDBRange(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
+        val frequencyStart = viewFrequency - viewBandwidth / 2
+        val frequencyEnd = viewFrequency + viewBandwidth / 2
+
+        grid.setFrequencyRange(frequencyStart, frequencyEnd)
+        peaks.setFrequencyRange(frequencyStart, frequencyEnd, scale.toFloat())
+
+        val dbStart = viewDBCenter - viewDBRange / 2
+        val dbEnd = viewDBCenter + viewDBRange / 2
+
+        grid.setDBRange(dbStart, dbEnd)
+        peaks.setDBRange(dbStart, dbEnd)
 
         requestRender()
     }
