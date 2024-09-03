@@ -157,6 +157,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putDouble("viewBandwidth", viewBandwidth)
         bundle.putFloat("viewDBCenter", viewDBCenter)
         bundle.putFloat("viewDBRange", viewDBRange)
+
         fft.saveInstanceState(bundle)
     }
 
@@ -166,8 +167,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewBandwidth = bundle.getDouble("viewBandwidth")
         viewDBCenter = bundle.getFloat("viewDBCenter")
         viewDBRange = bundle.getFloat("viewDBRange")
+
         fft.restoreInstanceState(bundle)
-        info.setFrequencyLock(isFrequencyLocked)
+
+        updateInfoBar()
     }
 
     fun start() {
@@ -176,14 +179,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isRunning = true
 
         info.start()
-        info.setFrequency(preferences.frequency)
-        info.setFrequencyLock(isFrequencyLocked)
-
         waterfall.start()
 
         if (isReady) {
             updateFFTandGrid()
         }
+
+        updateInfoBar()
     }
 
     fun stop(restart: Boolean) {
@@ -246,6 +248,11 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         requestRender()
     }
 
+    private fun updateInfoBar() {
+        info.setFrequency(preferences.frequency)
+        info.setFrequencyLock(isFrequencyLocked)
+    }
+
     override fun onTouchEvent(event: MotionEvent?): Boolean {
         val scaleGestureResult = event?.let { scaleGestureDetector.onTouchEvent(it) }
         val gestureResult = event?.let { gestureDetector.onTouchEvent(it) }
@@ -295,7 +302,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 preferences.frequency = frequency
                 preferences.save()
 
-                info.setFrequency(preferences.frequency)
+                updateInfoBar()
             }
         }
 
@@ -315,7 +322,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             } else {
                 requestRender()
             }
-            info.setFrequencyLock(isFrequencyLocked)
+            updateInfoBar()
         }
     }
 
