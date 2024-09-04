@@ -27,6 +27,11 @@
     <string name="menu_fft_blackman_harris">Blackman-Harris</string>
     <string name="menu_fft_hamming">Hamming</string>
 
+    <string name="menu_wf_speed">Waterfall Speed</string>
+    <string name="menu_wf_speed_1x">1x</string>
+    <string name="menu_wf_speed_2x">2x</string>
+    <string name="menu_wf_speed_4x">4x</string>
+
     <string name="menu_wf_colormap">Waterfall Color Map</string>
     <string name="menu_wf_colormap_classic">Classic</string>
     <string name="menu_wf_colormap_classic_green">Classic Green</string>

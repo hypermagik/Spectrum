@@ -21,6 +21,8 @@ class Preferences(private val activity: Activity?) {
 
     var fftSize = 256
     var fftWindowType = WindowType.FLAT_TOP
+
+    var wfSpeed = 1
     var wfColorMap = 0
 
     var fpsLimit = 120
@@ -40,12 +42,13 @@ class Preferences(private val activity: Activity?) {
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
             agc = getBoolean("agc", agc)
-            frequencyStep = getInt("frequencyStep", frequencyStep)
             sampleFifoSize = getInt("sampleFifoSize", sampleFifoSize)
             sampleFifoBufferSize = getInt("sampleFifoBufferSize", sampleFifoBufferSize)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
+            wfSpeed = getInt("wfSpeed", wfSpeed)
             wfColorMap = getInt("wfColorMap", wfColorMap)
+            frequencyStep = getInt("frequencyStep", frequencyStep)
             fpsLimit = getInt("fpsLimit", fpsLimit)
         }
     }
@@ -62,12 +65,13 @@ class Preferences(private val activity: Activity?) {
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)
             putBoolean("agc", agc)
-            putInt("frequencyStep", frequencyStep)
             putInt("sampleFifoSize", sampleFifoSize)
             putInt("sampleFifoBufferSize", sampleFifoBufferSize)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
+            putInt("wfSpeed", wfSpeed)
             putInt("wfColorMap", wfColorMap)
+            putInt("frequencyStep", frequencyStep)
             putInt("fpsLimit", fpsLimit)
             apply()
         }

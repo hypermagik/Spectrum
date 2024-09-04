@@ -45,13 +45,13 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     private var fftSize = preferences.fftSize
     private var sampleBuffer: ByteBuffer
 
+    private var speed = preferences.wfSpeed
+
     private var colorMap = -1
     private var colors = intArrayOf(Color.RED)
 
-    private var height = 0
+    private var viewHeight = 0
     private var currentLine = 0
-
-    private lateinit var clearBuffer: ByteBuffer
 
     private var isRunning = false
     private var isVisible: Boolean = context.resources.configuration.orientation == ORIENTATION_PORTRAIT
@@ -113,14 +113,9 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
             return
         }
 
-        if (this.height != height / 2) {
-            this.height = height / 2
+        if (viewHeight != height) {
+            viewHeight = height
             currentLine = 0
-
-            clearBuffer = ByteBuffer.allocateDirect(fftSize * this.height * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-
-            GLES20.glUniform1i(uWaterfallHeight, this.height)
-
             isDirty = true
         }
     }
@@ -141,7 +136,11 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         if (fftSize != magnitudes.size) {
             fftSize = magnitudes.size
             sampleBuffer = ByteBuffer.allocateDirect(fftSize * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-            clearBuffer = ByteBuffer.allocateDirect(fftSize * height * Float.SIZE_BYTES)
+            isDirty = true
+        }
+
+        if (speed != preferences.wfSpeed) {
+            speed = preferences.wfSpeed
             isDirty = true
         }
 
@@ -172,15 +171,22 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST)
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST)
 
+        val textureHeight = viewHeight / 2 / speed
+
         if (isDirty) {
             isDirty = false
             currentLine = 0
-            GLES20.glTexImage2D(GL10.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, fftSize, height, 0, GLES20.GL_ALPHA, GLES10.GL_FLOAT, clearBuffer)
+
+            val clearBuffer = ByteBuffer.allocateDirect(fftSize * textureHeight * Float.SIZE_BYTES)
+            GLES20.glTexImage2D(GL10.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, fftSize, textureHeight, 0, GLES20.GL_ALPHA, GLES10.GL_FLOAT, clearBuffer)
+
+            GLES20.glUniform1i(uWaterfallHeight, textureHeight)
         }
 
         if (isRunning) {
-            GLES20.glTexSubImage2D(GL10.GL_TEXTURE_2D, 0, 0, height - currentLine - 1, fftSize, 1, GLES20.GL_ALPHA, GLES20.GL_FLOAT, sampleBuffer)
-            currentLine = (currentLine + 1) % height
+            GLES20.glTexSubImage2D(GL10.GL_TEXTURE_2D, 0, 0, textureHeight - currentLine - 1, fftSize, 1, GLES20.GL_ALPHA, GLES20.GL_FLOAT, sampleBuffer)
+
+            currentLine = (currentLine + 1) % textureHeight
             GLES20.glUniform1i(uWaterfallOffset, currentLine)
         }
 
@@ -189,6 +195,7 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST)
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST)
 
+        // Color map changes are checked here as they are applied even when stopped.
         if (colorMap != preferences.wfColorMap) {
             colorMap = preferences.wfColorMap
 

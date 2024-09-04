@@ -48,6 +48,12 @@ class Constants {
             FFT.WindowType.HAMMING to R.id.menu_fft_hamming,
         )
 
+        val wfSpedToMenuItem = mapOf(
+            1 to R.id.menu_wf_speed_1x,
+            2 to R.id.menu_wf_speed_2x,
+            4 to R.id.menu_wf_speed_4x,
+        )
+
         val wfColormapToMenuItem = mapOf(
             0 to R.id.menu_wf_colormap_classic,
             1 to R.id.menu_wf_colormap_classic_green,

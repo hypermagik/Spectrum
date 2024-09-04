@@ -174,6 +174,9 @@ class MainActivity : AppCompatActivity() {
         Constants.fftWindowToMenuItem[fft.windowType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
+        Constants.wfSpedToMenuItem[preferences.wfSpeed]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
         Constants.wfColormapToMenuItem[preferences.wfColorMap]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -221,6 +224,11 @@ class MainActivity : AppCompatActivity() {
                     preferences.saveNow()
                 }
             }
+            item.setChecked(true)
+        } else if (item.groupId == R.id.wf_speed_group) {
+            val wfSpeed = Constants.wfSpedToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.wfSpeed = wfSpeed
+            preferences.saveNow()
             item.setChecked(true)
         } else if (item.groupId == R.id.wf_colormap_group) {
             val colorMap = Constants.wfColormapToMenuItem.filterValues { it == item.itemId }.keys.first()
