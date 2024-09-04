@@ -4,9 +4,9 @@
 
     <application
         android:allowBackup="true"
-        android:icon="@drawable/spectroid"
+        android:icon="@drawable/spectrum"
         android:label="@string/app_name"
-        android:roundIcon="@drawable/spectroid"
+        android:roundIcon="@drawable/spectrum"
         android:theme="@style/Theme.Spectrum"
         tools:targetApi="31">
 

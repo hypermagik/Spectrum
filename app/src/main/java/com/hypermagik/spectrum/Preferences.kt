@@ -10,7 +10,7 @@ import kotlin.concurrent.schedule
 import kotlin.math.max
 
 class Preferences(private val activity: Activity?) {
-    var frequency = 99200000L
+    var frequency = 3000000000L
     var sampleRate = 1000000
     var gain = 0
     var agc = false
@@ -20,10 +20,10 @@ class Preferences(private val activity: Activity?) {
     var fftSize = 256
     var fftWindowType = WindowType.FLAT_TOP
 
-    var wfSpeed = 1
+    var wfSpeed = 2
     var wfColorMap = 0
 
-    var fpsLimit = 120
+    var fpsLimit = 60
 
     private val timer = Timer()
     private var timerTask: TimerTask? = null
