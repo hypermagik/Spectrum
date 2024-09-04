@@ -35,7 +35,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sampleFifo: SampleFIFO
 
     private var analyzerThread: Thread? = null
-    private lateinit var analyzerThrottle: Throttle
+    private val analyzerThrottle = Throttle()
     private lateinit var analyzerMagnitudes: FloatArray
 
     private lateinit var analyzerView: AnalyzerView
@@ -61,7 +61,7 @@ class MainActivity : AppCompatActivity() {
         fft = FFT(preferences.fftSize, preferences.fftWindowType)
         sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
 
-        analyzerThrottle = Throttle(1e9 / preferences.fpsLimit)
+        analyzerThrottle.setFPS(preferences.fpsLimit)
         analyzerMagnitudes = FloatArray(preferences.fftSize) { 0.0f }
 
         analyzerView = AnalyzerView(this, preferences)
@@ -272,7 +272,7 @@ class MainActivity : AppCompatActivity() {
             analyzerMagnitudes = FloatArray(fft.size) { 0.0f }
         }
 
-        analyzerThrottle = Throttle(if (preferences.fpsLimit == 0) 0.0 else 1e9 / preferences.fpsLimit)
+        analyzerThrottle.setFPS(preferences.fpsLimit)
 
         Log.i(TAG, "Starting source")
         source.start()
@@ -394,7 +394,7 @@ class MainActivity : AppCompatActivity() {
             val newFPSLimit = preferences.fpsLimit
             if (previousFPSLimit != newFPSLimit) {
                 previousFPSLimit = newFPSLimit
-                analyzerThrottle = Throttle(if (newFPSLimit == 0) 0.0 else 1e9 / newFPSLimit)
+                analyzerThrottle.setFPS(newFPSLimit)
             }
         }
 
@@ -404,7 +404,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun analyze(samples: Complex32Array) {
-        analyzerThrottle.sync()
+        if (!analyzerThrottle.isSynced()) {
+            return
+        }
 
         fft.applyWindow(samples)
         fft.fft(samples)

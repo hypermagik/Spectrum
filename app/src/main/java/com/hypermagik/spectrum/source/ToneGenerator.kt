@@ -2,7 +2,6 @@ package com.hypermagik.spectrum.source
 
 import android.util.Log
 import com.hypermagik.spectrum.Preferences
-import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.dsp.Utils
 import com.hypermagik.spectrum.lib.gen.CW
@@ -26,7 +25,7 @@ class ToneGenerator : Source {
     private lateinit var signalFrequencies: LongArray
     private lateinit var signalGains: FloatArray
 
-    private lateinit var throttle: Throttle
+    private var throttle = Throttle()
 
     override fun getName(): String {
         return "Tone Generator"
@@ -54,8 +53,6 @@ class ToneGenerator : Source {
             signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
         }
 
-        throttle = Throttle(preferences.getSampleFifoBufferSize(), preferences.sampleRate)
-
         return true
     }
 
@@ -71,7 +68,7 @@ class ToneGenerator : Source {
     }
 
     override fun read(buffer: Complex32Array) {
-        throttle.sync()
+        throttle.sync(1000000000L * buffer.size / sampleRate)
 
         val frequencyRange = LongRange(currentFrequency - sampleRate / 2, currentFrequency + sampleRate / 2)
 

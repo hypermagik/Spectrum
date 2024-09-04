@@ -1,12 +1,17 @@
 package com.hypermagik.spectrum.utils
 
-class Throttle(private val interval: Long) {
-    constructor(interval: Double) : this(interval.toLong())
-    constructor(bufferSize: Int, sampleRate: Int) : this(1e9 * bufferSize / sampleRate)
+class Throttle(private var interval: Long) {
+    constructor() : this(0)
 
     private var t0: Long = System.nanoTime()
 
-    fun sync() {
+    fun setFPS(fps: Int): Throttle {
+        interval = if (fps <= 0) 0 else 1000000000L / fps
+        t0 = System.nanoTime()
+        return this
+    }
+
+    fun sync(interval: Long) {
         if (interval <= 0) {
             return
         }
@@ -30,5 +35,27 @@ class Throttle(private val interval: Long) {
             }
             t0 += interval
         }
+    }
+
+    fun isSynced(): Boolean {
+        if (interval <= 0) {
+            return true
+        }
+
+        val t1 = System.nanoTime()
+        val dt = t1 - t0
+
+        if (dt < interval) {
+            return false
+        }
+
+
+        if (dt > 5 * interval) {
+            t0 = t1
+        } else {
+            t0 += interval
+        }
+
+        return true
     }
 }
