@@ -142,23 +142,48 @@ class Grid(val context: Context) {
         xCount = 0
         val pixelsPerUnit = width / (end - start)
 
-        val labelWidth = paint.measureText(String.format(Locale.getDefault(), " %.3fM ", end / 1000000.0)).toInt()
-        val numLabels = (end - start).toInt() / step
-        val maxLabels = min(numLabels, width.toInt() / labelWidth)
-        val labelStep = (numLabels + maxLabels) / maxLabels
+        if (step == 1000) {
+            val center = ((start + range / 2) / step).toLong() * step.toDouble()
 
-        var i = ((start + step - 1) / step).toLong() * step.toDouble()
-        while (i < end) {
-            val x = (i - start) * pixelsPerUnit
-            xCoord[xCount] = x.toFloat()
-            // Hide some labels if they are overlapping.
-            if (round(i / step).toLong() % labelStep == 0L) {
-                xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0)
-            } else {
-                xText[xCount] = ""
-            }
+            xCoord[xCount] = ((center - start) * pixelsPerUnit).toFloat()
+            xText[xCount] = String.format(Locale.getDefault(), "%.3fM", center / 1000000.0)
             xCount += 1
-            i += step
+
+            var i = center + step
+            while (i < end) {
+                val x = (i - start) * pixelsPerUnit
+                xCoord[xCount] = x.toFloat()
+                xText[xCount] = String.format(Locale.getDefault(), "+%.0fK", (i - center) / 1000.0)
+                xCount += 1
+                i += step
+            }
+            i = center - step
+            while (i > start) {
+                val x = (i - start) * pixelsPerUnit
+                xCoord[xCount] = x.toFloat()
+                xText[xCount] = String.format(Locale.getDefault(), "-%.0fK", (center - i) / 1000.0)
+                xCount += 1
+                i -= step
+            }
+        } else {
+            val labelWidth = paint.measureText(String.format(Locale.getDefault(), " %.3fM ", end / 1000000.0)).toInt()
+            val numLabels = (end - start).toInt() / step
+            val maxLabels = min(numLabels, width.toInt() / labelWidth)
+            val labelStep = (numLabels + maxLabels) / maxLabels
+
+            var i = ((start + step - 1) / step).toLong() * step.toDouble()
+            while (i < end) {
+                val x = (i - start) * pixelsPerUnit
+                xCoord[xCount] = x.toFloat()
+                // Hide some labels if they are overlapping.
+                if (round(i / step).toLong() % labelStep == 0L) {
+                    xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0)
+                } else {
+                    xText[xCount] = ""
+                }
+                xCount += 1
+                i += step
+            }
         }
 
         isDirty = true
