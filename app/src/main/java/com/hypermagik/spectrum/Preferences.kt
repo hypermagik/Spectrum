@@ -7,6 +7,7 @@ import com.hypermagik.spectrum.utils.TAG
 import java.util.Timer
 import java.util.TimerTask
 import kotlin.concurrent.schedule
+import kotlin.math.max
 
 class Preferences(private val activity: Activity?) {
     var frequency = 99200000L
@@ -15,9 +16,6 @@ class Preferences(private val activity: Activity?) {
     var agc = false
 
     var frequencyStep = 1000
-
-    var sampleFifoSize = 16
-    var sampleFifoBufferSize = 4096
 
     var fftSize = 256
     var fftWindowType = WindowType.FLAT_TOP
@@ -42,8 +40,6 @@ class Preferences(private val activity: Activity?) {
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
             agc = getBoolean("agc", agc)
-            sampleFifoSize = getInt("sampleFifoSize", sampleFifoSize)
-            sampleFifoBufferSize = getInt("sampleFifoBufferSize", sampleFifoBufferSize)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             wfSpeed = getInt("wfSpeed", wfSpeed)
@@ -65,8 +61,6 @@ class Preferences(private val activity: Activity?) {
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)
             putBoolean("agc", agc)
-            putInt("sampleFifoSize", sampleFifoSize)
-            putInt("sampleFifoBufferSize", sampleFifoBufferSize)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
             putInt("wfSpeed", wfSpeed)
@@ -87,5 +81,9 @@ class Preferences(private val activity: Activity?) {
     fun saveNow() {
         timerTask?.cancel()
         saveIt()
+    }
+
+    fun getSampleFifoBufferSize(): Int {
+        return max(fftSize, 4096)
     }
 }

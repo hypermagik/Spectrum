@@ -18,7 +18,6 @@ import com.hypermagik.spectrum.source.ToneGenerator
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
 import kotlin.concurrent.thread
-import kotlin.math.min
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
@@ -31,12 +30,12 @@ class MainActivity : AppCompatActivity() {
     private var sourceThread: Thread? = null
 
     private lateinit var fft: FFT
+
+    private val sampleFifoSize = 32
     private lateinit var sampleFifo: SampleFIFO
 
     private var analyzerThread: Thread? = null
     private lateinit var analyzerThrottle: Throttle
-    private lateinit var analyzerBuffer: Complex32Array
-    private var analyzerBufferOffset = 0
     private lateinit var analyzerMagnitudes: FloatArray
 
     private lateinit var analyzerView: AnalyzerView
@@ -60,9 +59,8 @@ class MainActivity : AppCompatActivity() {
         supportActionBar!!.subtitle = source.getName()
 
         fft = FFT(preferences.fftSize, preferences.fftWindowType)
-        sampleFifo = SampleFIFO(preferences.sampleFifoSize, preferences.sampleFifoBufferSize)
+        sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
 
-        analyzerBuffer = Complex32Array(preferences.fftSize) { Complex32() }
         analyzerThrottle = Throttle(1e9 / preferences.fpsLimit)
         analyzerMagnitudes = FloatArray(preferences.fftSize) { 0.0f }
 
@@ -265,14 +263,9 @@ class MainActivity : AppCompatActivity() {
             fft = FFT(preferences.fftSize, preferences.fftWindowType)
         }
 
-        if (fft.size > sampleFifo.bufferSize) {
-            if (fft.size != analyzerBuffer.size) {
-                Log.d(TAG, "Resizing analyzer buffer")
-                analyzerBuffer = Complex32Array(fft.size) { Complex32() }
-            }
+        if (sampleFifo.bufferSize != preferences.getSampleFifoBufferSize()) {
+            sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
         }
-
-        analyzerBufferOffset = 0
 
         if (fft.size != analyzerMagnitudes.size) {
             Log.d(TAG, "Resizing magnitude buffer")
@@ -410,24 +403,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Stopping analyzer thread")
     }
 
-    private fun analyze(sourceSamples: Complex32Array) {
-        var samples = sourceSamples
-
-        if (samples.size < fft.size) {
-            val count = min(fft.size - analyzerBufferOffset, samples.size)
-            for (i in 0 until count) {
-                analyzerBuffer[analyzerBufferOffset + i].set(samples[i])
-            }
-
-            analyzerBufferOffset += count
-            if (analyzerBufferOffset < fft.size) {
-                return
-            }
-
-            analyzerBufferOffset = 0
-            samples = analyzerBuffer
-        }
-
+    private fun analyze(samples: Complex32Array) {
         analyzerThrottle.sync()
 
         fft.applyWindow(samples)

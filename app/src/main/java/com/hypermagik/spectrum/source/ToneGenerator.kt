@@ -15,9 +15,6 @@ class ToneGenerator : Source {
     private var currentFrequency: Long = initialFrequency
     private var sampleRate: Int = 0
 
-    private var bufferSize: Int = 0
-    private var buffer: Complex32Array? = null
-
     private var noiseGain: Float = 2 * Utils.db2mag(-90.0f)
     private val noise = Noise()
 
@@ -46,9 +43,6 @@ class ToneGenerator : Source {
             preferences.save()
         }
 
-        bufferSize = preferences.sampleFifoBufferSize
-        buffer = Array(bufferSize) { Complex32() }
-
         signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + initialFrequency }
 
         signals = Array(signalFrequencies.size) { CW(0, sampleRate) }
@@ -60,7 +54,7 @@ class ToneGenerator : Source {
             signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
         }
 
-        throttle = Throttle(bufferSize, preferences.sampleRate)
+        throttle = Throttle(preferences.getSampleFifoBufferSize(), preferences.sampleRate)
 
         return true
     }
