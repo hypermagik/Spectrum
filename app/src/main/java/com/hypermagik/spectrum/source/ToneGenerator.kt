@@ -39,12 +39,13 @@ class ToneGenerator : Source {
         Log.d(TAG, "Opening ${getName()}")
 
         sampleRate = preferences.sampleRate
-        currentFrequency = preferences.frequency.coerceIn(getMinimumFrequency(), getMaximumFrequency())
 
-        if (preferences.frequency != currentFrequency) {
-            preferences.frequency = currentFrequency
+        if (preferences.frequency < getMinimumFrequency() || getMaximumFrequency() < preferences.frequency) {
+            preferences.frequency = initialFrequency
             preferences.save()
         }
+
+        currentFrequency = preferences.frequency
 
         signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + initialFrequency }
 
@@ -67,6 +68,7 @@ class ToneGenerator : Source {
     override fun start() {
         Log.d(TAG, "Starting")
     }
+
     override fun stop() {
         Log.d(TAG, "Stopping")
     }
