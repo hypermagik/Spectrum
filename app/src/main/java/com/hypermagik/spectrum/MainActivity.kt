@@ -143,12 +143,12 @@ class MainActivity : AppCompatActivity() {
             when (state) {
                 State.Running -> {
                     item.setEnabled(true)
-                    item.setIcon(android.R.drawable.ic_media_pause)
+                    item.setIcon(R.drawable.ic_pause)
                 }
 
                 State.Stopped -> {
                     item.setEnabled(true)
-                    item.setIcon(android.R.drawable.ic_media_play)
+                    item.setIcon(R.drawable.ic_play)
                 }
 
                 else -> {

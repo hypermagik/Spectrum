@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
         android:id="@+id/action_playpause"
-        android:icon="@android:drawable/ic_media_play"
+        android:icon="@drawable/ic_play"
         android:orderInCategory="1"
         android:title="@string/action_play"
         app:showAsAction="ifRoom" />
