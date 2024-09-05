@@ -55,5 +55,15 @@
                 </group>
             </menu>
         </item>
+        <item
+            android:id="@+id/menu_peak_hold"
+            android:checkable="true"
+            android:title="@string/menu_peak_hold"
+            app:showAsAction="never" />
+        <item
+            android:id="@+id/menu_peak_indicator"
+            android:checkable="true"
+            android:title="@string/menu_peak_indicator"
+            app:showAsAction="never" />
     </group>
 </menu>

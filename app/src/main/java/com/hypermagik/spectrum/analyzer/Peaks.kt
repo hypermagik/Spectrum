@@ -9,6 +9,7 @@ import android.graphics.Paint
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.os.Bundle
+import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.R
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -17,7 +18,7 @@ import javax.microedition.khronos.opengles.GL10
 import kotlin.math.max
 import kotlin.math.pow
 
-class Peaks(private val context: Context) {
+class Peaks(private val context: Context, private val preferences: Preferences) {
     private var vPosition: Int = 0
     private var vColor: Int = 0
     private var aTexCoord: Int = 0
@@ -124,6 +125,10 @@ class Peaks(private val context: Context) {
     }
 
     fun update(magnitudes: FloatArray) {
+        if (!preferences.peakIndicatorEnabled) {
+            return
+        }
+
         if (history.size != magnitudes.size) {
             history = FloatArray(magnitudes.size)
         }
@@ -209,6 +214,10 @@ class Peaks(private val context: Context) {
     }
 
     fun draw() {
+        if (!preferences.peakIndicatorEnabled) {
+            return
+        }
+
         GLES20.glEnableVertexAttribArray(vPosition)
         GLES20.glVertexAttribPointer(
             vPosition, 3, GLES20.GL_FLOAT, false, 3 * Float.SIZE_BYTES, vertexBuffer

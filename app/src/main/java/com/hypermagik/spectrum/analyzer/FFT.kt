@@ -46,7 +46,6 @@ class FFT(private val context: Context, private val preferences: Preferences) {
     private var maxY = 1.0f
     private var minDB = 0.0f
     private var maxDB = 100.0f
-    private var isPeakHoldEnabled = true
     private var sizeChanged = true
     private var scaleChanged = true
 
@@ -81,17 +80,15 @@ class FFT(private val context: Context, private val preferences: Preferences) {
 
         vertexBuffer.rewind()
 
-        if (isPeakHoldEnabled) {
-            peakHoldVertexBuffer = ByteBuffer.allocateDirect(vboCapacity / 2).order(ByteOrder.nativeOrder())
+        peakHoldVertexBuffer = ByteBuffer.allocateDirect(vboCapacity / 2).order(ByteOrder.nativeOrder())
 
-            for (i in 0 until fftSize) {
-                peakHoldVertexBuffer.putFloat(i.toFloat())
-                peakHoldVertexBuffer.putFloat(0.0f)
-                peakHoldVertexBuffer.putFloat(1.0f)
-            }
-
-            peakHoldVertexBuffer.rewind()
+        for (i in 0 until fftSize) {
+            peakHoldVertexBuffer.putFloat(i.toFloat())
+            peakHoldVertexBuffer.putFloat(0.0f)
+            peakHoldVertexBuffer.putFloat(1.0f)
         }
+
+        peakHoldVertexBuffer.rewind()
 
         var vdoCapacity = (fftSize - 1) * 2 /* vertices */ * Int.SIZE_BYTES
         drawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
@@ -184,11 +181,16 @@ class FFT(private val context: Context, private val preferences: Preferences) {
     fun update(magnitudes: FloatArray) {
         updateFFTSize(magnitudes.size)
 
+        val peakHoldEnabled = preferences.peakHoldEnabled
+
+        var peakHoldDecay = 0.0f
+        if (peakHoldEnabled) {
+            peakHoldDecay = 1.0f - preferences.getPeakHoldDecayFactor()
+        }
+
         // TODO: compute entire FFT on the GPU.
         // - https://community.khronos.org/t/spectrogram-and-fft-using-opengl/76933/13
         // - https://github.com/bane9/OpenGLFFT/tree/main/OpenGLFFT
-
-        val peakHoldDecay = 1.0f - preferences.getPeakHoldDecayFactor()
 
         // Scaling is done in the vertex shader.
         for (i in magnitudes.indices) {
@@ -197,17 +199,13 @@ class FFT(private val context: Context, private val preferences: Preferences) {
 
             vertexBuffer.putFloat(bufferIndex, magnitude)
 
-            if (isPeakHoldEnabled) {
-                var peak = peakHoldVertexBuffer.getFloat(bufferIndex)
+            if (peakHoldEnabled) {
+                val peak = peakHoldVertexBuffer.getFloat(bufferIndex)
                 peakHoldVertexBuffer.putFloat(bufferIndex, max(peak * peakHoldDecay, magnitude))
             }
         }
 
         vertexBuffer.rewind()
-
-        if (isPeakHoldEnabled) {
-            peakHoldVertexBuffer.rewind()
-        }
     }
 
     fun updateX(scale: Float, translate: Float) {
@@ -252,7 +250,7 @@ class FFT(private val context: Context, private val preferences: Preferences) {
         GLES20.glDrawElements(GLES20.GL_LINES, (fftSize - 1) * 2, GLES20.GL_UNSIGNED_INT, drawOrderBuffer)
 
         // Draw the FFT hold peaks.
-        if (isPeakHoldEnabled) {
+        if (preferences.peakHoldEnabled) {
             GLES20.glEnableVertexAttribArray(vPosition)
             GLES20.glVertexAttribPointer(
                 vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, peakHoldVertexBuffer

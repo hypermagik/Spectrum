@@ -57,4 +57,6 @@
     <string name="menu_fps_60">60 FPS</string>
     <string name="menu_fps_120">120 FPS</string>
     <string name="menu_fps_unlimited">Unlimited</string>
+    <string name="menu_peak_hold">Peak hold</string>
+    <string name="menu_peak_indicator">Peak indicator</string>
 </resources>

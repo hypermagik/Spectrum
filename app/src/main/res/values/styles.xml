@@ -1,6 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <style name="radio_button_style" parent="Widget.AppCompat.CompoundButton.RadioButton">
-        <item name="android:paddingRight">-5dp</item>
-    </style>
-</resources>

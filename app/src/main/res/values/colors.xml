@@ -14,7 +14,7 @@
 
     <color name="fft">#FF00D578</color>
     <color name="fft_peak">#FF78D500</color>
-    <color name="fft_peak_hold">#AA78D500</color>
+    <color name="fft_peak_hold">#FF88EE00</color>
     <color name="fft_grid_line">#FF385E5B</color>
     <color name="fft_grid_text">#FFFFFFFF</color>
     <color name="fft_grid_background">#FF060D0C</color>

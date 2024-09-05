@@ -199,6 +199,10 @@ class MainActivity : AppCompatActivity() {
         Constants.fftWindowToMenuItem[fft.windowType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
+
+        menu.findItem(R.id.menu_peak_hold)?.setChecked(preferences.peakHoldEnabled)
+        menu.findItem(R.id.menu_peak_indicator)?.setChecked(preferences.peakIndicatorEnabled)
+
         Constants.wfSpedToMenuItem[preferences.wfSpeed]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -257,6 +261,16 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             item.setChecked(true)
+        } else if (item.itemId == R.id.menu_peak_hold) {
+            preferences.peakHoldEnabled = !preferences.peakHoldEnabled
+            preferences.saveNow()
+            item.setChecked(preferences.peakHoldEnabled)
+            analyzerView.requestRender()
+        } else if (item.itemId == R.id.menu_peak_indicator) {
+            preferences.peakIndicatorEnabled = !preferences.peakIndicatorEnabled
+            preferences.saveNow()
+            item.setChecked(preferences.peakIndicatorEnabled)
+            analyzerView.requestRender()
         } else if (item.groupId == R.id.wf_speed_group) {
             val wfSpeed = Constants.wfSpedToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.wfSpeed = wfSpeed

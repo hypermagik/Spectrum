@@ -29,6 +29,9 @@ class Preferences(private val activity: Activity?) {
     var dbCenter = dbCenterDefault
     var dbRange = dbRangeDefault
 
+    var peakHoldEnabled = true
+    var peakIndicatorEnabled = true
+
     var wfSpeed = 2
     var wfColorMap = 0
 
@@ -55,6 +58,8 @@ class Preferences(private val activity: Activity?) {
             fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             dbCenter = getFloat("dbCenter", dbCenter)
             dbRange = getFloat("dbRange", dbRange)
+            peakHoldEnabled = getBoolean("peakHoldEnabled", peakHoldEnabled)
+            peakIndicatorEnabled = getBoolean("peakIndicatorEnabled", peakIndicatorEnabled)
             wfSpeed = getInt("wfSpeed", wfSpeed)
             wfColorMap = getInt("wfColorMap", wfColorMap)
             frequencyStep = getInt("frequencyStep", frequencyStep)
@@ -80,6 +85,8 @@ class Preferences(private val activity: Activity?) {
             putInt("fftWindowType", fftWindowType.ordinal)
             putFloat("dbCenter", dbCenter)
             putFloat("dbRange", dbRange)
+            putBoolean("peakHoldEnabled", peakHoldEnabled)
+            putBoolean("peakIndicatorEnabled", peakIndicatorEnabled)
             putInt("wfSpeed", wfSpeed)
             putInt("wfColorMap", wfColorMap)
             putInt("frequencyStep", frequencyStep)
