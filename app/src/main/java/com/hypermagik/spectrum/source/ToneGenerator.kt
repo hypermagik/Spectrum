@@ -31,6 +31,10 @@ class ToneGenerator : Source {
         return "Tone Generator"
     }
 
+    override fun getType(): SourceType {
+        return SourceType.ToneGenerator
+    }
+
     override fun open(preferences: Preferences): String? {
         Log.d(TAG, "Opening ${getName()}")
 

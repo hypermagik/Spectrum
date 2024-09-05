@@ -8,7 +8,21 @@
         android:title="@string/action_play"
         app:showAsAction="ifRoom" />
     <item
-        android:orderInCategory="11"
+        android:orderInCategory="3"
+        android:title="@string/source"
+        app:showAsAction="never">
+        <menu>
+            <group
+                android:id="@+id/source_type_group"
+                android:checkableBehavior="single">
+                <item
+                    android:id="@+id/menu_source_tone_generator"
+                    android:title="@string/menu_source_tone_generator" />
+            </group>
+        </menu>
+    </item>
+    <item
+        android:orderInCategory="91"
         android:title="@string/frequency_step"
         app:showAsAction="never">
         <menu>
@@ -34,7 +48,7 @@
         </menu>
     </item>
     <item
-        android:orderInCategory="12"
+        android:orderInCategory="92"
         android:title="@string/fps_limit"
         app:showAsAction="never">
         <menu>

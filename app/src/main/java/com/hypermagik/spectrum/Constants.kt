@@ -1,6 +1,7 @@
 package com.hypermagik.spectrum
 
 import com.hypermagik.spectrum.lib.dsp.FFT
+import com.hypermagik.spectrum.source.SourceType
 
 class Constants {
     companion object {
@@ -66,6 +67,14 @@ class Constants {
             1 to R.raw.colormap_classic_green,
             2 to R.raw.colormap_gqrx,
             3 to R.raw.colormap_vivid,
+        )
+
+        val sourceTypeToMenu = mapOf(
+            SourceType.ToneGenerator to R.menu.source_tone_generator,
+        )
+
+        val sourceTypeToMenuItem = mapOf(
+            SourceType.ToneGenerator to R.id.menu_source_tone_generator,
         )
     }
 }

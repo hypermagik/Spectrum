@@ -4,6 +4,9 @@
     <string name="action_play">Play</string>
     <string name="action_pause">Pause</string>
 
+    <string name="source">Source</string>
+    <string name="menu_source_tone_generator">Tone Generator</string>
+
     <string name="menu_sample_rate">Sample Rate</string>
     <string name="menu_sr_1M">1.00 Msps</string>
     <string name="menu_sr_2M">2.00 Msps</string>

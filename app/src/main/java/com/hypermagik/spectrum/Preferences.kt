@@ -3,6 +3,7 @@ package com.hypermagik.spectrum
 import android.app.Activity
 import android.util.Log
 import com.hypermagik.spectrum.lib.dsp.FFT.WindowType
+import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.utils.TAG
 import java.util.Timer
 import java.util.TimerTask
@@ -10,6 +11,8 @@ import kotlin.concurrent.schedule
 import kotlin.math.max
 
 class Preferences(private val activity: Activity?) {
+    var sourceType = SourceType.ToneGenerator
+
     var frequency = 3000000000L
     var sampleRate = 1000000
     var gain = 0
@@ -36,6 +39,7 @@ class Preferences(private val activity: Activity?) {
         }
 
         activity.getPreferences(Activity.MODE_PRIVATE).run {
+            sourceType = SourceType.entries.toTypedArray()[getInt("sourceType", sourceType.ordinal)]
             frequency = getLong("frequency", frequency)
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
@@ -57,6 +61,7 @@ class Preferences(private val activity: Activity?) {
         }
 
         activity.getPreferences(Activity.MODE_PRIVATE).edit().run {
+            putInt("sourceType", sourceType.ordinal)
             putLong("frequency", frequency)
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)

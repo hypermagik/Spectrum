@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <group
         android:id="@+id/waterfall_group"
-        android:orderInCategory="4">
+        android:orderInCategory="31">
         <item
             android:title="@string/menu_wf_speed"
             app:showAsAction="never">

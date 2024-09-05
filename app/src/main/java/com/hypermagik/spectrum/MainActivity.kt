@@ -55,8 +55,7 @@ class MainActivity : AppCompatActivity() {
 
         preferences.load()
 
-        source = ToneGenerator()
-        supportActionBar!!.subtitle = source.getName()
+        createSource(true)
 
         fft = FFT(preferences.fftSize, preferences.fftWindowType)
         sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
@@ -85,6 +84,20 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState != null) {
             startOnResume = savedInstanceState.getBoolean("startOnResume", false)
         }
+    }
+
+    private fun createSource(force: Boolean = false) {
+        if (!force && source.getType() == preferences.sourceType) {
+            return
+        }
+
+        stop(false)
+
+        source = when (preferences.sourceType) {
+            SourceType.ToneGenerator -> ToneGenerator()
+        }
+
+        supportActionBar!!.subtitle = source.getName()
     }
 
     override fun onResume() {
@@ -129,9 +142,9 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.setGroupDividerEnabled(true)
         menuInflater.inflate(R.menu.main, menu)
-        menuInflater.inflate(R.menu.tone_generator, menu)
         menuInflater.inflate(R.menu.fft, menu)
         menuInflater.inflate(R.menu.waterfall, menu)
+        Constants.sourceTypeToMenu[source.getType()]?.also { menuInflater.inflate(it, menu) }
         updateOptionsMenu()
         return true
     }
@@ -157,6 +170,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        Constants.sourceTypeToMenuItem[source.getType()]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
         Constants.sampleRateToMenuItem[preferences.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }

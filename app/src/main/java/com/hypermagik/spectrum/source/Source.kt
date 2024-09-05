@@ -5,6 +5,7 @@ import com.hypermagik.spectrum.lib.data.Complex32Array
 
 interface Source {
     fun getName(): String
+    fun getType(): SourceType
 
     fun open(preferences: Preferences): String?
     fun close()

@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <group
         android:id="@+id/fft_group"
-        android:orderInCategory="3">
+        android:orderInCategory="21">
         <item
             android:title="@string/menu_fft_size"
             app:showAsAction="never">

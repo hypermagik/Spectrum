@@ -1,16 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto">
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
     <group
-        android:id="@+id/tone_generator_group"
-        android:orderInCategory="2">
-        <item
-            android:orderInCategory="2"
-            android:title="@string/menu_sample_rate"
-            app:showAsAction="never">
+        android:id="@+id/source_tone_generator_group"
+        android:orderInCategory="11">
+        <item android:title="@string/menu_sample_rate">
             <menu>
                 <group
-                    android:id="@+id/sample_rate_group"
+                    android:id="@id/sample_rate_group"
                     android:checkableBehavior="single">
                     <item
                         android:id="@+id/menu_sr_1M"
