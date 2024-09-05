@@ -24,6 +24,11 @@ class Preferences(private val activity: Activity?) {
     var fftSize = 256
     var fftWindowType = WindowType.FLAT_TOP
 
+    var dbCenterDefault = -55.0f
+    var dbRangeDefault = 120.0f
+    var dbCenter = dbCenterDefault
+    var dbRange = dbRangeDefault
+
     var wfSpeed = 2
     var wfColorMap = 0
 
@@ -48,6 +53,8 @@ class Preferences(private val activity: Activity?) {
             agc = getBoolean("agc", agc)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
+            dbCenter = getFloat("dbCenter", dbCenter)
+            dbRange = getFloat("dbRange", dbRange)
             wfSpeed = getInt("wfSpeed", wfSpeed)
             wfColorMap = getInt("wfColorMap", wfColorMap)
             frequencyStep = getInt("frequencyStep", frequencyStep)
@@ -71,6 +78,8 @@ class Preferences(private val activity: Activity?) {
             putBoolean("agc", agc)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
+            putFloat("dbCenter", dbCenter)
+            putFloat("dbRange", dbRange)
             putInt("wfSpeed", wfSpeed)
             putInt("wfColorMap", wfColorMap)
             putInt("frequencyStep", frequencyStep)

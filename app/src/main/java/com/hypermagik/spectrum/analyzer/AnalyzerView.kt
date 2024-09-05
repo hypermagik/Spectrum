@@ -36,16 +36,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var maxDB = 15.0f
     private var minDBRange = 10.0f
     private var maxDBRange = maxDB - minDB
-    private var defaultDBCenter = -55.0f
-    private var defaultDBRange = 120.0f
 
     private var previousSampleRate = 0
     private var previousGain = 0
 
     private var viewFrequency = preferences.frequency.toDouble()
     private var viewBandwidth = preferences.sampleRate.toDouble()
-    private var viewDBCenter = defaultDBCenter
-    private var viewDBRange = defaultDBRange
+    private var viewDBCenter = preferences.dbCenter
+    private var viewDBRange = preferences.dbRange
 
     private var isReady = false
     private var isRunning = false
@@ -163,8 +161,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
         bundle.putDouble("viewFrequency", viewFrequency)
         bundle.putDouble("viewBandwidth", viewBandwidth)
-        bundle.putFloat("viewDBCenter", viewDBCenter)
-        bundle.putFloat("viewDBRange", viewDBRange)
 
         fft.saveInstanceState(bundle)
         peaks.saveInstanceState(bundle)
@@ -174,8 +170,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
         viewFrequency = bundle.getDouble("viewFrequency")
         viewBandwidth = bundle.getDouble("viewBandwidth")
-        viewDBCenter = bundle.getFloat("viewDBCenter")
-        viewDBRange = bundle.getFloat("viewDBRange")
 
         fft.restoreInstanceState(bundle)
         peaks.restoreInstanceState(bundle)
@@ -195,8 +189,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             previousSampleRate = preferences.sampleRate
             viewFrequency = preferences.frequency.toDouble()
             viewBandwidth = preferences.sampleRate.toDouble()
-            viewDBCenter = defaultDBCenter
-            viewDBRange = defaultDBRange
         }
 
         if (isReady) {
@@ -263,6 +255,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         viewDBRange = viewDBRange.coerceIn(minDBRange, maxDBRange)
         viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
+        updatePreferencesDB()
 
         fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
 
@@ -284,6 +277,12 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private fun updateInfoBar() {
         info.setFrequency(preferences.frequency)
         info.setFrequencyLock(isFrequencyLocked)
+    }
+
+    private fun updatePreferencesDB() {
+        preferences.dbCenter = viewDBCenter
+        preferences.dbRange = viewDBRange
+        preferences.save()
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -366,8 +365,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             // TODO: open frequency popup
         } else if (x < grid.leftScaleSize * 1.5f && y < height / 2) {
             // Reset the Y axis.
-            viewDBCenter = defaultDBCenter
-            viewDBRange = defaultDBRange
+            viewDBCenter = preferences.dbCenterDefault
+            viewDBRange = preferences.dbRangeDefault
             updateFFTandGrid()
         } else {
             // Reset the X axis.
