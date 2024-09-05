@@ -30,7 +30,7 @@ class ToneGenerator : Source {
     private var throttle = Throttle()
 
     override fun getName(): String {
-        return "Tone Generator"
+        return "Tone generator"
     }
 
     override fun getType(): SourceType {

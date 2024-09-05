@@ -37,7 +37,7 @@ class IQFile(private val context: Context) : Source {
     }
 
     override fun getName(): String {
-        return if (fileName.isEmpty()) "IQ File" else "IQ File: $fileName"
+        return if (fileName.isEmpty()) "IQ file" else "IQ file: $fileName"
     }
 
     override fun getType(): SourceType {

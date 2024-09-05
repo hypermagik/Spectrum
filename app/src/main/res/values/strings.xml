@@ -3,13 +3,13 @@
 
     <string name="action_play">Play</string>
     <string name="action_pause">Pause</string>
-    <string name="action_open">Open IQ File</string>
+    <string name="action_open">Open IQ file</string>
 
     <string name="source">Source</string>
-    <string name="menu_source_tone_generator">Tone Generator</string>
-    <string name="menu_source_iq_file">IQ File</string>
+    <string name="menu_source_tone_generator">Tone generator</string>
+    <string name="menu_source_iq_file">IQ file</string>
 
-    <string name="menu_sample_rate">Sample Rate</string>
+    <string name="menu_sample_rate">Sample rate</string>
     <string name="menu_sr_1M">1.00 Msps</string>
     <string name="menu_sr_2M">2.00 Msps</string>
     <string name="menu_sr_5M">5.00 Msps</string>
@@ -19,8 +19,8 @@
     <string name="menu_sr_40M">40.00 Msps</string>
     <string name="menu_sr_61_44M">61.44 Msps</string>
 
-    <string name="menu_fft_size">FFT Size</string>
-    <string name="menu_fft_window">FFT Window</string>
+    <string name="menu_fft_size">FFT size</string>
+    <string name="menu_fft_window">FFT window</string>
     <string name="menu_fft_256">256</string>
     <string name="menu_fft_512">512</string>
     <string name="menu_fft_1024">1024</string>
@@ -32,25 +32,25 @@
     <string name="menu_fft_blackman_harris">Blackman-Harris</string>
     <string name="menu_fft_hamming">Hamming</string>
 
-    <string name="menu_wf_speed">Waterfall Speed</string>
+    <string name="menu_wf_speed">Waterfall speed</string>
     <string name="menu_wf_speed_1x">1x</string>
     <string name="menu_wf_speed_2x">2x</string>
     <string name="menu_wf_speed_4x">4x</string>
 
-    <string name="menu_wf_colormap">Waterfall Color Map</string>
+    <string name="menu_wf_colormap">Waterfall color map</string>
     <string name="menu_wf_colormap_classic">Classic</string>
     <string name="menu_wf_colormap_classic_green">Classic Green</string>
     <string name="menu_wf_colormap_gqrx">GQRX</string>
     <string name="menu_wf_colormap_vivid">Vivid</string>
 
-    <string name="frequency_step">Frequency Step</string>
+    <string name="frequency_step">Frequency step</string>
     <string name="menu_fstep_1">1 Hz</string>
     <string name="menu_fstep_10">10 Hz</string>
     <string name="menu_fstep_100">100 Hz</string>
     <string name="menu_fstep_1000">1 kHz</string>
     <string name="menu_fstep_10000">10 kHz</string>
 
-    <string name="fps_limit">FPS Limit</string>
+    <string name="fps_limit">FPS limit</string>
     <string name="menu_fps_10">10 FPS</string>
     <string name="menu_fps_20">20 FPS</string>
     <string name="menu_fps_30">30 FPS</string>
