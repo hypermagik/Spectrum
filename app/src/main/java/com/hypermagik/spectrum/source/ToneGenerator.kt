@@ -12,7 +12,9 @@ import com.hypermagik.spectrum.utils.Throttle
 class ToneGenerator : Source {
     private var initialFrequency: Long = 3e9.toLong()
     private var currentFrequency: Long = initialFrequency
+
     private var sampleRate: Int = 0
+    private var supportedSampleRates = intArrayOf(1000000, 2000000, 5000000, 10000000, 20000000, 30000000, 40000000, 61440000)
 
     private var noiseGain: Float = 2 * Utils.db2mag(-90.0f)
     private val noise = Noise()
@@ -38,13 +40,15 @@ class ToneGenerator : Source {
     override fun open(preferences: Preferences): String? {
         Log.d(TAG, "Opening ${getName()}")
 
+        if (!supportedSampleRates.contains(preferences.sampleRate)) {
+            preferences.sampleRate = supportedSampleRates[0]
+        }
         sampleRate = preferences.sampleRate
 
         if (preferences.frequency < getMinimumFrequency() || getMaximumFrequency() < preferences.frequency) {
             preferences.frequency = initialFrequency
             preferences.save()
         }
-
         currentFrequency = preferences.frequency
 
         signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + initialFrequency }
