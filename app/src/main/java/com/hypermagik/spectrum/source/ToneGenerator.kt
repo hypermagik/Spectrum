@@ -31,7 +31,7 @@ class ToneGenerator : Source {
         return "Tone Generator"
     }
 
-    override fun open(preferences: Preferences): Boolean {
+    override fun open(preferences: Preferences): String? {
         Log.d(TAG, "Opening ${getName()}")
 
         sampleRate = preferences.sampleRate
@@ -53,7 +53,7 @@ class ToneGenerator : Source {
             signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
         }
 
-        return true
+        return null
     }
 
     override fun close() {

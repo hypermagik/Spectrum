@@ -254,8 +254,10 @@ class MainActivity : AppCompatActivity() {
         }
 
         Log.i(TAG, "Opening source")
-        if (!source.open(preferences)) {
-            Log.e(TAG, "Error opening source")
+        val error = source.open(preferences)
+        if (error != null) {
+            Log.e(TAG, "Error opening source: $error")
+            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
             return
         }
 
