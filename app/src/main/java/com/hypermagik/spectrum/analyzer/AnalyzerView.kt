@@ -24,7 +24,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private var grid = Grid(context)
     private var info = Info(context)
-    private var fft = FFT(context, preferences.fftSize)
+    private var fft = FFT(context, preferences)
     private var peaks = Peaks(context)
     private var waterfall = Waterfall(context, preferences)
 

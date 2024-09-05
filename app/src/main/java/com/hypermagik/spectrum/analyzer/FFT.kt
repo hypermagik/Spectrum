@@ -8,12 +8,13 @@ import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
+import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.R
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.max
 
-class FFT(private val context: Context, private var fftSize: Int) {
+class FFT(private val context: Context, private val preferences: Preferences) {
     private var vPosition: Int = 0
     private var vColor: Int = 0
 
@@ -37,6 +38,7 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
     private val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
 
+    private var fftSize = preferences.fftSize
     private var viewHeight = 0
     private var xScale = 1.0f
     private var xTranslate = 0.0f
@@ -60,7 +62,7 @@ class FFT(private val context: Context, private var fftSize: Int) {
     }
 
     private fun createBuffers() {
-        val vboCapacity = fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
+        val vboCapacity = preferences.fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
         vertexBuffer = ByteBuffer.allocateDirect(vboCapacity).order(ByteOrder.nativeOrder())
 
         for (i in 0 until fftSize) {
@@ -186,6 +188,8 @@ class FFT(private val context: Context, private var fftSize: Int) {
         // - https://community.khronos.org/t/spectrogram-and-fft-using-opengl/76933/13
         // - https://github.com/bane9/OpenGLFFT/tree/main/OpenGLFFT
 
+        val peakHoldDecay = 1.0f - preferences.getPeakHoldDecayFactor()
+
         // Scaling is done in the vertex shader.
         for (i in magnitudes.indices) {
             val bufferIndex = (i * coordsPerVertex + 1) * Float.SIZE_BYTES
@@ -195,7 +199,7 @@ class FFT(private val context: Context, private var fftSize: Int) {
 
             if (isPeakHoldEnabled) {
                 var peak = peakHoldVertexBuffer.getFloat(bufferIndex)
-                peakHoldVertexBuffer.putFloat(bufferIndex, max(peak * 0.95f, magnitude))
+                peakHoldVertexBuffer.putFloat(bufferIndex, max(peak * peakHoldDecay, magnitude))
             }
         }
 

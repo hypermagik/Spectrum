@@ -103,4 +103,8 @@ class Preferences(private val activity: Activity?) {
     fun getSampleFifoBufferSize(): Int {
         return max(fftSize, 4096)
     }
+
+    fun getPeakHoldDecayFactor(): Float {
+        return (0.035f * if (fpsLimit == 0) 1.0f else 120.0f / fpsLimit).coerceIn(0.035f, 0.1f)
+    }
 }
