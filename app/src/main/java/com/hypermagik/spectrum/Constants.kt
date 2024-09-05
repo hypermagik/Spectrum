@@ -71,10 +71,12 @@ class Constants {
 
         val sourceTypeToMenu = mapOf(
             SourceType.ToneGenerator to R.menu.source_tone_generator,
+            SourceType.IQFile to R.menu.source_iq_file,
         )
 
         val sourceTypeToMenuItem = mapOf(
             SourceType.ToneGenerator to R.id.menu_source_tone_generator,
+            SourceType.IQFile to R.id.menu_source_iq_file,
         )
     }
 }

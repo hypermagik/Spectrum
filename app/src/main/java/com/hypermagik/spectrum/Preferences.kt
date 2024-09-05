@@ -12,6 +12,7 @@ import kotlin.math.max
 
 class Preferences(private val activity: Activity?) {
     var sourceType = SourceType.ToneGenerator
+    var iqFile: String? = null
 
     var frequency = 3000000000L
     var sampleRate = 1000000
@@ -40,6 +41,7 @@ class Preferences(private val activity: Activity?) {
 
         activity.getPreferences(Activity.MODE_PRIVATE).run {
             sourceType = SourceType.entries.toTypedArray()[getInt("sourceType", sourceType.ordinal)]
+            iqFile = getString("iqFile", iqFile)
             frequency = getLong("frequency", frequency)
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
@@ -62,6 +64,7 @@ class Preferences(private val activity: Activity?) {
 
         activity.getPreferences(Activity.MODE_PRIVATE).edit().run {
             putInt("sourceType", sourceType.ordinal)
+            putString("iqFile", iqFile)
             putLong("frequency", frequency)
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)

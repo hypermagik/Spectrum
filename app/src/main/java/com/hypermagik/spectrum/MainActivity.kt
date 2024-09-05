@@ -1,10 +1,14 @@
 package com.hypermagik.spectrum
 
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.FrameLayout
+import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.slider.Slider
 import com.hypermagik.spectrum.analyzer.AnalyzerView
@@ -13,7 +17,9 @@ import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleFIFO
 import com.hypermagik.spectrum.lib.dsp.FFT
+import com.hypermagik.spectrum.source.IQFile
 import com.hypermagik.spectrum.source.Source
+import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.source.ToneGenerator
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
@@ -44,6 +50,8 @@ class MainActivity : AppCompatActivity() {
 
     private var state = State.Stopped
     private var startOnResume = false
+
+    private val getContent = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? -> onFileSelected(uri) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,6 +103,7 @@ class MainActivity : AppCompatActivity() {
 
         source = when (preferences.sourceType) {
             SourceType.ToneGenerator -> ToneGenerator()
+            SourceType.IQFile -> IQFile(this)
         }
 
         supportActionBar!!.subtitle = source.getName()
@@ -170,6 +179,8 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        menu.findItem(R.id.action_open)?.setVisible(source.getType() == SourceType.IQFile)
+
         Constants.sourceTypeToMenuItem[source.getType()]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -205,6 +216,13 @@ class MainActivity : AppCompatActivity() {
                 stop(false)
                 item.tooltipText = getString(R.string.action_play)
             }
+        } else if (item.itemId == R.id.action_open) {
+            openIQFile()
+        } else if (item.groupId == R.id.source_type_group) {
+            preferences.sourceType = Constants.sourceTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.saveNow()
+            invalidateOptionsMenu()
+            createSource()
         } else if (item.groupId == R.id.sample_rate_group) {
             val sampleRate = Constants.sampleRateToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
@@ -254,6 +272,26 @@ class MainActivity : AppCompatActivity() {
         return super.onOptionsItemSelected(item)
     }
 
+    private fun openIQFile() {
+        getContent.launch(arrayOf("*/*"))
+    }
+
+    private fun onFileSelected(uri: Uri?) {
+        if (uri == null) {
+            return
+        }
+
+        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        preferences.iqFile = uri.toString()
+        preferences.save()
+
+        if (state == State.Running) {
+            stop(false)
+            start()
+        }
+    }
+
     private fun setState(state: State) {
         Log.d(TAG, "Setting state to $state")
 
@@ -276,6 +314,8 @@ class MainActivity : AppCompatActivity() {
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
             return
         }
+
+        supportActionBar!!.subtitle = source.getName()
 
         if (fft.size != preferences.fftSize || fft.windowType != preferences.fftWindowType) {
             fft = FFT(preferences.fftSize, preferences.fftWindowType)
