@@ -9,11 +9,14 @@ import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.converter.IQConverter
 import com.hypermagik.spectrum.lib.data.converter.IQConverterFactory
+import com.hypermagik.spectrum.lib.dsp.Utils
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import kotlin.math.abs
+import kotlin.math.pow
 
 class IQFile(private val context: Context) : Source {
     private var fd: ParcelFileDescriptor? = null
@@ -72,6 +75,7 @@ class IQFile(private val context: Context) : Source {
 
         preferences.frequency = frequency
         preferences.sampleRate = sampleRate
+        gain = preferences.gain
 
         converter = IQConverterFactory.create(preferences.iqFileType)
         byteBuffer = ByteBuffer.allocate(preferences.getSampleFifoBufferSize() * converter.getSampleSize()).order(ByteOrder.LITTLE_ENDIAN)
@@ -142,6 +146,17 @@ class IQFile(private val context: Context) : Source {
         byteBuffer.rewind()
 
         converter.convert(byteBuffer, buffer)
+
+        if (gain != 0) {
+            var mag = Utils.db2mag(abs(gain).toFloat())
+            if (gain < 0) {
+                mag = 1.0f / mag
+            }
+            for (i in buffer.indices) {
+                buffer[i].re *= mag
+                buffer[i].im *= mag
+            }
+        }
     }
 
     override fun setFrequency(frequency: Long) {}
