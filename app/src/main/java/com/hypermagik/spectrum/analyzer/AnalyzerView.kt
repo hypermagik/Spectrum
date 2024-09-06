@@ -1,14 +1,22 @@
 package com.hypermagik.spectrum.analyzer
 
+import android.app.AlertDialog
 import android.content.Context
+import android.content.DialogInterface
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.os.Bundle
 import android.util.Log
 import android.view.GestureDetector
+import android.view.LayoutInflater
 import android.view.MotionEvent
 import android.view.ScaleGestureDetector
+import android.view.View
+import android.view.WindowManager
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.R
 import com.hypermagik.spectrum.utils.TAG
@@ -362,7 +370,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val infoArea = Info.HEIGHT * resources.displayMetrics.density * 1.5f
         if (y < infoArea) {
             // Info bar double-tapped, open frequency popup.
-            // TODO: open frequency popup
+            showSetFrequencyDialog()
         } else if (x < grid.leftScaleSize * 1.5f && y < height / 2) {
             // Reset the Y axis.
             viewDBCenter = preferences.dbCenterDefault
@@ -374,5 +382,65 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             viewBandwidth = preferences.sampleRate.toDouble()
             updateFFTandGrid()
         }
+    }
+
+    fun showSetFrequencyDialog() {
+        if (!isRunning || minFrequency == maxFrequency) {
+            return
+        }
+
+        val layout = LayoutInflater.from(context).inflate(R.layout.set_frequency, null)
+
+        layout.findViewById<EditText>(R.id.set_frequency)?.apply {
+            setText(preferences.frequency.toString())
+            requestFocus()
+            selectAll()
+        }
+
+        val dialog = AlertDialog.Builder(context)
+            .setTitle(R.string.set_frequency)
+            .setView(layout)
+            .create()
+
+        layout.findViewById<Button>(R.id.apply_button)?.setOnClickListener { onFrequencyClick(dialog, DialogInterface.BUTTON_POSITIVE, layout) }
+        layout.findViewById<Button>(R.id.cancel_button)?.setOnClickListener { onFrequencyClick(dialog, DialogInterface.BUTTON_NEGATIVE, layout) }
+
+        dialog.window?.attributes = dialog.window?.attributes?.apply { gravity = android.view.Gravity.BOTTOM }
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+
+        dialog.show()
+    }
+
+    private fun onFrequencyClick(dialog: DialogInterface?, which: Int, layout: View) {
+        if (which == DialogInterface.BUTTON_NEGATIVE) {
+            dialog?.dismiss()
+            return
+        }
+
+        val input = layout.findViewById<EditText>(R.id.set_frequency) ?: return
+        var frequency = input.text.toString().toDouble()
+
+        if (frequency < minFrequency) {
+            // If it's too low, assume it's MHz.
+            frequency *= 1000000.0
+        }
+
+        if (frequency < minFrequency || frequency > maxFrequency) {
+            layout.findViewById<TextView>(R.id.error)?.apply {
+                text = context.getString(R.string.frequency_out_of_range, minFrequency, maxFrequency)
+                visibility = View.VISIBLE
+            }
+            return
+        }
+
+        viewFrequency = frequency
+
+        preferences.frequency = frequency.toLong()
+        preferences.save()
+
+        updateFFTandGrid()
+        updateInfoBar()
+
+        dialog?.dismiss()
     }
 }

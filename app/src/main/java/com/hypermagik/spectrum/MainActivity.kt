@@ -72,6 +72,7 @@ class MainActivity : AppCompatActivity() {
         analyzerMagnitudes = FloatArray(preferences.fftSize) { 0.0f }
 
         analyzerView = AnalyzerView(this, preferences)
+        analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
 
         analyzerFrame = binding.appBarMain.analyzerFrame
         analyzerFrame.setBackgroundColor(resources.getColor(R.color.black, null))
@@ -184,6 +185,9 @@ class MainActivity : AppCompatActivity() {
         Constants.sourceTypeToMenuItem[source.getType()]?.also {
             menu.findItem(it)?.setChecked(true)
         }
+
+        menu.findItem(R.id.set_frequency)?.setEnabled(state == State.Running)
+
         Constants.sampleRateToMenuItem[preferences.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -233,6 +237,8 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             invalidateOptionsMenu()
             createSource()
+        } else if (item.itemId == R.id.set_frequency) {
+            analyzerView.showSetFrequencyDialog()
         } else if (item.groupId == R.id.sample_rate_group) {
             val sampleRate = Constants.sampleRateToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
