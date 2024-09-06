@@ -17,6 +17,12 @@ class Preferences(private val activity: Activity?) {
     var iqFile: String? = null
     var iqFileType: IQConverterFactory.IQConverterType = IQConverterFactory.IQConverterType.IQ8Unsigned
 
+    var recordLocation: String? = null
+    var recordLimit = 20000000L
+
+    // Internal use only, not serialized.
+    var isRecording = false
+
     var frequency = 3000000000L
     var sampleRate = 1000000
     var gain = 0
@@ -55,6 +61,8 @@ class Preferences(private val activity: Activity?) {
             sourceType = SourceType.entries.toTypedArray()[getInt("sourceType", sourceType.ordinal)]
             iqFile = getString("iqFile", iqFile)
             iqFileType = IQConverterFactory.IQConverterType.entries.toTypedArray()[getInt("iqFileType", iqFileType.ordinal)]
+            recordLocation = getString("recordLocation", recordLocation)
+            recordLimit = getLong("recordLimit", recordLimit)
             frequency = getLong("frequency", frequency)
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
@@ -84,6 +92,8 @@ class Preferences(private val activity: Activity?) {
             putInt("sourceType", sourceType.ordinal)
             putString("iqFile", iqFile)
             putInt("iqFileType", iqFileType.ordinal)
+            putString("recordLocation", recordLocation)
+            putLong("recordLimit", recordLimit)
             putLong("frequency", frequency)
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)

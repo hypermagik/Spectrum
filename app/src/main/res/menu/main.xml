@@ -14,7 +14,13 @@
         android:title="@string/action_open"
         app:showAsAction="ifRoom" />
     <item
+        android:id="@+id/record"
+        android:icon="@drawable/ic_record_off"
         android:orderInCategory="3"
+        android:title="@string/action_record"
+        app:showAsAction="ifRoom" />
+    <item
+        android:orderInCategory="4"
         android:title="@string/source"
         app:showAsAction="never">
         <menu>

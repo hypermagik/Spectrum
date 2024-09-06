@@ -2,11 +2,13 @@
     <string name="app_name">Spectrum</string>
 
     <string name="apply">Apply</string>
+    <string name="start">Start</string>
     <string name="cancel">Cancel</string>
 
     <string name="action_play">Play</string>
     <string name="action_pause">Pause</string>
     <string name="action_open">Open IQ file</string>
+    <string name="action_record">Record IQ samples</string>
 
     <string name="source">Source</string>
     <string name="menu_source_tone_generator">Tone generator</string>

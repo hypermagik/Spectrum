@@ -51,7 +51,13 @@ class MainActivity : AppCompatActivity() {
     private var state = State.Stopped
     private var startOnResume = false
 
-    private val getContent = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? -> onFileSelected(uri) }
+    enum class RecordingState { Running, Stopping, Stopped }
+
+    private var recorder = IQRecorder(this, preferences)
+    private var recordingState = RecordingState.Stopped
+
+    private val getIQFileContent = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? -> onIQFileSelected(uri) }
+    private val getRecordLocationContent = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? -> onRecordLocationSelected(uri) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,7 +109,7 @@ class MainActivity : AppCompatActivity() {
         stop(false)
 
         source = when (preferences.sourceType) {
-            SourceType.ToneGenerator -> ToneGenerator()
+            SourceType.ToneGenerator -> ToneGenerator(recorder)
             SourceType.IQFile -> IQFile(this)
         }
 
@@ -161,26 +167,37 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateOptionsMenu() {
         val menu = binding.appBarMain.toolbar.menu
-        val item = menu.findItem(R.id.action_playpause)
-        if (item != null) {
+
+        menu.findItem(R.id.action_playpause)?.apply {
             when (state) {
                 State.Running -> {
-                    item.setEnabled(true)
-                    item.setIcon(R.drawable.ic_pause)
+                    isEnabled = true
+                    setIcon(R.drawable.ic_pause)
                 }
 
                 State.Stopped -> {
-                    item.setEnabled(true)
-                    item.setIcon(R.drawable.ic_play)
+                    isEnabled = true
+                    setIcon(R.drawable.ic_play)
                 }
 
                 else -> {
-                    item.setEnabled(false)
+                    isEnabled = false
                 }
             }
         }
 
         menu.findItem(R.id.action_open)?.setVisible(source.getType() == SourceType.IQFile)
+
+        menu.findItem(R.id.record)?.apply {
+            isEnabled = state == State.Running
+            isVisible = source.getType() != SourceType.IQFile
+
+            if (preferences.isRecording) {
+                setIcon(R.drawable.ic_record_on)
+            } else {
+                setIcon(R.drawable.ic_record_off)
+            }
+        }
 
         Constants.sourceTypeToMenuItem[source.getType()]?.also {
             menu.findItem(it)?.setChecked(true)
@@ -229,6 +246,8 @@ class MainActivity : AppCompatActivity() {
             }
         } else if (item.itemId == R.id.action_open) {
             openIQFile()
+        } else if (item.itemId == R.id.record) {
+            toggleRecord()
         } else if (item.groupId == R.id.source_type_group) {
             preferences.sourceType = Constants.sourceTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.saveNow()
@@ -309,10 +328,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun openIQFile() {
-        getContent.launch(arrayOf("*/*"))
+        getIQFileContent.launch(arrayOf("*/*"))
     }
 
-    private fun onFileSelected(uri: Uri?) {
+    private fun onIQFileSelected(uri: Uri?) {
         if (uri == null) {
             return
         }
@@ -325,6 +344,76 @@ class MainActivity : AppCompatActivity() {
         if (state == State.Running) {
             stop(false)
             start()
+        }
+    }
+
+    private fun openRecordLocation() {
+        getRecordLocationContent.launch(null)
+    }
+
+    private fun onRecordLocationSelected(uri: Uri?) {
+        if (uri == null) {
+            return
+        }
+
+        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+
+        preferences.recordLocation = uri.toString()
+        preferences.save()
+
+        if (recordingState == RecordingState.Stopped) {
+            startRecorder()
+        }
+    }
+
+    private fun toggleRecord() {
+        if (recordingState == RecordingState.Running) {
+            recordingState = RecordingState.Stopping
+        } else if (recordingState == RecordingState.Stopped) {
+            if (preferences.recordLocation == null) {
+                openRecordLocation()
+            } else {
+                startRecorder()
+            }
+        }
+    }
+
+    private fun startRecorder() {
+        var error: String?
+
+        try {
+            error = recorder.start()
+            if (error == null) {
+                recordingState = RecordingState.Running
+                invalidateOptionsMenu()
+            }
+        } catch (e: Exception) {
+            error = e.message
+        }
+
+        if (error != null) {
+            preferences.recordLocation = null
+            Log.e(TAG, "Error starting recorder: $error")
+            Toast.makeText(this, "Error starting recorder:\n$error", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun checkRecorderState() {
+        when (recordingState) {
+            RecordingState.Running -> {
+                if (!recorder.isRecording()) {
+                    recordingState = RecordingState.Stopped
+                    invalidateOptionsMenu()
+                }
+            }
+
+            RecordingState.Stopping -> {
+                recorder.stop()
+                recordingState = RecordingState.Stopped
+                invalidateOptionsMenu()
+            }
+
+            RecordingState.Stopped -> return
         }
     }
 
@@ -441,6 +530,13 @@ class MainActivity : AppCompatActivity() {
             if (gain.update()) {
                 source.setGain(gain.value)
             }
+
+            checkRecorderState()
+        }
+
+        if (recordingState != RecordingState.Stopped) {
+            recorder.stop()
+            recordingState = RecordingState.Stopped
         }
 
         Log.i(TAG, "Closing source")

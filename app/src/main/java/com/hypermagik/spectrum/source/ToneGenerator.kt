@@ -1,6 +1,7 @@
 package com.hypermagik.spectrum.source
 
 import android.util.Log
+import com.hypermagik.spectrum.IQRecorder
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.dsp.Utils
@@ -9,7 +10,7 @@ import com.hypermagik.spectrum.lib.gen.Noise
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
 
-class ToneGenerator : Source {
+class ToneGenerator(private val recorder: IQRecorder) : Source {
     private var initialFrequency: Long = 3e9.toLong()
     private var currentFrequency: Long = initialFrequency
 
@@ -91,6 +92,8 @@ class ToneGenerator : Source {
                 }
             }
         }
+
+        recorder.record(buffer)
     }
 
     override fun setFrequency(frequency: Long) {
