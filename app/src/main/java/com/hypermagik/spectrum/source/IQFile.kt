@@ -15,16 +15,21 @@ import com.hypermagik.spectrum.utils.Throttle
 import java.io.FileInputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
+import java.nio.channels.ClosedByInterruptException
+import java.nio.channels.FileChannel
 import kotlin.math.abs
-import kotlin.math.pow
 
 class IQFile(private val context: Context) : Source {
     private var fd: ParcelFileDescriptor? = null
     private var stream: FileInputStream? = null
+    private var channel: FileChannel? = null
+
     private var fileName: String = ""
-    private var fileSize = 0L
+    private var headerSize = 0
 
     private lateinit var converter: IQConverter
+
+    private var bufferSize = 0
     private lateinit var byteBuffer: ByteBuffer
 
     private var frequency: Long = 0
@@ -55,16 +60,17 @@ class IQFile(private val context: Context) : Source {
         val fd = context.contentResolver.openFileDescriptor(uri, "r") ?: return "Failed to open IQ file."
         val stream = FileInputStream(fd.fileDescriptor)
 
-        fileName = name
-        fileSize = stream.available().toLong()
+        parseWaveHeader(stream)
 
-        sampleRate = tryGetWaveSampleRate(stream)
         if (sampleRate == 0) {
             Regex("\\D*(\\d+)Sps\\D*").find(name)?.also {
                 sampleRate = it.groupValues[1].toInt()
             }
         }
+
         if (sampleRate == 0) {
+            stream.close()
+            fd.close()
             return "Cannot detect sample rate from IQ file."
         }
 
@@ -77,33 +83,41 @@ class IQFile(private val context: Context) : Source {
         preferences.sampleRate = sampleRate
         gain = preferences.gain
 
+        fileName = name
+
         converter = IQConverterFactory.create(preferences.iqFileType)
-        byteBuffer = ByteBuffer.allocate(preferences.getSampleFifoBufferSize() * converter.getSampleSize()).order(ByteOrder.LITTLE_ENDIAN)
+
+        bufferSize = preferences.getSampleFifoBufferSize() * converter.getSampleSize()
+        byteBuffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.LITTLE_ENDIAN)
 
         this.fd = fd
         this.stream = stream
+        this.channel = stream.channel
 
         return null
     }
 
-    private fun tryGetWaveSampleRate(stream: FileInputStream): Int {
-        val header = ByteArray(44)
+    private fun parseWaveHeader(stream: FileInputStream) {
+        val waveHeaderSize = 44
+
+        val header = ByteArray(waveHeaderSize)
         stream.read(header)
-        stream.skip(-44)
+        stream.skip(-waveHeaderSize.toLong())
 
         byteBuffer = ByteBuffer.wrap(header).order(ByteOrder.LITTLE_ENDIAN)
 
         val signature = String(header.sliceArray(0..3))
         if (signature != "RIFF") {
-            return 0
+            return
         }
 
         val fileType = String(header.sliceArray(8..11))
         if (fileType != "WAVE") {
-            return 0
+            return
         }
 
-        return byteBuffer.getInt(24)
+        headerSize = waveHeaderSize
+        sampleRate = byteBuffer.getInt(24)
     }
 
     override fun close() {
@@ -117,9 +131,6 @@ class IQFile(private val context: Context) : Source {
 
         fd?.close()
         fd = null
-
-        fileName = ""
-        fileSize = 0
     }
 
     override fun start() {}
@@ -127,20 +138,18 @@ class IQFile(private val context: Context) : Source {
     override fun stop() {}
 
     override fun read(buffer: Complex32Array) {
-        throttle.sync(1000000000L * buffer.size / sampleRate)
+        val channel = this.channel ?: return
 
-        val stream = this.stream ?: return
-        val array = byteBuffer.array()
+        byteBuffer.rewind()
 
-        var bytesRead = 0
-        while (bytesRead < array.size) {
-            val n = stream.read(array, bytesRead, array.size - bytesRead)
-
-            if (n > 0) {
-                bytesRead += n
-            } else {
-                stream.skip(-fileSize)
+        try {
+            while (byteBuffer.position() != bufferSize) {
+                if (channel.read(byteBuffer) <= 0) {
+                    channel.position(headerSize.toLong())
+                }
             }
+        } catch (e: ClosedByInterruptException) {
+            return
         }
 
         byteBuffer.rewind()
@@ -157,6 +166,8 @@ class IQFile(private val context: Context) : Source {
                 buffer[i].im *= mag
             }
         }
+
+        throttle.sync(1000000000L * buffer.size / sampleRate)
     }
 
     override fun setFrequency(frequency: Long) {}
