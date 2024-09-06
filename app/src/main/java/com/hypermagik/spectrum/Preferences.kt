@@ -2,6 +2,7 @@ package com.hypermagik.spectrum
 
 import android.app.Activity
 import android.util.Log
+import com.hypermagik.spectrum.lib.data.converter.IQConverterFactory
 import com.hypermagik.spectrum.lib.dsp.FFT.WindowType
 import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.utils.TAG
@@ -12,7 +13,9 @@ import kotlin.math.max
 
 class Preferences(private val activity: Activity?) {
     var sourceType = SourceType.ToneGenerator
+
     var iqFile: String? = null
+    var iqFileType: IQConverterFactory.IQConverterType = IQConverterFactory.IQConverterType.IQ8Unsigned
 
     var frequency = 3000000000L
     var sampleRate = 1000000
@@ -50,6 +53,7 @@ class Preferences(private val activity: Activity?) {
         activity.getPreferences(Activity.MODE_PRIVATE).run {
             sourceType = SourceType.entries.toTypedArray()[getInt("sourceType", sourceType.ordinal)]
             iqFile = getString("iqFile", iqFile)
+            iqFileType = IQConverterFactory.IQConverterType.entries.toTypedArray()[getInt("iqFileType", iqFileType.ordinal)]
             frequency = getLong("frequency", frequency)
             sampleRate = getInt("sampleRate", sampleRate)
             gain = getInt("gain", gain)
@@ -77,6 +81,7 @@ class Preferences(private val activity: Activity?) {
         activity.getPreferences(Activity.MODE_PRIVATE).edit().run {
             putInt("sourceType", sourceType.ordinal)
             putString("iqFile", iqFile)
+            putInt("iqFileType", iqFileType.ordinal)
             putLong("frequency", frequency)
             putInt("sampleRate", sampleRate)
             putInt("gain", gain)

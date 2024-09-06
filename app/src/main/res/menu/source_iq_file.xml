@@ -1,2 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu />
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/source_iq_file_group"
+        android:orderInCategory="11">
+        <item android:title="@string/menu_sample_type">
+            <menu>
+                <group
+                    android:id="@+id/sample_type_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_sample_type_8s"
+                        android:title="@string/menu_sample_type_8s" />
+                    <item
+                        android:id="@+id/menu_sample_type_8u"
+                        android:title="@string/menu_sample_type_8u" />
+                    <item
+                        android:id="@+id/menu_sample_type_12sp"
+                        android:title="@string/menu_sample_type_12sp" />
+                    <item
+                        android:id="@+id/menu_sample_type_32f"
+                        android:title="@string/menu_sample_type_32f" />
+                </group>
+            </menu>
+        </item>
+    </group>
+</menu>

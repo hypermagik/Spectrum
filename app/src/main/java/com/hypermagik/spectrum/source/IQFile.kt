@@ -7,6 +7,8 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.data.converter.IQConverter
+import com.hypermagik.spectrum.lib.data.converter.IQConverterFactory
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
 import java.io.FileInputStream
@@ -19,22 +21,14 @@ class IQFile(private val context: Context) : Source {
     private var fileName: String = ""
     private var fileSize = 0L
 
-    private lateinit var byteBuffer: ByteArray
-    private lateinit var shortBuffer: ByteBuffer
+    private lateinit var converter: IQConverter
+    private lateinit var byteBuffer: ByteBuffer
 
     private var frequency: Long = 0
     private var sampleRate: Int = 0
     private var gain: Int = 0
 
-    private val lookupTable = FloatArray(4096)
-
     private val throttle = Throttle()
-
-    init {
-        for (i in 0 until 4096) {
-            lookupTable[i] = (i - 2048) / 2048.0f
-        }
-    }
 
     override fun getName(): String {
         return if (fileName.isEmpty()) "IQ file" else "IQ file: $fileName"
@@ -79,8 +73,8 @@ class IQFile(private val context: Context) : Source {
         preferences.frequency = frequency
         preferences.sampleRate = sampleRate
 
-        byteBuffer = ByteArray(preferences.getSampleFifoBufferSize() * 2 * Short.SIZE_BYTES)
-        shortBuffer = ByteBuffer.wrap(byteBuffer).order(ByteOrder.LITTLE_ENDIAN)
+        converter = IQConverterFactory.create(preferences.iqFileType)
+        byteBuffer = ByteBuffer.allocate(preferences.getSampleFifoBufferSize() * converter.getSampleSize()).order(ByteOrder.LITTLE_ENDIAN)
 
         this.fd = fd
         this.stream = stream
@@ -111,6 +105,9 @@ class IQFile(private val context: Context) : Source {
     override fun close() {
         Log.d(TAG, "Closing IQ file")
 
+        channel?.close()
+        channel = null
+
         stream?.close()
         stream = null
 
@@ -129,10 +126,11 @@ class IQFile(private val context: Context) : Source {
         throttle.sync(1000000000L * buffer.size / sampleRate)
 
         val stream = this.stream ?: return
+        val array = byteBuffer.array()
 
         var bytesRead = 0
-        while (bytesRead < byteBuffer.size) {
-            val n = stream.read(byteBuffer, bytesRead, byteBuffer.size - bytesRead)
+        while (bytesRead < array.size) {
+            val n = stream.read(array, bytesRead, array.size - bytesRead)
 
             if (n > 0) {
                 bytesRead += n
@@ -141,12 +139,9 @@ class IQFile(private val context: Context) : Source {
             }
         }
 
-        shortBuffer.rewind()
+        byteBuffer.rewind()
 
-        for (i in buffer.indices) {
-            buffer[i].re = lookupTable[shortBuffer.getShort() + 2048]
-            buffer[i].im = lookupTable[shortBuffer.getShort() + 2048]
-        }
+        converter.convert(byteBuffer, buffer)
     }
 
     override fun setFrequency(frequency: Long) {}

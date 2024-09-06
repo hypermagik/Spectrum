@@ -187,6 +187,9 @@ class MainActivity : AppCompatActivity() {
         Constants.sampleRateToMenuItem[preferences.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
+        Constants.sampleTypeToMenuItem[preferences.iqFileType]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
         Constants.fpsLimitToMenuItem[preferences.fpsLimit]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -233,6 +236,14 @@ class MainActivity : AppCompatActivity() {
                 preferences.sampleRate = sampleRate
                 preferences.saveNow()
             }
+            item.setChecked(true)
+        } else if (item.groupId == R.id.sample_type_group) {
+            val sampleType = Constants.sampleTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
+            restartIfRunning {
+                preferences.iqFileType = sampleType
+                preferences.saveNow()
+            }
+            item.setChecked(true)
         } else if (item.groupId == R.id.fps_limit_group) {
             val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.fpsLimit = fpsLimit
