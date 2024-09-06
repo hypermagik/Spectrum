@@ -33,6 +33,7 @@ class Preferences(private val activity: Activity?) {
     var dbRange = dbRangeDefault
 
     var peakHoldEnabled = true
+    var peakHoldDecay = 30
     var peakIndicatorEnabled = true
 
     var wfSpeed = 2
@@ -63,6 +64,7 @@ class Preferences(private val activity: Activity?) {
             dbCenter = getFloat("dbCenter", dbCenter)
             dbRange = getFloat("dbRange", dbRange)
             peakHoldEnabled = getBoolean("peakHoldEnabled", peakHoldEnabled)
+            peakHoldDecay = getInt("peakHoldDecay", peakHoldDecay)
             peakIndicatorEnabled = getBoolean("peakIndicatorEnabled", peakIndicatorEnabled)
             wfSpeed = getInt("wfSpeed", wfSpeed)
             wfColorMap = getInt("wfColorMap", wfColorMap)
@@ -91,6 +93,7 @@ class Preferences(private val activity: Activity?) {
             putFloat("dbCenter", dbCenter)
             putFloat("dbRange", dbRange)
             putBoolean("peakHoldEnabled", peakHoldEnabled)
+            putInt("peakHoldDecay", peakHoldDecay)
             putBoolean("peakIndicatorEnabled", peakIndicatorEnabled)
             putInt("wfSpeed", wfSpeed)
             putInt("wfColorMap", wfColorMap)
@@ -117,6 +120,6 @@ class Preferences(private val activity: Activity?) {
     }
 
     fun getPeakHoldDecayFactor(): Float {
-        return (0.035f * if (fpsLimit == 0) 1.0f else 120.0f / fpsLimit).coerceIn(0.035f, 0.1f)
+        return (peakHoldDecay * 0.001f * if (fpsLimit == 0) 1.0f else 120.0f / fpsLimit).coerceIn(0.01f, 0.1f)
     }
 }

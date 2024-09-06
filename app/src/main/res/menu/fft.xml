@@ -61,6 +61,47 @@
             android:title="@string/menu_peak_hold"
             app:showAsAction="never" />
         <item
+            android:id="@+id/menu_peak_hold_decay"
+            android:title="@string/menu_peak_hold_decay"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/peak_hold_decay_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_10"
+                        android:title="@string/menu_peak_hold_decay_10" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_20"
+                        android:title="@string/menu_peak_hold_decay_20" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_30"
+                        android:title="@string/menu_peak_hold_decay_30" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_40"
+                        android:title="@string/menu_peak_hold_decay_40" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_50"
+                        android:title="@string/menu_peak_hold_decay_50" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_60"
+                        android:title="@string/menu_peak_hold_decay_60" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_70"
+                        android:title="@string/menu_peak_hold_decay_70" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_80"
+                        android:title="@string/menu_peak_hold_decay_80" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_90"
+                        android:title="@string/menu_peak_hold_decay_90" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_100"
+                        android:title="@string/menu_peak_hold_decay_100" />
+                </group>
+            </menu>
+        </item>
+        <item
             android:id="@+id/menu_peak_indicator"
             android:checkable="true"
             android:title="@string/menu_peak_indicator"

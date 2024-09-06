@@ -38,6 +38,22 @@
     <string name="menu_fft_blackman_harris">Blackman-Harris</string>
     <string name="menu_fft_hamming">Hamming</string>
 
+    <string name="menu_peak_hold">Peak hold</string>
+
+    <string name="menu_peak_hold_decay">Peak hold decay</string>
+    <string name="menu_peak_hold_decay_10">10</string>
+    <string name="menu_peak_hold_decay_20">20</string>
+    <string name="menu_peak_hold_decay_30">30</string>
+    <string name="menu_peak_hold_decay_40">40</string>
+    <string name="menu_peak_hold_decay_50">50</string>
+    <string name="menu_peak_hold_decay_60">60</string>
+    <string name="menu_peak_hold_decay_70">70</string>
+    <string name="menu_peak_hold_decay_80">80</string>
+    <string name="menu_peak_hold_decay_90">90</string>
+    <string name="menu_peak_hold_decay_100">100</string>
+
+    <string name="menu_peak_indicator">Peak indicator</string>
+
     <string name="menu_wf_speed">Waterfall speed</string>
     <string name="menu_wf_speed_1x">1x</string>
     <string name="menu_wf_speed_2x">2x</string>
@@ -63,6 +79,4 @@
     <string name="menu_fps_60">60 FPS</string>
     <string name="menu_fps_120">120 FPS</string>
     <string name="menu_fps_unlimited">Unlimited</string>
-    <string name="menu_peak_hold">Peak hold</string>
-    <string name="menu_peak_indicator">Peak indicator</string>
 </resources>

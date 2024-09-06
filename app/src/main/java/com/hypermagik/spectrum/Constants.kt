@@ -50,6 +50,19 @@ class Constants {
             FFT.WindowType.HAMMING to R.id.menu_fft_hamming,
         )
 
+        val peakHoldDecayToMenuItem = mapOf(
+            10 to R.id.menu_peak_hold_decay_10,
+            20 to R.id.menu_peak_hold_decay_20,
+            30 to R.id.menu_peak_hold_decay_30,
+            40 to R.id.menu_peak_hold_decay_40,
+            50 to R.id.menu_peak_hold_decay_50,
+            60 to R.id.menu_peak_hold_decay_60,
+            70 to R.id.menu_peak_hold_decay_70,
+            80 to R.id.menu_peak_hold_decay_80,
+            90 to R.id.menu_peak_hold_decay_90,
+            100 to R.id.menu_peak_hold_decay_100,
+        )
+
         val wfSpedToMenuItem = mapOf(
             1 to R.id.menu_wf_speed_1x,
             2 to R.id.menu_wf_speed_2x,

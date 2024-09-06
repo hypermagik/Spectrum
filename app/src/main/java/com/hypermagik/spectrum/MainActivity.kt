@@ -206,6 +206,9 @@ class MainActivity : AppCompatActivity() {
         menu.findItem(R.id.menu_peak_hold)?.setChecked(preferences.peakHoldEnabled)
         menu.findItem(R.id.menu_peak_indicator)?.setChecked(preferences.peakIndicatorEnabled)
 
+        Constants.peakHoldDecayToMenuItem[preferences.peakHoldDecay]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
         Constants.wfSpedToMenuItem[preferences.wfSpeed]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -277,6 +280,11 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             item.setChecked(preferences.peakHoldEnabled)
             analyzerView.requestRender()
+        } else if (item.groupId == R.id.peak_hold_decay_group) {
+            val peakHoldDecay = Constants.peakHoldDecayToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.peakHoldDecay = peakHoldDecay
+            preferences.saveNow()
+            item.setChecked(true)
         } else if (item.itemId == R.id.menu_peak_indicator) {
             preferences.peakIndicatorEnabled = !preferences.peakIndicatorEnabled
             preferences.saveNow()
