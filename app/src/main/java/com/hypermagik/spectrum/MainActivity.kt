@@ -185,9 +185,6 @@ class MainActivity : AppCompatActivity() {
         Constants.sourceTypeToMenuItem[source.getType()]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-
-        menu.findItem(R.id.set_frequency)?.setEnabled(state == State.Running)
-
         Constants.sampleRateToMenuItem[preferences.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -422,8 +419,8 @@ class MainActivity : AppCompatActivity() {
 
         val scratch = Complex32Array(sampleFifo.bufferSize) { Complex32() }
 
-        var previousFrequency = preferences.frequency
-        var previousGain = preferences.gain
+        val frequency = PreferencesWrapper.Frequency(preferences)
+        val gain = PreferencesWrapper.Gain(preferences)
 
         while (state == State.Running) {
             try {
@@ -438,15 +435,11 @@ class MainActivity : AppCompatActivity() {
                 break
             }
 
-            val newGain = preferences.gain
-            if (previousGain != newGain) {
-                previousGain = newGain
-                source.setGain(newGain)
+            if (frequency.update()) {
+                source.setFrequency(frequency.value)
             }
-            val newFrequency = preferences.frequency
-            if (previousFrequency != newFrequency) {
-                previousFrequency = newFrequency
-                source.setFrequency(newFrequency)
+            if (gain.update()) {
+                source.setGain(gain.value)
             }
         }
 

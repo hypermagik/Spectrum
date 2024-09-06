@@ -18,6 +18,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.TextView
 import com.hypermagik.spectrum.Preferences
+import com.hypermagik.spectrum.PreferencesWrapper
 import com.hypermagik.spectrum.R
 import com.hypermagik.spectrum.utils.TAG
 import javax.microedition.khronos.egl.EGLConfig
@@ -45,8 +46,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var minDBRange = 10.0f
     private var maxDBRange = maxDB - minDB
 
-    private var previousSampleRate = 0
-    private var previousGain = 0
+    private var frequency = PreferencesWrapper.Frequency(preferences)
+    private var sampleRate = PreferencesWrapper.SampleRate(preferences)
+    private var gain = PreferencesWrapper.Gain(preferences)
 
     private var viewFrequency = preferences.frequency.toDouble()
     private var viewBandwidth = preferences.sampleRate.toDouble()
@@ -142,9 +144,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     override fun onDrawFrame(unused: GL10) {
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        if (previousGain != preferences.gain) {
-            previousGain = preferences.gain
-            info.setGain(previousGain)
+        if (gain.update()) {
+            info.setGain(gain.value)
         }
 
         grid.drawBackground()
@@ -166,6 +167,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun saveInstanceState(bundle: Bundle) {
+        bundle.putLong("frequency", frequency.value)
+        bundle.putLong("minFrequency", minFrequency)
+        bundle.putLong("maxFrequency", maxFrequency)
+        bundle.putInt("sampleRate", sampleRate.value)
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
         bundle.putDouble("viewFrequency", viewFrequency)
         bundle.putDouble("viewBandwidth", viewBandwidth)
@@ -175,6 +180,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun restoreInstanceState(bundle: Bundle) {
+        frequency.value = bundle.getLong("frequency")
+        minFrequency = bundle.getLong("minFrequency")
+        maxFrequency = bundle.getLong("maxFrequency")
+        sampleRate.value = bundle.getInt("sampleRate")
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
         viewFrequency = bundle.getDouble("viewFrequency")
         viewBandwidth = bundle.getDouble("viewBandwidth")
@@ -193,8 +202,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         info.start()
         waterfall.start()
 
-        if (previousSampleRate != preferences.sampleRate) {
-            previousSampleRate = preferences.sampleRate
+        frequency.update()
+
+        if (sampleRate.update()) {
             viewFrequency = preferences.frequency.toDouble()
             viewBandwidth = preferences.sampleRate.toDouble()
         }
@@ -244,20 +254,20 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateFFTandGrid() {
-        val minViewBandwidth = preferences.sampleRate / (preferences.fftSize / 128.0)
-        val maxViewBandwidth = preferences.sampleRate / 1.0
+        val minViewBandwidth = sampleRate.value / (preferences.fftSize / 128.0)
+        val maxViewBandwidth = sampleRate.value / 1.0
 
         viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
 
-        val frequency0 = preferences.frequency - preferences.sampleRate / 2.0
-        val frequency1 = preferences.frequency + preferences.sampleRate / 2.0
+        val frequency0 = frequency.value - sampleRate.value / 2.0
+        val frequency1 = frequency.value + sampleRate.value / 2.0
         val viewFrequency0 = frequency0 + viewBandwidth / 2.0
         val viewFrequency1 = frequency1 - viewBandwidth / 2.0
 
         viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
-        val scale = preferences.sampleRate / viewBandwidth
-        val translate = (viewFrequency - viewBandwidth / 2.0 - frequency0) / preferences.sampleRate * scale
+        val scale = sampleRate.value / viewBandwidth
+        val translate = (viewFrequency - viewBandwidth / 2.0 - frequency0) / sampleRate.value * scale
 
         fft.updateX(scale.toFloat(), translate.toFloat())
 
@@ -283,7 +293,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateInfoBar() {
-        info.setFrequency(preferences.frequency)
+        info.setFrequency(frequency.value)
         info.setFrequencyLock(isFrequencyLocked)
     }
 
@@ -334,14 +344,15 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             // Scroll the X axis.
             viewFrequency += viewBandwidth * deltaX / width
 
-            // If running and not locked, update source frequency.
-            if (isRunning && !isFrequencyLocked) {
-                var frequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
-                frequency = frequency.coerceIn(minFrequency, maxFrequency)
+            if (!isFrequencyLocked) {
+                // If locked, can't change frequency.
+                var newFrequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
+                newFrequency = newFrequency.coerceIn(minFrequency, maxFrequency)
 
-                preferences.frequency = frequency
+                preferences.frequency = newFrequency
                 preferences.save()
 
+                frequency.update()
                 updateInfoBar()
             }
         }
@@ -356,8 +367,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             isFrequencyLocked = !isFrequencyLocked
             if (!isFrequencyLocked) {
                 // When unlocked, reset the X axis.
-                viewFrequency = preferences.frequency.toDouble()
-                viewBandwidth = preferences.sampleRate.toDouble()
+                viewFrequency = frequency.value.toDouble()
+                viewBandwidth = sampleRate.value.toDouble()
                 updateFFTandGrid()
             } else {
                 requestRender()
@@ -378,21 +389,21 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             updateFFTandGrid()
         } else {
             // Reset the X axis.
-            viewFrequency = preferences.frequency.toDouble()
-            viewBandwidth = preferences.sampleRate.toDouble()
+            viewFrequency = frequency.value.toDouble()
+            viewBandwidth = sampleRate.value.toDouble()
             updateFFTandGrid()
         }
     }
 
     fun showSetFrequencyDialog() {
-        if (!isRunning || minFrequency == maxFrequency) {
+        if (minFrequency == maxFrequency) {
             return
         }
 
         val layout = LayoutInflater.from(context).inflate(R.layout.set_frequency, null)
 
         layout.findViewById<EditText>(R.id.set_frequency)?.apply {
-            setText(preferences.frequency.toString())
+            setText(frequency.value.toString())
             requestFocus()
             selectAll()
         }
@@ -418,14 +429,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
 
         val input = layout.findViewById<EditText>(R.id.set_frequency) ?: return
-        var frequency = input.text.toString().toDouble()
+        var newFrequency = input.text.toString().toDouble()
 
-        if (frequency < minFrequency) {
+        if (newFrequency < minFrequency) {
             // If it's too low, assume it's MHz.
-            frequency *= 1000000.0
+            newFrequency *= 1000000.0
         }
 
-        if (frequency < minFrequency || frequency > maxFrequency) {
+        if (newFrequency < minFrequency || newFrequency > maxFrequency) {
             layout.findViewById<TextView>(R.id.error)?.apply {
                 text = context.getString(R.string.frequency_out_of_range, minFrequency, maxFrequency)
                 visibility = View.VISIBLE
@@ -433,13 +444,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             return
         }
 
-        viewFrequency = frequency
-
-        preferences.frequency = frequency.toLong()
+        preferences.frequency = newFrequency.toLong()
         preferences.save()
 
-        updateFFTandGrid()
-        updateInfoBar()
+        if (isRunning) {
+            frequency.update()
+            viewFrequency = frequency.value.toDouble()
+
+            updateFFTandGrid()
+            updateInfoBar()
+        }
 
         dialog?.dismiss()
     }
