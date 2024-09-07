@@ -51,6 +51,8 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
 
     private var viewWidth = 0
     private var viewHeight = 0
+    private var viewFrequencyStart = 0.0
+    private var viewFrequencyEnd = 0.0
     private var fftSize = 0
     private var fftScale = 1.0f
     private var frequencyStart = 0.0
@@ -101,10 +103,7 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
     }
 
     fun saveInstanceState(bundle: Bundle) {
-        bundle.putInt("peakIndex", peakIndex)
-        bundle.putFloat("peakMagnitude", peakMagnitude)
-        bundle.putDouble("peakFrequency", peakFrequency)
-        bundle.putInt("fftSize", fftSize)
+        bundle.putFloatArray("history", history)
         bundle.putFloat("fftScale", fftScale)
         bundle.putFloat("minDB", minDB)
         bundle.putFloat("maxDB", maxDB)
@@ -113,10 +112,8 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
     }
 
     fun restoreInstanceState(bundle: Bundle) {
-        peakIndex = bundle.getInt("peakIndex")
-        peakMagnitude = bundle.getFloat("peakMagnitude")
-        peakFrequency = bundle.getDouble("peakFrequency")
-        fftSize = bundle.getInt("fftSize")
+        history = bundle.getFloatArray("history")!!
+        fftSize = history.size
         fftScale = bundle.getFloat("fftScale")
         minDB = bundle.getFloat("minDB")
         maxDB = bundle.getFloat("maxDB")
@@ -150,9 +147,17 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
 
         lastUpdate = now
         fftSize = magnitudes.size
+
+        update()
+    }
+
+    private fun update() {
         peakMagnitude = Float.NEGATIVE_INFINITY
 
-        for (i in history.indices) {
+        val startIndex = fftSize * (viewFrequencyStart - frequencyStart) / (frequencyEnd - frequencyStart)
+        val endIndex = fftSize * (viewFrequencyEnd - frequencyStart) / (frequencyEnd - frequencyStart)
+
+        for (i in startIndex.toInt() until endIndex.toInt()) {
             if (peakMagnitude < history[i]) {
                 peakMagnitude = history[i]
                 peakIndex = i
@@ -161,10 +166,6 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
 
         peakFrequency = frequencyStart + (frequencyEnd - frequencyStart) * peakIndex / (fftSize - 1)
 
-        update()
-    }
-
-    private fun update() {
         bitmap.eraseColor(Color.TRANSPARENT)
 
         val midPoint = bitmap.width / 2.0f
@@ -201,9 +202,11 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
     }
 
     @Synchronized
-    fun setFrequencyRange(start: Double, end: Double, scale: Float) {
-        frequencyStart = start
-        frequencyEnd = end
+    fun setFrequencyRange(frequencyStart: Double, frequencyEnd: Double, viewFrequencyStart: Double, viewFrequencyEnd: Double, scale: Float) {
+        this.frequencyStart = frequencyStart
+        this.frequencyEnd = frequencyEnd
+        this.viewFrequencyStart = viewFrequencyStart
+        this.viewFrequencyEnd = viewFrequencyEnd
         fftScale = scale
 
         lastUpdate = 0

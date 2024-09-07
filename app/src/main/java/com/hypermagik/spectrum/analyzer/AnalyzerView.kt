@@ -282,7 +282,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val frequencyEnd = viewFrequency + viewBandwidth / 2
 
         grid.setFrequencyRange(frequencyStart, frequencyEnd)
-        peaks.setFrequencyRange(frequencyStart, frequencyEnd, scale.toFloat())
+        peaks.setFrequencyRange(frequency0, frequency1, frequencyStart, frequencyEnd, scale.toFloat())
 
         val dbStart = viewDBCenter - viewDBRange / 2
         val dbEnd = viewDBCenter + viewDBRange / 2
