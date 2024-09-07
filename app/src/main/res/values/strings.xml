@@ -25,10 +25,10 @@
     <string name="menu_sr_61_44M">61.44 Msps</string>
 
     <string name="menu_sample_type">Sample type</string>
-    <string name="menu_sample_type_8s">8-bit signed</string>
-    <string name="menu_sample_type_8u">8-bit unsigned</string>
-    <string name="menu_sample_type_12sp">12-bit signed padded</string>
-    <string name="menu_sample_type_32f">32-bit float</string>
+    <string name="menu_sample_type_s8">8-bit signed</string>
+    <string name="menu_sample_type_u8">8-bit unsigned</string>
+    <string name="menu_sample_type_s12p">12-bit signed padded</string>
+    <string name="menu_sample_type_f32">32-bit float</string>
 
     <string name="menu_fft_size">FFT size</string>
     <string name="menu_fft_window">FFT window</string>

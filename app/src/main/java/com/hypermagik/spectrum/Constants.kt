@@ -1,6 +1,6 @@
 package com.hypermagik.spectrum
 
-import com.hypermagik.spectrum.lib.data.converter.IQConverterFactory
+import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.FFT
 import com.hypermagik.spectrum.source.SourceType
 
@@ -94,10 +94,10 @@ class Constants {
         )
 
         val sampleTypeToMenuItem = mapOf(
-            IQConverterFactory.IQConverterType.IQ8Signed to R.id.menu_sample_type_8s,
-            IQConverterFactory.IQConverterType.IQ8Unsigned to R.id.menu_sample_type_8u,
-            IQConverterFactory.IQConverterType.IQ12SignedPadded to R.id.menu_sample_type_12sp,
-            IQConverterFactory.IQConverterType.IQ32Float to R.id.menu_sample_type_32f,
+            SampleType.S8 to R.id.menu_sample_type_s8,
+            SampleType.U8 to R.id.menu_sample_type_u8,
+            SampleType.S12P to R.id.menu_sample_type_s12p,
+            SampleType.F32 to R.id.menu_sample_type_f32,
         )
     }
 }

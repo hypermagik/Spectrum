@@ -9,17 +9,17 @@
                     android:id="@+id/sample_type_group"
                     android:checkableBehavior="single">
                     <item
-                        android:id="@+id/menu_sample_type_8s"
-                        android:title="@string/menu_sample_type_8s" />
+                        android:id="@+id/menu_sample_type_s8"
+                        android:title="@string/menu_sample_type_s8" />
                     <item
-                        android:id="@+id/menu_sample_type_8u"
-                        android:title="@string/menu_sample_type_8u" />
+                        android:id="@+id/menu_sample_type_u8"
+                        android:title="@string/menu_sample_type_u8" />
                     <item
-                        android:id="@+id/menu_sample_type_12sp"
-                        android:title="@string/menu_sample_type_12sp" />
+                        android:id="@+id/menu_sample_type_s12p"
+                        android:title="@string/menu_sample_type_s12p" />
                     <item
-                        android:id="@+id/menu_sample_type_32f"
-                        android:title="@string/menu_sample_type_32f" />
+                        android:id="@+id/menu_sample_type_f32"
+                        android:title="@string/menu_sample_type_f32" />
                 </group>
             </menu>
         </item>

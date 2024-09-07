@@ -3,7 +3,7 @@ package com.hypermagik.spectrum.lib.data.converter
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import java.nio.ByteBuffer
 
-class IQConverter12SignedPadded : IQConverter {
+class IQConverterS12P : IQConverter {
     private val lookupTable = FloatArray(4096)
 
     init {

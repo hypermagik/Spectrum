@@ -3,7 +3,7 @@ package com.hypermagik.spectrum.lib.data.converter
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import java.nio.ByteBuffer
 
-class IQConverter32Float : IQConverter {
+class IQConverterF32 : IQConverter {
     override fun getSampleSize(): Int {
         return 2 * Float.SIZE_BYTES
     }

@@ -2,7 +2,7 @@ package com.hypermagik.spectrum
 
 import android.app.Activity
 import android.util.Log
-import com.hypermagik.spectrum.lib.data.converter.IQConverterFactory
+import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.FFT.WindowType
 import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.utils.TAG
@@ -15,7 +15,7 @@ class Preferences(private val activity: Activity?) {
     var sourceType = SourceType.ToneGenerator
 
     var iqFile: String? = null
-    var iqFileType: IQConverterFactory.IQConverterType = IQConverterFactory.IQConverterType.IQ8Unsigned
+    var iqFileType: SampleType = SampleType.U8
 
     var recordLocation: String? = null
     var recordLimit = 20000000L
@@ -60,7 +60,7 @@ class Preferences(private val activity: Activity?) {
         activity.getPreferences(Activity.MODE_PRIVATE).run {
             sourceType = SourceType.entries.toTypedArray()[getInt("sourceType", sourceType.ordinal)]
             iqFile = getString("iqFile", iqFile)
-            iqFileType = IQConverterFactory.IQConverterType.entries.toTypedArray()[getInt("iqFileType", iqFileType.ordinal)]
+            iqFileType = SampleType.entries.toTypedArray()[getInt("iqFileType", iqFileType.ordinal)]
             recordLocation = getString("recordLocation", recordLocation)
             recordLimit = getLong("recordLimit", recordLimit)
             frequency = getLong("frequency", frequency)

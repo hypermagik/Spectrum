@@ -5,8 +5,8 @@ import androidx.benchmark.junit4.measureRepeated
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
-import com.hypermagik.spectrum.lib.data.converter.IQConverter12SignedPadded
-import com.hypermagik.spectrum.lib.data.converter.IQConverter8Signed
+import com.hypermagik.spectrum.lib.data.converter.IQConverterS12P
+import com.hypermagik.spectrum.lib.data.converter.IQConverterS8
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -29,7 +29,7 @@ class IQConverter {
 
     @Test
     fun iqConverter8Signed() {
-        val uut = IQConverter8Signed()
+        val uut = IQConverterS8()
 
         val a = ByteArray(samplesPerBuffer * uut.getSampleSize())
         val b = ByteBuffer.wrap(a).order(ByteOrder.nativeOrder())
@@ -49,7 +49,7 @@ class IQConverter {
 
     @Test
     fun iqConverter8SignedLUT() {
-        val uut = IQConverter8Signed()
+        val uut = IQConverterS8()
 
         val a = ByteArray(samplesPerBuffer * uut.getSampleSize())
         val b = ByteBuffer.wrap(a).order(ByteOrder.nativeOrder())
@@ -69,7 +69,7 @@ class IQConverter {
 
     @Test
     fun iqConverter8Unsigned() {
-        val uut = IQConverter8Signed()
+        val uut = IQConverterS8()
 
         val a = ByteArray(samplesPerBuffer * uut.getSampleSize())
         val b = ByteBuffer.wrap(a).order(ByteOrder.nativeOrder())
@@ -89,7 +89,7 @@ class IQConverter {
 
     @Test
     fun iqConverter8UnsignedLUT() {
-        val uut = IQConverter8Signed()
+        val uut = IQConverterS8()
 
         val a = ByteArray(samplesPerBuffer * uut.getSampleSize())
         val b = ByteBuffer.wrap(a).order(ByteOrder.nativeOrder())
@@ -109,7 +109,7 @@ class IQConverter {
 
     @Test
     fun iqConverter12SignedPadded() {
-        val uut = IQConverter12SignedPadded()
+        val uut = IQConverterS12P()
 
         val a = ByteArray(samplesPerBuffer * uut.getSampleSize())
         val b = ByteBuffer.wrap(a).order(ByteOrder.nativeOrder())
@@ -130,7 +130,7 @@ class IQConverter {
 
     @Test
     fun iqConverter12SignedPaddedLUT() {
-        val uut = IQConverter12SignedPadded()
+        val uut = IQConverterS12P()
 
         val a = ByteArray(samplesPerBuffer * uut.getSampleSize())
         val b = ByteBuffer.wrap(a).order(ByteOrder.nativeOrder())
