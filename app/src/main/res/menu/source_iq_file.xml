@@ -9,6 +9,9 @@
                     android:id="@+id/sample_type_group"
                     android:checkableBehavior="single">
                     <item
+                        android:id="@+id/menu_sample_type_none"
+                        android:title="@string/menu_sample_type_auto" />
+                    <item
                         android:id="@+id/menu_sample_type_s8"
                         android:title="@string/menu_sample_type_s8" />
                     <item

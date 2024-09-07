@@ -94,6 +94,7 @@ class Constants {
         )
 
         val sampleTypeToMenuItem = mapOf(
+            SampleType.NONE to R.id.menu_sample_type_none,
             SampleType.S8 to R.id.menu_sample_type_s8,
             SampleType.U8 to R.id.menu_sample_type_u8,
             SampleType.S12P to R.id.menu_sample_type_s12p,

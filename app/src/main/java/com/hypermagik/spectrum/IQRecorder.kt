@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.documentfile.provider.DocumentFile
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.data.SampleType
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -15,8 +16,8 @@ class IQRecorder(private val context: Context, private val preferences: Preferen
     private var stream: FileOutputStream? = null
     private var channel: FileChannel? = null
 
-    fun start(): String? {
-        val fileName = String.format("${preferences.frequency}Hz_${preferences.sampleRate}Sps_${System.currentTimeMillis()}.iq")
+    fun start(sampleType: SampleType): String? {
+        val fileName = String.format("${preferences.frequency}Hz_${preferences.sampleRate}Sps_${sampleType}_${System.currentTimeMillis()}.iq")
 
         val loc = DocumentFile.fromTreeUri(context, Uri.parse(preferences.recordLocation)) ?: return "Failed to open IQ file location."
         val doc = loc.createFile("application/octet-stream", fileName) ?: return "Failed to create IQ file."

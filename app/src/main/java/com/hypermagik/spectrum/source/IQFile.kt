@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.documentfile.provider.DocumentFile
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.data.converter.IQConverter
 import com.hypermagik.spectrum.lib.data.converter.IQConverterFactory
 import com.hypermagik.spectrum.lib.dsp.Utils
@@ -46,6 +47,10 @@ class IQFile(private val context: Context) : Source {
         return SourceType.IQFile
     }
 
+    override fun getSampleType(): SampleType {
+        return SampleType.NONE
+    }
+
     override fun open(preferences: Preferences): String? {
         if (preferences.iqFile == null) {
             return "No IQ file selected."
@@ -79,13 +84,26 @@ class IQFile(private val context: Context) : Source {
             frequency = it.groupValues[1].toLong()
         }
 
+        var sampleType = preferences.iqFileType
+        if (sampleType == SampleType.NONE) {
+            for (type in SampleType.entries) {
+                if (Regex("_${type.name}[_.]").find(name) != null) {
+                    sampleType = type
+                    break
+                }
+            }
+        }
+        if (sampleType == SampleType.NONE) {
+            sampleType = SampleType.U8
+        }
+
         preferences.frequency = frequency
         preferences.sampleRate = sampleRate
         gain = preferences.gain
 
         fileName = name
 
-        converter = IQConverterFactory.create(preferences.iqFileType)
+        converter = IQConverterFactory.create(sampleType)
 
         bufferSize = preferences.getSampleFifoBufferSize() * converter.getSampleSize()
         byteBuffer = ByteBuffer.allocateDirect(bufferSize).order(ByteOrder.LITTLE_ENDIAN)

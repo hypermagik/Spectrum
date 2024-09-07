@@ -382,7 +382,7 @@ class MainActivity : AppCompatActivity() {
         var error: String?
 
         try {
-            error = recorder.start()
+            error = recorder.start(source.getSampleType())
             if (error == null) {
                 recordingState = RecordingState.Running
                 invalidateOptionsMenu()

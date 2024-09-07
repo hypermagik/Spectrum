@@ -25,6 +25,7 @@
     <string name="menu_sr_61_44M">61.44 Msps</string>
 
     <string name="menu_sample_type">Sample type</string>
+    <string name="menu_sample_type_auto">From file name</string>
     <string name="menu_sample_type_s8">8-bit signed</string>
     <string name="menu_sample_type_u8">8-bit unsigned</string>
     <string name="menu_sample_type_s12p">12-bit signed padded</string>

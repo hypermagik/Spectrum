@@ -4,6 +4,7 @@ import android.util.Log
 import com.hypermagik.spectrum.IQRecorder
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.Utils
 import com.hypermagik.spectrum.lib.gen.CW
 import com.hypermagik.spectrum.lib.gen.Noise
@@ -36,6 +37,10 @@ class ToneGenerator(private val recorder: IQRecorder) : Source {
 
     override fun getType(): SourceType {
         return SourceType.ToneGenerator
+    }
+
+    override fun getSampleType(): SampleType {
+        return SampleType.F32
     }
 
     override fun open(preferences: Preferences): String? {
