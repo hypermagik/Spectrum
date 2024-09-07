@@ -91,4 +91,11 @@
             </group>
         </menu>
     </item>
+    <group android:id="@+id/settings_group">
+        <item
+            android:id="@+id/action_recorder_settings"
+            android:orderInCategory="93"
+            android:title="@string/action_recorder_settings"
+            app:showAsAction="never" />
+    </group>
 </menu>

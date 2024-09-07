@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
@@ -12,21 +13,27 @@
         android:orientation="horizontal"
         android:paddingBottom="@dimen/activity_horizontal_margin">
 
-        <EditText
-            android:id="@+id/set_frequency"
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/size_limit" />
+
+        <TextView
+            android:id="@+id/size_limit"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="@string/frequency"
-            android:importantForAutofill="no"
-            android:inputType="numberDecimal" />
+            android:gravity="end" />
     </LinearLayout>
 
-    <TextView
-        android:id="@+id/error"
+    <com.google.android.material.slider.Slider
+        android:id="@+id/size_limit_slider"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:paddingBottom="@dimen/activity_horizontal_margin"
-        android:visibility="gone" />
+        android:layout_marginBottom="@dimen/activity_horizontal_margin"
+        android:stepSize="8"
+        android:valueFrom="8"
+        android:valueTo="1024"
+        app:labelBehavior="gone" />
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -35,18 +42,18 @@
         android:orientation="horizontal">
 
         <Button
-            android:id="@+id/cancel_button"
+            android:id="@+id/choose_location_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginEnd="@dimen/activity_horizontal_margin"
-            android:backgroundTint="@color/gray_button"
-            android:text="@string/cancel" />
+            android:text="@string/choose_location" />
 
         <Button
-            android:id="@+id/apply_button"
+            android:id="@+id/close_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/apply" />
+            android:backgroundTint="@color/gray_button"
+            android:text="@string/close" />
 
     </LinearLayout>
 

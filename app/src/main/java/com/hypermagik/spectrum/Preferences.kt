@@ -18,7 +18,7 @@ class Preferences(private val activity: Activity?) {
     var iqFileType: SampleType = SampleType.U8
 
     var recordLocation: String? = null
-    var recordLimit = 20000000L
+    var recordLimit = 32 * 1024 * 1024L
 
     // Internal use only, not serialized.
     var isRecording = false

@@ -4,15 +4,22 @@
     <string name="apply">Apply</string>
     <string name="start">Start</string>
     <string name="cancel">Cancel</string>
+    <string name="close">Close</string>
 
     <string name="action_play">Play</string>
     <string name="action_pause">Pause</string>
     <string name="action_open">Open IQ file</string>
     <string name="action_record">Record IQ samples</string>
+    <string name="action_recorder_settings">IQ recorder settings</string>
 
     <string name="source">Source</string>
     <string name="menu_source_tone_generator">Tone generator</string>
     <string name="menu_source_iq_file">IQ file</string>
+
+    <string name="frequency">Frequency</string>
+    <string name="set_frequency">Set frequency</string>
+    <string name="menu_set_frequency">Set frequency...</string>
+    <string name="frequency_out_of_range">Frequency out of range.\nValid range is %d Hz to %d Hz.</string>
 
     <string name="menu_sample_rate">Sample rate</string>
     <string name="menu_sr_1M">1.00 Msps</string>
@@ -86,8 +93,8 @@
     <string name="menu_fps_120">120 FPS</string>
     <string name="menu_fps_unlimited">Unlimited</string>
 
-    <string name="frequency">Frequency</string>
-    <string name="set_frequency">Set frequency</string>
-    <string name="menu_set_frequency">Set frequency...</string>
-    <string name="frequency_out_of_range">Frequency out of range.\nValid range is %d Hz to %d Hz.</string>
+    <string name="recorder_settings">Recorder settings</string>
+    <string name="choose_location">Choose location</string>
+    <string name="size_limit">Size limit</string>
+    <string name="megabytes">%d MB</string>
 </resources>

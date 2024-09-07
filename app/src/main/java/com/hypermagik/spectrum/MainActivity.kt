@@ -1,12 +1,17 @@
 package com.hypermagik.spectrum
 
+import android.app.AlertDialog
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuItem
+import android.view.WindowManager
+import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -51,7 +56,7 @@ class MainActivity : AppCompatActivity() {
     private var state = State.Stopped
     private var startOnResume = false
 
-    enum class RecordingState { Running, Stopping, Stopped }
+    enum class RecordingState { Starting, Running, Stopping, Stopped }
 
     private var recorder = IQRecorder(this, preferences)
     private var recordingState = RecordingState.Stopped
@@ -274,6 +279,8 @@ class MainActivity : AppCompatActivity() {
             preferences.fpsLimit = fpsLimit
             preferences.saveNow()
             item.setChecked(true)
+        } else if (item.itemId == R.id.action_recorder_settings) {
+            showRecorderSettings()
         } else if (item.groupId == R.id.frequency_step_group) {
             val frequencyStep = Constants.frequencyStepToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.frequencyStep = frequencyStep
@@ -361,9 +368,39 @@ class MainActivity : AppCompatActivity() {
         preferences.recordLocation = uri.toString()
         preferences.save()
 
-        if (recordingState == RecordingState.Stopped) {
+        if (recordingState == RecordingState.Starting) {
             startRecorder()
         }
+    }
+
+    private fun showRecorderSettings() {
+        val layout = LayoutInflater.from(this).inflate(R.layout.recorder_settings, null)
+
+        val sizeLimit = layout.findViewById<TextView>(R.id.size_limit)?.also {
+            it.text = getString(R.string.megabytes, preferences.recordLimit / 1024 / 1024)
+        }
+
+        val dialog = AlertDialog.Builder(this)
+            .setTitle(R.string.recorder_settings)
+            .setView(layout)
+            .create()
+
+        layout.findViewById<Slider>(R.id.size_limit_slider)?.apply {
+            value = preferences.recordLimit / 1024 / 1024.0f
+            addOnChangeListener { _, value, _ ->
+                sizeLimit?.text = getString(R.string.megabytes, value.toLong())
+                preferences.recordLimit = value.toLong() * 1024 * 1024
+                preferences.save()
+            }
+        }
+
+        layout.findViewById<Button>(R.id.choose_location_button)?.setOnClickListener { openRecordLocation() }
+        layout.findViewById<Button>(R.id.close_button)?.setOnClickListener { dialog.dismiss() }
+
+        dialog.window?.attributes = dialog.window?.attributes?.apply { gravity = android.view.Gravity.BOTTOM }
+        dialog.window?.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_VISIBLE)
+
+        dialog.show()
     }
 
     private fun toggleRecord() {
@@ -371,6 +408,7 @@ class MainActivity : AppCompatActivity() {
             recordingState = RecordingState.Stopping
         } else if (recordingState == RecordingState.Stopped) {
             if (preferences.recordLocation == null) {
+                recordingState = RecordingState.Starting
                 openRecordLocation()
             } else {
                 startRecorder()
@@ -393,6 +431,7 @@ class MainActivity : AppCompatActivity() {
 
         if (error != null) {
             preferences.recordLocation = null
+            recordingState = RecordingState.Stopped
             Log.e(TAG, "Error starting recorder: $error")
             Toast.makeText(this, "Error starting recorder:\n$error", Toast.LENGTH_SHORT).show()
         }
@@ -400,6 +439,8 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkRecorderState() {
         when (recordingState) {
+            RecordingState.Starting -> return
+
             RecordingState.Running -> {
                 if (!recorder.isRecording()) {
                     recordingState = RecordingState.Stopped
