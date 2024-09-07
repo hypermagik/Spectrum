@@ -344,7 +344,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         Log.i(TAG, "Opening source")
-        val error = source.open(preferences)
+        val error = try {
+            source.open(preferences)
+        } catch (e: Exception) {
+            e.message
+        }
         if (error != null) {
             Log.e(TAG, "Error opening source: $error")
             Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
