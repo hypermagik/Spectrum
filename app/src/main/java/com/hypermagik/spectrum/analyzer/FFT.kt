@@ -170,8 +170,7 @@ class FFT(private val context: Context, private val preferences: Preferences) {
     }
 
     private fun updateFFTSize(size: Int) {
-        val bufferSize = vertexBuffer.capacity() / coordsPerVertex / 2 / Float.SIZE_BYTES
-        if (bufferSize != size) {
+        if (fftSize != size) {
             fftSize = size
             createBuffers()
             sizeChanged = true
@@ -200,7 +199,10 @@ class FFT(private val context: Context, private val preferences: Preferences) {
             vertexBuffer.putFloat(bufferIndex, magnitude)
 
             if (peakHoldEnabled) {
-                val peak = peakHoldVertexBuffer.getFloat(bufferIndex)
+                var peak = peakHoldVertexBuffer.getFloat(bufferIndex)
+                if (peak.isNaN() || peak.isInfinite()) {
+                    peak = magnitude
+                }
                 peakHoldVertexBuffer.putFloat(bufferIndex, max(peak * peakHoldDecay, magnitude))
             }
         }

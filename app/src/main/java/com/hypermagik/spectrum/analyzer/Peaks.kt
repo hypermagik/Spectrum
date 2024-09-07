@@ -133,8 +133,14 @@ class Peaks(private val context: Context, private val preferences: Preferences) 
             history = FloatArray(magnitudes.size)
         }
 
+        val peakHoldDecay = 1.0f - preferences.getPeakHoldDecayFactor()
+
         for (i in magnitudes.indices) {
-            history[i] = max(history[i] * 0.95f, magnitudes[i])
+            var peak = history[i]
+            if (peak.isNaN() || peak.isInfinite()) {
+                peak = magnitudes[i]
+            }
+            history[i] = max(peak * peakHoldDecay, magnitudes[i])
         }
 
         val now = System.currentTimeMillis()
