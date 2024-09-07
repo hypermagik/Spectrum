@@ -113,7 +113,8 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
             return
         }
 
-        if (viewHeight != height) {
+        // This might be problematic on big height changes.
+        if (viewHeight == 0) {
             viewHeight = height
             currentLine = 0
             isDirty = true
