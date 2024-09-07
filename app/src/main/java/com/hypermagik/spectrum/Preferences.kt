@@ -116,7 +116,12 @@ class Preferences(private val activity: Activity?) {
     }
 
     fun getSampleFifoBufferSize(): Int {
-        return max(fftSize, 4096)
+        var size = 128 * 1024
+        // At least 120 buffers per second.
+        while (sampleRate / size < 120) {
+            size /= 2
+        }
+        return size
     }
 
     fun getPeakHoldDecayFactor(): Float {
