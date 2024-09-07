@@ -75,6 +75,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         info.setFrequency(preferences.frequency)
         info.setFrequencyLock(isFrequencyLocked)
+        info.setGain(preferences.gain)
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
