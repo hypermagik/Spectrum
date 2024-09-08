@@ -53,7 +53,6 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     private var viewHeight = 0
     private var currentLine = 0
 
-    private var isRunning = false
     private var isVisible: Boolean = context.resources.configuration.orientation == ORIENTATION_PORTRAIT
     private var isDirty = true
 
@@ -122,11 +121,9 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     }
 
     fun start() {
-        isRunning = true
     }
 
     fun stop() {
-        isRunning = false
     }
 
     fun update(magnitudes: FloatArray) {
@@ -145,11 +142,11 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
             isDirty = true
         }
 
+        sampleBuffer.rewind()
+
         for (i in magnitudes) {
             sampleBuffer.putFloat(i)
         }
-
-        sampleBuffer.rewind()
     }
 
     fun draw() {
@@ -184,7 +181,9 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
             GLES20.glUniform1i(uWaterfallHeight, textureHeight)
         }
 
-        if (isRunning) {
+        if (sampleBuffer.position() > 0) {
+            sampleBuffer.rewind()
+
             GLES20.glTexSubImage2D(GL10.GL_TEXTURE_2D, 0, 0, textureHeight - currentLine - 1, fftSize, 1, GLES20.GL_ALPHA, GLES20.GL_FLOAT, sampleBuffer)
 
             currentLine = (currentLine + 1) % textureHeight
