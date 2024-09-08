@@ -11,9 +11,13 @@ class Constants {
             2000000 to R.id.menu_sr_2M,
             5000000 to R.id.menu_sr_5M,
             10000000 to R.id.menu_sr_10M,
+            10240000 to R.id.menu_sr_10_24M,
             20000000 to R.id.menu_sr_20M,
+            20480000 to R.id.menu_sr_20_48M,
             30000000 to R.id.menu_sr_30M,
+            30720000 to R.id.menu_sr_30_72M,
             40000000 to R.id.menu_sr_40M,
+            40960000 to R.id.menu_sr_40_96M,
             61440000 to R.id.menu_sr_61_44M,
         )
 
@@ -86,11 +90,13 @@ class Constants {
         val sourceTypeToMenu = mapOf(
             SourceType.ToneGenerator to R.menu.source_tone_generator,
             SourceType.IQFile to R.menu.source_iq_file,
+            SourceType.BladeRF to R.menu.source_bladerf,
         )
 
         val sourceTypeToMenuItem = mapOf(
             SourceType.ToneGenerator to R.id.menu_source_tone_generator,
             SourceType.IQFile to R.id.menu_source_iq_file,
+            SourceType.BladeRF to R.id.menu_source_bladerf,
         )
 
         val sampleTypeToMenuItem = mapOf(

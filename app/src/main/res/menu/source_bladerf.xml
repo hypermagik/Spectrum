@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/source_bladerf_group"
+        android:orderInCategory="11">
+        <item
+            android:id="@+id/set_frequency"
+            android:title="@string/menu_set_frequency" />
+        <item android:title="@string/menu_sample_rate">
+            <menu>
+                <group
+                    android:id="@id/sample_rate_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_sr_1M"
+                        android:title="@string/menu_sr_1M" />
+                    <item
+                        android:id="@+id/menu_sr_2M"
+                        android:title="@string/menu_sr_2M" />
+                    <item
+                        android:id="@+id/menu_sr_5M"
+                        android:title="@string/menu_sr_5M" />
+                    <item
+                        android:id="@+id/menu_sr_10M"
+                        android:title="@string/menu_sr_10M" />
+                    <item
+                        android:id="@+id/menu_sr_10_24M"
+                        android:title="@string/menu_sr_10_24M" />
+                    <item
+                        android:id="@+id/menu_sr_20M"
+                        android:title="@string/menu_sr_20M" />
+                    <item
+                        android:id="@+id/menu_sr_20_48M"
+                        android:title="@string/menu_sr_20_48M" />
+                    <item
+                        android:id="@+id/menu_sr_30M"
+                        android:title="@string/menu_sr_30M" />
+                    <item
+                        android:id="@+id/menu_sr_30_72M"
+                        android:title="@string/menu_sr_30_72M" />
+                    <item
+                        android:id="@+id/menu_sr_40M"
+                        android:title="@string/menu_sr_40M" />
+                    <item
+                        android:id="@+id/menu_sr_40_96M"
+                        android:title="@string/menu_sr_40_96M" />
+                    <item
+                        android:id="@+id/menu_sr_61_44M"
+                        android:title="@string/menu_sr_61_44M" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:id="@+id/toggle_agc"
+            android:checkable="true"
+            android:title="@string/menu_toggle_agc" />
+    </group>
+</menu>

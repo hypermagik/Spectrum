@@ -1,6 +1,7 @@
 package com.hypermagik.spectrum.source
 
 import android.content.Context
+import android.hardware.usb.UsbDevice
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import android.util.Log
@@ -39,17 +40,10 @@ class IQFile(private val context: Context) : Source {
 
     private val throttle = Throttle()
 
-    override fun getName(): String {
-        return if (fileName.isEmpty()) "IQ file" else "IQ file: $fileName"
-    }
-
-    override fun getType(): SourceType {
-        return SourceType.IQFile
-    }
-
-    override fun getSampleType(): SampleType {
-        return SampleType.NONE
-    }
+    override fun getName(): String = if (fileName.isEmpty()) "IQ file" else "IQ file: $fileName"
+    override fun getType(): SourceType = SourceType.IQFile
+    override fun getSampleType(): SampleType = SampleType.NONE
+    override fun getUsbDevice(): UsbDevice? = null
 
     override fun open(preferences: Preferences): String? {
         if (preferences.iqFile == null) {
@@ -155,7 +149,7 @@ class IQFile(private val context: Context) : Source {
 
     override fun stop() {}
 
-    override fun read(buffer: Complex32Array) {
+    override fun read(output: Complex32Array) {
         val channel = this.channel ?: return
 
         byteBuffer.rewind()
@@ -172,43 +166,33 @@ class IQFile(private val context: Context) : Source {
 
         byteBuffer.rewind()
 
-        converter.convert(byteBuffer, buffer)
+        converter.convert(byteBuffer, output)
 
         if (gain != 0) {
             var mag = Utils.db2mag(abs(gain).toFloat())
             if (gain < 0) {
                 mag = 1.0f / mag
             }
-            for (i in buffer.indices) {
-                buffer[i].re *= mag
-                buffer[i].im *= mag
+            for (i in output.indices) {
+                output[i].re *= mag
+                output[i].im *= mag
             }
         }
 
-        throttle.sync(1000000000L * buffer.size / sampleRate)
+        throttle.sync(1000000000L * output.size / sampleRate)
     }
 
     override fun setFrequency(frequency: Long) {}
 
-    override fun getMinimumFrequency(): Long {
-        return frequency
-    }
-
-    override fun getMaximumFrequency(): Long {
-        return frequency
-    }
+    override fun getMinimumFrequency(): Long = frequency
+    override fun getMaximumFrequency(): Long = frequency
 
     override fun setGain(gain: Int) {
         this.gain = gain
     }
 
-    override fun getMinimumGain(): Int {
-        return -50
-    }
-
-    override fun getMaximumGain(): Int {
-        return 50
-    }
+    override fun getMinimumGain(): Int = -50
+    override fun getMaximumGain(): Int = 50
 
     override fun setAGC(enable: Boolean) {}
 }

@@ -65,4 +65,14 @@ class IQRecorder(private val context: Context, private val preferences: Preferen
             stop()
         }
     }
+
+    fun record(samples: ByteBuffer) {
+        val channel = channel ?: return
+
+        channel.write(samples)
+
+        if (channel.position() >= preferences.recordLimit) {
+            stop()
+        }
+    }
 }

@@ -1,5 +1,6 @@
 package com.hypermagik.spectrum.source
 
+import android.hardware.usb.UsbDevice
 import android.util.Log
 import com.hypermagik.spectrum.IQRecorder
 import com.hypermagik.spectrum.Preferences
@@ -31,17 +32,10 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
 
     private var throttle = Throttle()
 
-    override fun getName(): String {
-        return "Tone generator"
-    }
-
-    override fun getType(): SourceType {
-        return SourceType.ToneGenerator
-    }
-
-    override fun getSampleType(): SampleType {
-        return SampleType.F32
-    }
+    override fun getName(): String = "Tone generator"
+    override fun getType(): SourceType = SourceType.ToneGenerator
+    override fun getSampleType(): SampleType = SampleType.F32
+    override fun getUsbDevice(): UsbDevice? = null
 
     override fun open(preferences: Preferences): String? {
         Log.d(TAG, "Opening ${getName()}")
@@ -84,12 +78,12 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
         Log.d(TAG, "Stopping")
     }
 
-    override fun read(buffer: Complex32Array) {
-        throttle.sync(1000000000L * buffer.size / sampleRate)
+    override fun read(output: Complex32Array) {
+        throttle.sync(1000000000L * output.size / sampleRate)
 
         val frequencyRange = LongRange(currentFrequency - sampleRate / 2, currentFrequency + sampleRate / 2)
 
-        for (sample in buffer) {
+        for (sample in output) {
             noise.getNoise(sample, noiseGain)
 
             for (i in signals.indices) {
@@ -99,7 +93,7 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
             }
         }
 
-        recorder.record(buffer)
+        recorder.record(output)
     }
 
     override fun setFrequency(frequency: Long) {
@@ -112,13 +106,8 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
         }
     }
 
-    override fun getMinimumFrequency(): Long {
-        return initialFrequency - preferences.sourceSettings.sampleRate
-    }
-
-    override fun getMaximumFrequency(): Long {
-        return initialFrequency + preferences.sourceSettings.sampleRate
-    }
+    override fun getMinimumFrequency(): Long = initialFrequency - preferences.sourceSettings.sampleRate
+    override fun getMaximumFrequency(): Long = initialFrequency + preferences.sourceSettings.sampleRate
 
     override fun setGain(gain: Int) {
         for (i in signalGains.indices) {
@@ -126,13 +115,8 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
         }
     }
 
-    override fun getMinimumGain(): Int {
-        return -50
-    }
-
-    override fun getMaximumGain(): Int {
-        return 50
-    }
+    override fun getMinimumGain(): Int = -50
+    override fun getMaximumGain(): Int = 50
 
     override fun setAGC(enable: Boolean) {}
 }

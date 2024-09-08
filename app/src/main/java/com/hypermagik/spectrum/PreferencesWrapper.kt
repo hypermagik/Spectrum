@@ -39,4 +39,17 @@ class PreferencesWrapper {
             return false
         }
     }
+
+    class AGC(private val preferences: Preferences) {
+        var value = preferences.sourceSettings.agc
+
+        fun update(): Boolean {
+            val newValue = preferences.sourceSettings.agc
+            if (value != newValue) {
+                value = newValue
+                return true
+            }
+            return false
+        }
+    }
 }

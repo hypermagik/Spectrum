@@ -17,6 +17,7 @@ class Preferences(private val activity: Activity?) {
     private var allSourceSettings = mapOf(
         SourceType.ToneGenerator to SourceSettings(3000000000L, 1000000, 0, false),
         SourceType.IQFile to SourceSettings(0, 0, 0, false),
+        SourceType.BladeRF to SourceSettings(100000000L, 1000000, 0, false),
     )
 
     var sourceType = SourceType.ToneGenerator

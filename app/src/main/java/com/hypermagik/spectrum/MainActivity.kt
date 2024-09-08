@@ -1,7 +1,9 @@
 package com.hypermagik.spectrum
 
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
+import android.hardware.usb.UsbManager
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
@@ -22,6 +24,7 @@ import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleFIFO
 import com.hypermagik.spectrum.lib.dsp.FFT
+import com.hypermagik.spectrum.source.BladeRF
 import com.hypermagik.spectrum.source.IQFile
 import com.hypermagik.spectrum.source.Source
 import com.hypermagik.spectrum.source.SourceType
@@ -112,6 +115,7 @@ class MainActivity : AppCompatActivity() {
         source = when (preferences.sourceType) {
             SourceType.ToneGenerator -> ToneGenerator(preferences, recorder)
             SourceType.IQFile -> IQFile(this)
+            SourceType.BladeRF -> BladeRF(this, recorder)
         }
 
         supportActionBar!!.subtitle = source.getName()
@@ -214,6 +218,9 @@ class MainActivity : AppCompatActivity() {
         Constants.sampleRateToMenuItem[preferences.sourceSettings.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
+
+        menu.findItem(R.id.toggle_agc)?.setChecked(preferences.sourceSettings.agc)
+
         Constants.sampleTypeToMenuItem[preferences.iqFileType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -278,6 +285,10 @@ class MainActivity : AppCompatActivity() {
                 preferences.saveNow()
             }
             item.setChecked(true)
+        } else if (item.itemId == R.id.toggle_agc) {
+            preferences.sourceSettings.agc = !preferences.sourceSettings.agc
+            preferences.saveNow()
+            item.setChecked(preferences.sourceSettings.agc)
         } else if (item.groupId == R.id.fps_limit_group) {
             val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.fpsLimit = fpsLimit
@@ -477,6 +488,22 @@ class MainActivity : AppCompatActivity() {
             stop(true)
         }
 
+        val usbDevice = source.getUsbDevice()
+        if (usbDevice != null) {
+            val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+            if (!usbManager.hasPermission(usbDevice)) {
+                Permissions.request(this, usbManager, usbDevice) { error ->
+                    if (error != null) {
+                        Log.e(TAG, "Error requesting USB permission: $error")
+                        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+                    } else {
+                        start()
+                    }
+                }
+                return
+            }
+        }
+
         Log.i(TAG, "Opening source")
         val error = try {
             source.open(preferences)
@@ -552,6 +579,7 @@ class MainActivity : AppCompatActivity() {
 
         val frequency = PreferencesWrapper.Frequency(preferences)
         val gain = PreferencesWrapper.Gain(preferences)
+        val agc = PreferencesWrapper.AGC(preferences)
 
         Log.i(TAG, "Starting source")
         source.start()
@@ -575,6 +603,9 @@ class MainActivity : AppCompatActivity() {
             if (gain.update()) {
                 source.setGain(gain.value)
             }
+            if (agc.update()) {
+                source.setAGC(agc.value)
+            }
 
             checkRecorderState()
         }
@@ -586,6 +617,7 @@ class MainActivity : AppCompatActivity() {
 
         Log.i(TAG, "Closing source")
         source.stop()
+        source.close()
 
         Log.d(TAG, "Stopping source thread")
     }
