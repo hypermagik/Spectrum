@@ -224,6 +224,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         info.stop(restart)
         waterfall.stop()
+
+        if (!restart) {
+            requestRender()
+        }
     }
 
     fun setFrequencyRange(minimumFrequency: Long, maximumFrequency: Long) {
