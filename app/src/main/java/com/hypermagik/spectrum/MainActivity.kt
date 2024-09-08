@@ -372,9 +372,6 @@ class MainActivity : AppCompatActivity() {
 
         analyzerThrottle.setFPS(preferences.fpsLimit)
 
-        Log.i(TAG, "Starting source")
-        source.start()
-
         setState(State.Running)
 
         analyzerThread = thread { analyzerThreadFn(source) }
@@ -394,10 +391,6 @@ class MainActivity : AppCompatActivity() {
 
         analyzerThread?.interrupt()
         analyzerThread?.join()
-
-        Log.i(TAG, "Closing source")
-        source.stop()
-        source.close()
 
         sampleFifo.clear()
 
@@ -426,6 +419,9 @@ class MainActivity : AppCompatActivity() {
         val frequency = PreferencesWrapper.Frequency(preferences)
         val gain = PreferencesWrapper.Gain(preferences)
 
+        Log.i(TAG, "Starting source")
+        source.start()
+
         while (state == State.Running) {
             try {
                 val buffer = sampleFifo.getPushBuffer()
@@ -446,6 +442,9 @@ class MainActivity : AppCompatActivity() {
                 source.setGain(gain.value)
             }
         }
+
+        Log.i(TAG, "Closing source")
+        source.stop()
 
         Log.d(TAG, "Stopping source thread")
     }
