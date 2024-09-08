@@ -50,8 +50,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var sampleRate = PreferencesWrapper.SampleRate(preferences)
     private var gain = PreferencesWrapper.Gain(preferences)
 
-    private var viewFrequency = preferences.frequency.toDouble()
-    private var viewBandwidth = preferences.sampleRate.toDouble()
+    private var viewFrequency = preferences.sourceSettings.frequency.toDouble()
+    private var viewBandwidth = preferences.sourceSettings.sampleRate.toDouble()
     private var viewDBCenter = preferences.dbCenter
     private var viewDBRange = preferences.dbRange
 
@@ -73,9 +73,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         gestureDetector = GestureDetector(context, gestureHandler)
         gestureDetector.setOnDoubleTapListener(gestureHandler)
 
-        info.setFrequency(preferences.frequency)
+        info.setFrequency(preferences.sourceSettings.frequency)
         info.setFrequencyLock(isFrequencyLocked)
-        info.setGain(preferences.gain)
+        info.setGain(preferences.sourceSettings.gain)
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
@@ -206,8 +206,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         frequency.update()
 
         if (sampleRate.update()) {
-            viewFrequency = preferences.frequency.toDouble()
-            viewBandwidth = preferences.sampleRate.toDouble()
+            viewFrequency = preferences.sourceSettings.frequency.toDouble()
+            viewBandwidth = preferences.sourceSettings.sampleRate.toDouble()
         }
 
         if (isReady) {
@@ -354,7 +354,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 var newFrequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
                 newFrequency = newFrequency.coerceIn(minFrequency, maxFrequency)
 
-                preferences.frequency = newFrequency
+                preferences.sourceSettings.frequency = newFrequency
                 preferences.save()
 
                 frequency.update()
@@ -450,7 +450,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             return
         }
 
-        preferences.frequency = newFrequency.toLong()
+        preferences.sourceSettings.frequency = newFrequency.toLong()
         preferences.save()
 
         if (isRunning) {

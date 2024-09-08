@@ -46,16 +46,17 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
     override fun open(preferences: Preferences): String? {
         Log.d(TAG, "Opening ${getName()}")
 
-        if (!supportedSampleRates.contains(preferences.sampleRate)) {
-            preferences.sampleRate = supportedSampleRates[0]
-        }
-        sampleRate = preferences.sampleRate
-
-        if (preferences.frequency < getMinimumFrequency() || getMaximumFrequency() < preferences.frequency) {
-            preferences.frequency = initialFrequency
+        if (!supportedSampleRates.contains(preferences.sourceSettings.sampleRate)) {
+            preferences.sourceSettings.sampleRate = supportedSampleRates[0]
             preferences.save()
         }
-        currentFrequency = preferences.frequency
+        sampleRate = preferences.sourceSettings.sampleRate
+
+        if (preferences.sourceSettings.frequency < getMinimumFrequency() || getMaximumFrequency() < preferences.sourceSettings.frequency) {
+            preferences.sourceSettings.frequency = initialFrequency
+            preferences.save()
+        }
+        currentFrequency = preferences.sourceSettings.frequency
 
         signalFrequencies = LongArray(initialSignalFrequencies.size) { i -> initialSignalFrequencies[i] + initialFrequency }
 
@@ -65,7 +66,7 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
         for (i in signals.indices) {
             signals[i].setFrequency(initialSignalFrequencies[i] + initialFrequency - currentFrequency)
             signals[i].setModulatedFrequency((modulatedFrequencies[i] * sampleRate / 1e6).toLong())
-            signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.gain)
+            signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.sourceSettings.gain)
         }
 
         return null
@@ -112,11 +113,11 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
     }
 
     override fun getMinimumFrequency(): Long {
-        return initialFrequency - preferences.sampleRate
+        return initialFrequency - preferences.sourceSettings.sampleRate
     }
 
     override fun getMaximumFrequency(): Long {
-        return initialFrequency + preferences.sampleRate
+        return initialFrequency + preferences.sourceSettings.sampleRate
     }
 
     override fun setGain(gain: Int) {

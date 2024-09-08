@@ -17,7 +17,7 @@ class IQRecorder(private val context: Context, private val preferences: Preferen
     private var channel: FileChannel? = null
 
     fun start(sampleType: SampleType): String? {
-        val fileName = String.format("${preferences.frequency}Hz_${preferences.sampleRate}Sps_${sampleType}_${System.currentTimeMillis()}.iq")
+        val fileName = String.format("${preferences.sourceSettings.frequency}Hz_${preferences.sourceSettings.sampleRate}Sps_${sampleType}_${System.currentTimeMillis()}.iq")
 
         val loc = DocumentFile.fromTreeUri(context, Uri.parse(preferences.recordLocation)) ?: return "Failed to open IQ file location."
         val doc = loc.createFile("application/octet-stream", fileName) ?: return "Failed to create IQ file."

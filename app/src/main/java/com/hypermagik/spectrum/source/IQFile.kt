@@ -97,9 +97,9 @@ class IQFile(private val context: Context) : Source {
             sampleType = SampleType.U8
         }
 
-        preferences.frequency = frequency
-        preferences.sampleRate = sampleRate
-        gain = preferences.gain
+        preferences.sourceSettings.frequency = frequency
+        preferences.sourceSettings.sampleRate = sampleRate
+        gain = preferences.sourceSettings.gain
 
         fileName = name
 

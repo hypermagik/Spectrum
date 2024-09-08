@@ -9,10 +9,22 @@ import com.hypermagik.spectrum.utils.TAG
 import java.util.Timer
 import java.util.TimerTask
 import kotlin.concurrent.schedule
-import kotlin.math.max
 
 class Preferences(private val activity: Activity?) {
+
+    data class SourceSettings(var frequency: Long, var sampleRate: Int, var gain: Int, var agc: Boolean)
+
+    private var allSourceSettings = mapOf(
+        SourceType.ToneGenerator to SourceSettings(3000000000L, 1000000, 0, false),
+        SourceType.IQFile to SourceSettings(0, 0, 0, false),
+    )
+
     var sourceType = SourceType.ToneGenerator
+        set(value) {
+            field = value
+            sourceSettings = allSourceSettings[value]!!
+        }
+    var sourceSettings = allSourceSettings[sourceType]!!
 
     var iqFile: String? = null
     var iqFileType: SampleType = SampleType.U8
@@ -22,11 +34,6 @@ class Preferences(private val activity: Activity?) {
 
     // Internal use only, not serialized.
     var isRecording = false
-
-    var frequency = 3000000000L
-    var sampleRate = 1000000
-    var gain = 0
-    var agc = false
 
     var frequencyStep = 1000
 
@@ -59,14 +66,17 @@ class Preferences(private val activity: Activity?) {
 
         activity.getPreferences(Activity.MODE_PRIVATE).run {
             sourceType = SourceType.entries.toTypedArray()[getInt("sourceType", sourceType.ordinal)]
+            for (key in allSourceSettings.keys) {
+                val settings = allSourceSettings[key]!!
+                settings.frequency = getLong("$key-frequency", settings.frequency)
+                settings.sampleRate = getInt("$key-sampleRate", settings.sampleRate)
+                settings.gain = getInt("$key-gain", settings.gain)
+                settings.agc = getBoolean("$key-agc", settings.agc)
+            }
             iqFile = getString("iqFile", iqFile)
             iqFileType = SampleType.entries.toTypedArray()[getInt("iqFileType", iqFileType.ordinal)]
             recordLocation = getString("recordLocation", recordLocation)
             recordLimit = getLong("recordLimit", recordLimit)
-            frequency = getLong("frequency", frequency)
-            sampleRate = getInt("sampleRate", sampleRate)
-            gain = getInt("gain", gain)
-            agc = getBoolean("agc", agc)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             dbCenter = getFloat("dbCenter", dbCenter)
@@ -79,6 +89,8 @@ class Preferences(private val activity: Activity?) {
             frequencyStep = getInt("frequencyStep", frequencyStep)
             fpsLimit = getInt("fpsLimit", fpsLimit)
         }
+
+        sourceSettings = allSourceSettings[sourceType]!!
     }
 
     private fun saveIt() {
@@ -90,14 +102,17 @@ class Preferences(private val activity: Activity?) {
 
         activity.getPreferences(Activity.MODE_PRIVATE).edit().run {
             putInt("sourceType", sourceType.ordinal)
+            for (key in allSourceSettings.keys) {
+                val settings = allSourceSettings[key]!!
+                putLong("$key-frequency", settings.frequency)
+                putInt("$key-sampleRate", settings.sampleRate)
+                putInt("$key-gain", settings.gain)
+                putBoolean("$key-agc", settings.agc)
+            }
             putString("iqFile", iqFile)
             putInt("iqFileType", iqFileType.ordinal)
             putString("recordLocation", recordLocation)
             putLong("recordLimit", recordLimit)
-            putLong("frequency", frequency)
-            putInt("sampleRate", sampleRate)
-            putInt("gain", gain)
-            putBoolean("agc", agc)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
             putFloat("dbCenter", dbCenter)
@@ -128,7 +143,7 @@ class Preferences(private val activity: Activity?) {
     fun getSampleFifoBufferSize(): Int {
         var size = 128 * 1024
         // At least 120 buffers per second.
-        while (sampleRate / size < 120) {
+        while (sourceSettings.sampleRate / size < 120) {
             size /= 2
         }
         return size

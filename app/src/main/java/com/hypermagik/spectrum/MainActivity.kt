@@ -74,6 +74,14 @@ class MainActivity : AppCompatActivity() {
 
         preferences.load()
 
+        gainSlider = binding.appBarMain.gainSlider.apply {
+            isEnabled = false
+            addOnChangeListener { _, value, _ ->
+                preferences.sourceSettings.gain = value.toInt()
+                preferences.save()
+            }
+        }
+
         createSource(true)
 
         fft = FFT(preferences.fftSize, preferences.fftWindowType)
@@ -88,18 +96,6 @@ class MainActivity : AppCompatActivity() {
         analyzerFrame = binding.appBarMain.analyzerFrame
         analyzerFrame.setBackgroundColor(resources.getColor(R.color.black, null))
         analyzerFrame.addView(analyzerView)
-
-        gainSlider = binding.appBarMain.gainSlider.apply {
-            isEnabled = false
-            valueFrom = source.getMinimumGain().toFloat()
-            valueTo = source.getMaximumGain().toFloat()
-            value = preferences.gain.toFloat()
-
-            addOnChangeListener { _, value, _ ->
-                preferences.gain = value.toInt()
-                preferences.save()
-            }
-        }
 
         if (savedInstanceState != null) {
             startOnResume = savedInstanceState.getBoolean("startOnResume", false)
@@ -123,6 +119,10 @@ class MainActivity : AppCompatActivity() {
         if (!force) {
             analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
         }
+
+        gainSlider.valueFrom = source.getMinimumGain().toFloat()
+        gainSlider.valueTo = source.getMaximumGain().toFloat()
+        gainSlider.value = preferences.sourceSettings.gain.toFloat()
     }
 
     override fun onResume() {
@@ -211,7 +211,7 @@ class MainActivity : AppCompatActivity() {
         Constants.sourceTypeToMenuItem[source.getType()]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.sampleRateToMenuItem[preferences.sampleRate]?.also {
+        Constants.sampleRateToMenuItem[preferences.sourceSettings.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
         Constants.sampleTypeToMenuItem[preferences.iqFileType]?.also {
@@ -267,7 +267,7 @@ class MainActivity : AppCompatActivity() {
         } else if (item.groupId == R.id.sample_rate_group) {
             val sampleRate = Constants.sampleRateToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
-                preferences.sampleRate = sampleRate
+                preferences.sourceSettings.sampleRate = sampleRate
                 preferences.saveNow()
             }
             item.setChecked(true)

@@ -2,10 +2,10 @@ package com.hypermagik.spectrum
 
 class PreferencesWrapper {
     class Frequency(private val preferences: Preferences) {
-        var value = preferences.frequency
+        var value = preferences.sourceSettings.frequency
 
         fun update(): Boolean {
-            val newValue = preferences.frequency
+            val newValue = preferences.sourceSettings.frequency
             if (value != newValue) {
                 value = newValue
                 return true
@@ -15,10 +15,10 @@ class PreferencesWrapper {
     }
 
     class SampleRate(private val preferences: Preferences) {
-        var value = preferences.sampleRate
+        var value = preferences.sourceSettings.sampleRate
 
         fun update(): Boolean {
-            val newValue = preferences.sampleRate
+            val newValue = preferences.sourceSettings.sampleRate
             if (value != newValue) {
                 value = newValue
                 return true
@@ -28,10 +28,10 @@ class PreferencesWrapper {
     }
 
     class Gain(private val preferences: Preferences) {
-        var value = preferences.gain
+        var value = preferences.sourceSettings.gain
 
         fun update(): Boolean {
-            val newValue = preferences.gain
+            val newValue = preferences.sourceSettings.gain
             if (value != newValue) {
                 value = newValue
                 return true
