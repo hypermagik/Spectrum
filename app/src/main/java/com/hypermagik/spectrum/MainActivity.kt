@@ -114,11 +114,15 @@ class MainActivity : AppCompatActivity() {
         stop(false)
 
         source = when (preferences.sourceType) {
-            SourceType.ToneGenerator -> ToneGenerator(recorder)
+            SourceType.ToneGenerator -> ToneGenerator(preferences, recorder)
             SourceType.IQFile -> IQFile(this)
         }
 
         supportActionBar!!.subtitle = source.getName()
+
+        if (!force) {
+            analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
+        }
     }
 
     override fun onResume() {

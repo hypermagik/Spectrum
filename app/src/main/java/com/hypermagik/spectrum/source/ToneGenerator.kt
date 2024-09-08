@@ -11,7 +11,7 @@ import com.hypermagik.spectrum.lib.gen.Noise
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
 
-class ToneGenerator(private val recorder: IQRecorder) : Source {
+class ToneGenerator(private val preferences: Preferences, private val recorder: IQRecorder) : Source {
     private var initialFrequency: Long = 3e9.toLong()
     private var currentFrequency: Long = initialFrequency
 
@@ -112,11 +112,11 @@ class ToneGenerator(private val recorder: IQRecorder) : Source {
     }
 
     override fun getMinimumFrequency(): Long {
-        return initialFrequency - sampleRate
+        return initialFrequency - preferences.sampleRate
     }
 
     override fun getMaximumFrequency(): Long {
-        return initialFrequency + sampleRate
+        return initialFrequency + preferences.sampleRate
     }
 
     override fun setGain(gain: Int) {

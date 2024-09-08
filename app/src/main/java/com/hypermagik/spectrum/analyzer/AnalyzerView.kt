@@ -441,6 +441,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             newFrequency *= 1000000.0
         }
 
+        // TODO: should query the source here to make sure it's in range.
         if (newFrequency < minFrequency || newFrequency > maxFrequency) {
             layout.findViewById<TextView>(R.id.error)?.apply {
                 text = context.getString(R.string.frequency_out_of_range, minFrequency, maxFrequency)
