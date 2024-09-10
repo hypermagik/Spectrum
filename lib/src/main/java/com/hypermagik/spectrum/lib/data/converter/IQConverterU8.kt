@@ -18,8 +18,8 @@ class IQConverterU8 : IQConverter {
 
     override fun convert(b: ByteBuffer, c: Complex32Array) {
         for (i in c.indices) {
-            c[i].re = b.get().toUByte().toInt() - 127.5f / 128.0f
-            c[i].im = b.get().toUByte().toInt() - 127.5f / 128.0f
+            c[i].re = (b.get().toUByte().toInt() - 127.5f) / 128.0f
+            c[i].im = (b.get().toUByte().toInt() - 127.5f) / 128.0f
         }
     }
 
