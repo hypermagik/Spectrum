@@ -37,6 +37,7 @@ import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
+    private lateinit var toast: Toast
     private lateinit var analyzerFrame: FrameLayout
     private lateinit var gainSlider: Slider
 
@@ -76,6 +77,8 @@ class MainActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         setSupportActionBar(binding.appBarMain.toolbar)
+
+        toast = Toast(this)
 
         preferences.load()
 
@@ -166,6 +169,11 @@ class MainActivity : AppCompatActivity() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         analyzerView.restoreInstanceState(savedInstanceState)
+    }
+
+    private fun toast(message: String) {
+        toast.cancel()
+        toast = Toast.makeText(this, message, Toast.LENGTH_SHORT).also { it.show() }
     }
 
     private fun updateActionBarSubtitle() {
@@ -460,14 +468,15 @@ class MainActivity : AppCompatActivity() {
                 invalidateOptionsMenu()
             }
         } catch (e: Exception) {
-            error = e.message
+            Log.e(TAG, "Exception thrown while starting recorder", e)
+            error = "Exception thrown"
         }
 
         if (error != null) {
             preferences.recordLocation = null
             recordingState = RecordingState.Stopped
             Log.e(TAG, "Error starting recorder: $error")
-            Toast.makeText(this, "Error starting recorder:\n$error", Toast.LENGTH_SHORT).show()
+            toast(error)
         }
     }
 
@@ -513,7 +522,7 @@ class MainActivity : AppCompatActivity() {
                 Permissions.request(this, usbManager, usbDevice) { error ->
                     if (error != null) {
                         Log.e(TAG, "Error requesting USB permission: $error")
-                        Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+                        toast(error)
                     } else {
                         start()
                     }
@@ -523,14 +532,17 @@ class MainActivity : AppCompatActivity() {
         }
 
         Log.i(TAG, "Opening source")
-        val error = try {
-            source.open(preferences)
+        var error: String?
+        try {
+            error = source.open(preferences)
         } catch (e: Exception) {
-            e.message
+            Log.e(TAG, "Exception thrown while opening source", e)
+            error = "Exception thrown"
         }
+
         if (error != null) {
             Log.e(TAG, "Error opening source: $error")
-            Toast.makeText(this, error, Toast.LENGTH_SHORT).show()
+            toast(error)
             return
         }
 
@@ -620,9 +632,9 @@ class MainActivity : AppCompatActivity() {
             } catch (e: InterruptedException) {
                 break
             } catch (e: Exception) {
-                Log.e(TAG, "Error while reading from source", e)
+                Log.e(TAG, "Exception thrown while reading from source", e)
                 runOnUiThread {
-                    Toast.makeText(this, "Error while reading from source", Toast.LENGTH_SHORT).show()
+                    toast("Error while reading from source")
                     stop(false)
                 }
                 break
