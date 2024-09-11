@@ -122,14 +122,11 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateActionBarSubtitle()
+        updateGainSlider()
 
         if (!force) {
             analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
         }
-
-        gainSlider.valueFrom = source.getMinimumGain().toFloat()
-        gainSlider.valueTo = source.getMaximumGain().toFloat()
-        gainSlider.value = preferences.sourceSettings.gain.toFloat()
     }
 
     override fun onResume() {
@@ -178,6 +175,14 @@ class MainActivity : AppCompatActivity() {
             val sampleRate = DecimalFormat("0.###").format(preferences.sourceSettings.sampleRate / 1e6f)
             supportActionBar!!.subtitle = String.format("${source.getName()} @ %s Msps", sampleRate)
         }
+    }
+
+    private fun updateGainSlider() {
+        gainSlider.isEnabled = state == State.Running && !preferences.sourceSettings.agc
+
+        gainSlider.valueFrom = source.getMinimumGain().toFloat()
+        gainSlider.valueTo = source.getMaximumGain().toFloat()
+        gainSlider.value = preferences.sourceSettings.gain.toFloat()
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -302,6 +307,7 @@ class MainActivity : AppCompatActivity() {
             preferences.sourceSettings.agc = !preferences.sourceSettings.agc
             preferences.saveNow()
             item.setChecked(preferences.sourceSettings.agc)
+            updateGainSlider()
         } else if (item.groupId == R.id.fps_limit_group) {
             val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.fpsLimit = fpsLimit
@@ -491,9 +497,8 @@ class MainActivity : AppCompatActivity() {
 
         this.state = state
 
+        updateGainSlider()
         updateOptionsMenu()
-
-        gainSlider.isEnabled = state == State.Running
     }
 
     private fun start() {
