@@ -18,7 +18,7 @@ const float M_2_TO_MINUS_23 = 0.00000011920929;
 void drawWaterfall();
 
 void main() {
-    if (sampleTexture == 2) {
+    if (sampleTexture >= 2) {
         drawWaterfall();
     } else if (sampleTexture == 1) {
         gl_FragColor = texture2D(uTexture, vTexCoord);
@@ -27,8 +27,15 @@ void main() {
     }
 }
 
+float rgba2float(vec4 rgba);
+
 void drawWaterfall() {
-    float value = texture2D(uTexture, vTexCoord).a;
+    float value;
+    if (sampleTexture == 2) {
+        value = rgba2float(texture2D(uTexture, vTexCoord));
+    } else {
+        value = texture2D(uTexture, vTexCoord).a;
+    }
 
     // Convert to dB.
     value = 20.0 * log(value) * M_1_OVER_LN10;

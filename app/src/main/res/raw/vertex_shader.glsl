@@ -22,7 +22,7 @@ void drawFFT();
 void drawWaterfall();
 
 void main() {
-    if (sampleTexture == 2) {
+    if (sampleTexture >= 2) {
         drawWaterfall();
         return;
     }

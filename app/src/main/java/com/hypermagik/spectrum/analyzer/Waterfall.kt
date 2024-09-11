@@ -8,13 +8,17 @@ import android.opengl.GLES10
 import android.opengl.GLES20
 import android.opengl.GLUtils
 import android.util.JsonReader
+import android.util.Log
 import com.hypermagik.spectrum.Constants
 import com.hypermagik.spectrum.Preferences
+import com.hypermagik.spectrum.utils.TAG
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import javax.microedition.khronos.opengles.GL10
 
 class Waterfall(private val context: Context, private val preferences: Preferences) {
+    private var useFloatTexture = false
+
     private var vPosition: Int = 0
     private var aTexCoord: Int = 0
     private var uSampleTexture: Int = 0
@@ -105,6 +109,12 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         GLES20.glGenTextures(2, textures, 0)
 
         GLES20.glUniform1i(uWaterfallSampler, 1)
+
+        val extensions = GLES20.glGetString(GLES20.GL_EXTENSIONS)
+        if (extensions.contains("GL_OES_texture_float")) {
+            Log.i(TAG, "Using float textures")
+            useFloatTexture = true
+        }
     }
 
     fun onSurfaceChanged(height: Int) {
@@ -175,7 +185,11 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
             currentLine = 0
 
             val clearBuffer = ByteBuffer.allocateDirect(fftSize * textureHeight * Float.SIZE_BYTES)
-            GLES20.glTexImage2D(GL10.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, fftSize, textureHeight, 0, GLES20.GL_ALPHA, GLES10.GL_FLOAT, clearBuffer)
+            if (useFloatTexture) {
+                GLES20.glTexImage2D(GL10.GL_TEXTURE_2D, 0, GLES20.GL_ALPHA, fftSize, textureHeight, 0, GLES20.GL_ALPHA, GLES10.GL_FLOAT, clearBuffer)
+            } else {
+                GLES20.glTexImage2D(GL10.GL_TEXTURE_2D, 0, GLES20.GL_RGBA, fftSize, textureHeight, 0, GLES20.GL_RGBA, GLES10.GL_UNSIGNED_BYTE, clearBuffer)
+            }
 
             GLES20.glUniform1i(uWaterfallHeight, textureHeight)
         }
@@ -183,7 +197,13 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         if (sampleBuffer.position() > 0) {
             sampleBuffer.rewind()
 
-            GLES20.glTexSubImage2D(GL10.GL_TEXTURE_2D, 0, 0, textureHeight - currentLine - 1, fftSize, 1, GLES20.GL_ALPHA, GLES20.GL_FLOAT, sampleBuffer)
+            val yOffset = textureHeight - currentLine - 1
+
+            if (useFloatTexture) {
+                GLES20.glTexSubImage2D(GL10.GL_TEXTURE_2D, 0, 0, yOffset, fftSize, 1, GLES20.GL_ALPHA, GLES20.GL_FLOAT, sampleBuffer)
+            } else {
+                GLES20.glTexSubImage2D(GL10.GL_TEXTURE_2D, 0, 0, yOffset, fftSize, 1, GLES20.GL_RGBA, GLES20.GL_UNSIGNED_BYTE, sampleBuffer)
+            }
 
             currentLine = (currentLine + 1) % textureHeight
             GLES20.glUniform1i(uWaterfallOffset, currentLine)
@@ -205,7 +225,7 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
             GLUtils.texImage2D(GL10.GL_TEXTURE_2D, 0, bitmap, 0)
         }
 
-        GLES20.glUniform1i(uSampleTexture, 2)
+        GLES20.glUniform1i(uSampleTexture, if (useFloatTexture) 3 else 2)
 
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_FAN, drawOrder.size, GLES20.GL_UNSIGNED_SHORT, drawOrderBuffer)
 
