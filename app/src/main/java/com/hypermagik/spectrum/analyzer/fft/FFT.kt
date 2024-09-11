@@ -1,4 +1,4 @@
-package com.hypermagik.spectrum.analyzer
+package com.hypermagik.spectrum.analyzer.fft
 
 import android.content.Context
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -10,11 +10,15 @@ import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.R
+import com.hypermagik.spectrum.analyzer.Info
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import kotlin.math.max
 
 class FFT(private val context: Context, private val preferences: Preferences) {
+    val grid = Grid(context, this)
+    private val peaks = Peaks(context, this)
+
     private var vPosition: Int = 0
     private var vColor: Int = 0
 
@@ -26,7 +30,7 @@ class FFT(private val context: Context, private val preferences: Preferences) {
     private var uFFTMinDB: Int = 0
     private var uFFTMaxDB: Int = 0
 
-    private var coordsPerVertex = 3
+    val coordsPerVertex = 3
 
     private var color: FloatArray
     private var fillColor: FloatArray
@@ -38,14 +42,26 @@ class FFT(private val context: Context, private val preferences: Preferences) {
 
     private val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
 
-    private var fftSize = preferences.fftSize
-    private var viewHeight = 0
-    private var xScale = 1.0f
+    var fftSize = preferences.fftSize
+        private set
+    var viewWidth = 0
+        private set
+    var viewHeight = 0
+        private set
+    var xScale = 1.0f
+        private set
+
     private var xTranslate = 0.0f
-    private var minY = 0.0f
-    private var maxY = 1.0f
-    private var minDB = 0.0f
-    private var maxDB = 100.0f
+
+    var minY = 0.0f
+        private set
+    var maxY = 1.0f
+        private set
+    var minDB = 0.0f
+        private set
+    var maxDB = 100.0f
+        private set
+
     private var sizeChanged = true
     private var scaleChanged = true
 
@@ -61,7 +77,7 @@ class FFT(private val context: Context, private val preferences: Preferences) {
     }
 
     private fun createBuffers() {
-        val vboCapacity = preferences.fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
+        val vboCapacity = fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
         vertexBuffer = ByteBuffer.allocateDirect(vboCapacity).order(ByteOrder.nativeOrder())
 
         for (i in 0 until fftSize) {
@@ -117,6 +133,10 @@ class FFT(private val context: Context, private val preferences: Preferences) {
         fillDrawOrderBuffer.rewind()
     }
 
+    fun getBufferForPeaks(): ByteBuffer {
+        return if (preferences.peakHoldEnabled) peakHoldVertexBuffer else vertexBuffer
+    }
+
     fun onSurfaceCreated(program: Int) {
         vPosition = GLES20.glGetAttribLocation(program, "vPosition")
         vColor = GLES20.glGetUniformLocation(program, "vColor")
@@ -128,9 +148,14 @@ class FFT(private val context: Context, private val preferences: Preferences) {
         uFFTMaxY = GLES20.glGetUniformLocation(program, "fftMaxY")
         uFFTMinDB = GLES20.glGetUniformLocation(program, "fftMinDB")
         uFFTMaxDB = GLES20.glGetUniformLocation(program, "fftMaxDB")
+
+        grid.onSurfaceCreated(program)
+        peaks.onSurfaceCreated(program)
     }
 
-    fun onSurfaceChanged(height: Int) {
+    fun onSurfaceChanged(width: Int, height: Int) {
+        viewWidth = width
+
         if (viewHeight != height) {
             viewHeight = height
 
@@ -141,6 +166,8 @@ class FFT(private val context: Context, private val preferences: Preferences) {
         }
 
         updateFFTSize(fftSize)
+
+        grid.onSurfaceChanged(width, height)
     }
 
     fun saveInstanceState(bundle: Bundle) {
@@ -208,21 +235,33 @@ class FFT(private val context: Context, private val preferences: Preferences) {
         }
 
         vertexBuffer.rewind()
+
+        if (preferences.peakIndicatorEnabled) {
+            peaks.update()
+        }
     }
 
-    fun updateX(scale: Float, translate: Float) {
-        this.xScale = scale
-        this.xTranslate = translate
+    fun updateX(scale: Float, translate: Float, sourceMinFrequency: Double, sourceMaxFrequency: Double, viewMinFrequency: Double, viewMaxFrequency: Double) {
+        xScale = scale
+        xTranslate = translate
         scaleChanged = true
+
+        grid.setFrequencyRange(viewMinFrequency, viewMaxFrequency)
+        peaks.setFrequencyRange(sourceMinFrequency, sourceMaxFrequency, viewMinFrequency, viewMaxFrequency)
     }
 
     fun updateY(minDB: Float, maxDB: Float) {
         this.minDB = minDB
         this.maxDB = maxDB
         scaleChanged = true
+
+        grid.updateY()
+        peaks.forceUpdate()
     }
 
     fun draw() {
+        grid.drawBackground()
+
         if (sizeChanged) {
             sizeChanged = false
             GLES20.glUniform1i(uFFTSize, fftSize)
@@ -263,5 +302,11 @@ class FFT(private val context: Context, private val preferences: Preferences) {
         }
 
         GLES20.glDisableVertexAttribArray(vPosition)
+
+        if (preferences.peakIndicatorEnabled) {
+            peaks.draw()
+        }
+
+        grid.drawLabels()
     }
 }

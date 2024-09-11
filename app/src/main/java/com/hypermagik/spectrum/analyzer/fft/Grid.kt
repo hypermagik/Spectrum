@@ -1,4 +1,4 @@
-package com.hypermagik.spectrum.analyzer
+package com.hypermagik.spectrum.analyzer.fft
 
 import android.content.Context
 import android.content.res.Configuration.ORIENTATION_LANDSCAPE
@@ -6,11 +6,13 @@ import android.graphics.DashPathEffect
 import android.graphics.Paint
 import android.graphics.Rect
 import com.hypermagik.spectrum.R
+import com.hypermagik.spectrum.analyzer.Info
+import com.hypermagik.spectrum.analyzer.Texture
 import java.util.Locale
 import kotlin.math.min
 import kotlin.math.round
 
-class Grid(val context: Context) {
+class Grid(val context: Context, private val fft: FFT) {
     private val lineColor: Int = context.resources.getColor(R.color.fft_grid_line, null)
     private var textColor: Int = context.resources.getColor(R.color.fft_grid_text, null)
     private var backgroundColor: Int = context.resources.getColor(R.color.fft_grid_background, null)
@@ -190,18 +192,18 @@ class Grid(val context: Context) {
     }
 
     @Synchronized
-    fun setDBRange(start: Float, end: Float) {
+    fun updateY() {
         var step = 1
-        val range = round(end - start)
+        val range = round(fft.maxDB - fft.minDB)
         while (range / step > yMaxLines) {
             step += 1
         }
 
         yCount = 0
         val usableHeight = height - top
-        val pixelsPerUnit = usableHeight / (end - start)
+        val pixelsPerUnit = usableHeight / (fft.maxDB - fft.minDB)
 
-        var i = end - (end - (step - 1) + step * if (end > 0) 1 else 0).toInt() / step * step.toFloat()
+        var i = fft.maxDB - (fft.maxDB - (step - 1) + step * if (fft.maxDB > 0) 1 else 0).toInt() / step * step.toFloat()
         while (i < range) {
             // Don't draw over the other axis' labels.
             val y = top + i * pixelsPerUnit
@@ -209,7 +211,7 @@ class Grid(val context: Context) {
                 break
             }
             yCoord[yCount] = y
-            yText[yCount] = String.format(Locale.getDefault(), "%.0f", end - i)
+            yText[yCount] = String.format(Locale.getDefault(), "%.0f", fft.maxDB - i)
             yCount += 1
             i += step
         }

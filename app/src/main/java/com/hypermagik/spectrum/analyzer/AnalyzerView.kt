@@ -20,6 +20,7 @@ import android.widget.TextView
 import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.PreferencesWrapper
 import com.hypermagik.spectrum.R
+import com.hypermagik.spectrum.analyzer.fft.FFT
 import com.hypermagik.spectrum.utils.TAG
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
@@ -31,10 +32,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private var program: Int = 0
 
-    private var grid = Grid(context)
     private var info = Info(context)
     private var fft = FFT(context, preferences)
-    private var peaks = Peaks(context, preferences)
     private var waterfall = Waterfall(context, preferences)
 
     private var minFrequency: Long = 0
@@ -112,10 +111,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         GLES20.glClearColor(0.0f, 0.0f, 0.0f, 1.0f)
 
-        grid.onSurfaceCreated(program)
         info.onSurfaceCreated(program)
         fft.onSurfaceCreated(program)
-        peaks.onSurfaceCreated(program)
         waterfall.onSurfaceCreated(program)
     }
 
@@ -131,13 +128,11 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     override fun onSurfaceChanged(unused: GL10, width: Int, height: Int) {
         GLES20.glViewport(-width, -height, width * 2, height * 2)
 
-        grid.onSurfaceChanged(width, height)
         info.onSurfaceChanged(width, height)
-        fft.onSurfaceChanged(height)
-        peaks.onSurfaceChanged(width, height)
+        fft.onSurfaceChanged(width, height)
         waterfall.onSurfaceChanged(height)
 
-        updateFFTandGrid()
+        updateFFT()
 
         isReady = true
     }
@@ -149,17 +144,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             info.setGain(gain.value)
         }
 
-        grid.drawBackground()
-
         synchronized(fft) {
             fft.draw()
         }
 
-        synchronized(peaks) {
-            peaks.draw()
-        }
-
-        grid.drawLabels()
         info.draw()
 
         synchronized(waterfall) {
@@ -177,7 +165,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putDouble("viewBandwidth", viewBandwidth)
 
         fft.saveInstanceState(bundle)
-        peaks.saveInstanceState(bundle)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
@@ -190,7 +177,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewBandwidth = bundle.getDouble("viewBandwidth")
 
         fft.restoreInstanceState(bundle)
-        peaks.restoreInstanceState(bundle)
 
         updateInfoBar()
     }
@@ -211,7 +197,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
 
         if (isReady) {
-            updateFFTandGrid()
+            updateFFT()
         }
 
         updateInfoBar()
@@ -245,10 +231,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.update(magnitudes)
         }
 
-        synchronized(peaks) {
-            peaks.update(magnitudes)
-        }
-
         synchronized(waterfall) {
             waterfall.update(magnitudes)
         }
@@ -258,7 +240,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         requestRender()
     }
 
-    private fun updateFFTandGrid() {
+    private fun updateFFT() {
         val minViewBandwidth = sampleRate.value / (preferences.fftSize / 128.0)
         val maxViewBandwidth = sampleRate.value / 1.0
 
@@ -274,25 +256,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val scale = sampleRate.value / viewBandwidth
         val translate = (viewFrequency - viewBandwidth / 2.0 - frequency0) / sampleRate.value * scale
 
-        fft.updateX(scale.toFloat(), translate.toFloat())
+        val frequencyStart = viewFrequency - viewBandwidth / 2
+        val frequencyEnd = viewFrequency + viewBandwidth / 2
+
+        fft.updateX(scale.toFloat(), translate.toFloat(), frequency0, frequency1, frequencyStart, frequencyEnd)
 
         viewDBRange = viewDBRange.coerceIn(minDBRange, maxDBRange)
         viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
         updatePreferencesDB()
 
         fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
-
-        val frequencyStart = viewFrequency - viewBandwidth / 2
-        val frequencyEnd = viewFrequency + viewBandwidth / 2
-
-        grid.setFrequencyRange(frequencyStart, frequencyEnd)
-        peaks.setFrequencyRange(frequency0, frequency1, frequencyStart, frequencyEnd, scale.toFloat())
-
-        val dbStart = viewDBCenter - viewDBRange / 2
-        val dbEnd = viewDBCenter + viewDBRange / 2
-
-        grid.setDBRange(dbStart, dbEnd)
-        peaks.setDBRange(dbStart, dbEnd)
 
         requestRender()
     }
@@ -317,7 +290,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
         val fftHeight = if (context.resources.configuration.orientation == ORIENTATION_LANDSCAPE) height else height / 2
 
-        if (focusX < grid.leftScaleSize * 1.5f && focusY < fftHeight) {
+        if (focusX < fft.grid.leftScaleSize * 1.5f && focusY < fftHeight) {
             // Scale the Y axis.
             viewDBRange /= scaleFactor
 
@@ -335,13 +308,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             viewFrequency = focusFrequency + (viewFrequency - focusFrequency) / scaleFactor
         }
 
-        updateFFTandGrid()
+        updateFFT()
     }
 
     fun onScroll(x: Float, y: Float, deltaX: Float, deltaY: Float) {
         val fftHeight = if (context.resources.configuration.orientation == ORIENTATION_LANDSCAPE) height else height / 2
 
-        if (x < grid.leftScaleSize * 1.5f && y < fftHeight) {
+        if (x < fft.grid.leftScaleSize * 1.5f && y < fftHeight) {
             // Scroll the Y axis.
             viewDBCenter -= viewDBRange * deltaY / fftHeight
             viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
@@ -362,7 +335,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             }
         }
 
-        updateFFTandGrid()
+        updateFFT()
     }
 
     fun onSingleTap(x: Float, y: Float) {
@@ -374,7 +347,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 // When unlocked, reset the X axis.
                 viewFrequency = frequency.value.toDouble()
                 viewBandwidth = sampleRate.value.toDouble()
-                updateFFTandGrid()
+                updateFFT()
             } else {
                 requestRender()
             }
@@ -387,16 +360,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         if (y < infoArea) {
             // Info bar double-tapped, open frequency popup.
             showSetFrequencyDialog()
-        } else if (x < grid.leftScaleSize * 1.5f && y < height / 2) {
+        } else if (x < fft.grid.leftScaleSize * 1.5f && y < height / 2) {
             // Reset the Y axis.
             viewDBCenter = preferences.dbCenterDefault
             viewDBRange = preferences.dbRangeDefault
-            updateFFTandGrid()
+            updateFFT()
         } else {
             // Reset the X axis.
             viewFrequency = frequency.value.toDouble()
             viewBandwidth = sampleRate.value.toDouble()
-            updateFFTandGrid()
+            updateFFT()
         }
     }
 
@@ -457,7 +430,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             frequency.update()
             viewFrequency = frequency.value.toDouble()
 
-            updateFFTandGrid()
+            updateFFT()
             updateInfoBar()
         }
 
