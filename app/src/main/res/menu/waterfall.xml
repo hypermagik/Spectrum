@@ -9,7 +9,7 @@
             app:showAsAction="never">
             <menu>
                 <group
-                    android:id="@+id/wf_speed_group"
+                    android:id="@+id/menu_wf_speed_group"
                     android:checkableBehavior="single">
                     <item
                         android:id="@+id/menu_wf_speed_1x"
@@ -28,7 +28,7 @@
             app:showAsAction="never">
             <menu>
                 <group
-                    android:id="@+id/wf_colormap_group"
+                    android:id="@+id/menu_wf_colormap_group"
                     android:checkableBehavior="single">
                     <item
                         android:id="@+id/menu_wf_colormap_classic"

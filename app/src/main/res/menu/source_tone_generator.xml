@@ -4,12 +4,12 @@
         android:id="@+id/source_tone_generator_group"
         android:orderInCategory="11">
         <item
-            android:id="@+id/set_frequency"
+            android:id="@+id/menu_set_frequency"
             android:title="@string/menu_set_frequency" />
         <item android:title="@string/menu_sample_rate">
             <menu>
                 <group
-                    android:id="@id/sample_rate_group"
+                    android:id="@id/menu_sample_rate_group"
                     android:checkableBehavior="single">
                     <item
                         android:id="@+id/menu_sr_1M"

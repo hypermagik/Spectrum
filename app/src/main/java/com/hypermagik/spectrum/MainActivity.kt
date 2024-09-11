@@ -198,7 +198,7 @@ class MainActivity : AppCompatActivity() {
     private fun updateOptionsMenu() {
         val menu = binding.appBarMain.toolbar.menu
 
-        menu.findItem(R.id.action_playpause)?.apply {
+        menu.findItem(R.id.menu_playpause)?.apply {
             when (state) {
                 State.Running -> {
                     isEnabled = true
@@ -216,9 +216,9 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
-        menu.findItem(R.id.action_open)?.setVisible(source.getType() == SourceType.IQFile)
+        menu.findItem(R.id.menu_open)?.setVisible(source.getType() == SourceType.IQFile)
 
-        menu.findItem(R.id.record)?.apply {
+        menu.findItem(R.id.menu_record)?.apply {
             isEnabled = state == State.Running
             isVisible = source.getType() != SourceType.IQFile
 
@@ -236,7 +236,7 @@ class MainActivity : AppCompatActivity() {
             menu.findItem(it)?.setChecked(true)
         }
 
-        menu.findItem(R.id.toggle_agc)?.setChecked(preferences.sourceSettings.agc)
+        menu.findItem(R.id.menu_toggle_agc)?.setChecked(preferences.sourceSettings.agc)
 
         Constants.sampleTypeToMenuItem[preferences.iqFileType]?.also {
             menu.findItem(it)?.setChecked(true)
@@ -269,7 +269,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        if (item.itemId == R.id.action_playpause) {
+        if (item.itemId == R.id.menu_playpause) {
             if (state == State.Stopped) {
                 start()
                 item.tooltipText = getString(R.string.action_pause)
@@ -277,18 +277,18 @@ class MainActivity : AppCompatActivity() {
                 stop(false)
                 item.tooltipText = getString(R.string.action_play)
             }
-        } else if (item.itemId == R.id.action_open) {
+        } else if (item.itemId == R.id.menu_open) {
             openIQFile()
-        } else if (item.itemId == R.id.record) {
+        } else if (item.itemId == R.id.menu_record) {
             toggleRecord()
-        } else if (item.groupId == R.id.source_type_group) {
+        } else if (item.groupId == R.id.menu_source_type_group) {
             preferences.sourceType = Constants.sourceTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.saveNow()
             invalidateOptionsMenu()
             createSource()
-        } else if (item.itemId == R.id.set_frequency) {
+        } else if (item.itemId == R.id.menu_set_frequency) {
             analyzerView.showSetFrequencyDialog()
-        } else if (item.groupId == R.id.sample_rate_group) {
+        } else if (item.groupId == R.id.menu_sample_rate_group) {
             val sampleRate = Constants.sampleRateToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
                 preferences.sourceSettings.sampleRate = sampleRate
@@ -296,31 +296,31 @@ class MainActivity : AppCompatActivity() {
             }
             item.setChecked(true)
             updateActionBarSubtitle()
-        } else if (item.groupId == R.id.sample_type_group) {
+        } else if (item.groupId == R.id.menu_sample_type_group) {
             val sampleType = Constants.sampleTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
                 preferences.iqFileType = sampleType
                 preferences.saveNow()
             }
             item.setChecked(true)
-        } else if (item.itemId == R.id.toggle_agc) {
+        } else if (item.itemId == R.id.menu_toggle_agc) {
             preferences.sourceSettings.agc = !preferences.sourceSettings.agc
             preferences.saveNow()
             item.setChecked(preferences.sourceSettings.agc)
             updateGainSlider()
-        } else if (item.groupId == R.id.fps_limit_group) {
+        } else if (item.groupId == R.id.menu_fps_limit_group) {
             val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.fpsLimit = fpsLimit
             preferences.saveNow()
             item.setChecked(true)
-        } else if (item.itemId == R.id.action_recorder_settings) {
+        } else if (item.itemId == R.id.menu_recorder_settings) {
             showRecorderSettings()
-        } else if (item.groupId == R.id.frequency_step_group) {
+        } else if (item.groupId == R.id.menu_frequency_step_group) {
             val frequencyStep = Constants.frequencyStepToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.frequencyStep = frequencyStep
             preferences.saveNow()
             item.setChecked(true)
-        } else if (item.groupId == R.id.fft_size_group) {
+        } else if (item.groupId == R.id.menu_fft_size_group) {
             val fftSize = Constants.fftSizeToMenuItem.filterValues { it == item.itemId }.keys.first()
             if (fftSize != fft.size) {
                 restartIfRunning {
@@ -329,7 +329,7 @@ class MainActivity : AppCompatActivity() {
                 }
             }
             item.setChecked(true)
-        } else if (item.groupId == R.id.fft_window_group) {
+        } else if (item.groupId == R.id.menu_fft_window_group) {
             val fftWindow = Constants.fftWindowToMenuItem.filterValues { it == item.itemId }.keys.first()
             if (fftWindow != fft.windowType) {
                 restartIfRunning {
@@ -343,7 +343,7 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             item.setChecked(preferences.peakHoldEnabled)
             analyzerView.requestRender()
-        } else if (item.groupId == R.id.peak_hold_decay_group) {
+        } else if (item.groupId == R.id.menu_peak_hold_decay_group) {
             val peakHoldDecay = Constants.peakHoldDecayToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.peakHoldDecay = peakHoldDecay
             preferences.saveNow()
@@ -353,12 +353,12 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             item.setChecked(preferences.peakIndicatorEnabled)
             analyzerView.requestRender()
-        } else if (item.groupId == R.id.wf_speed_group) {
+        } else if (item.groupId == R.id.menu_wf_speed_group) {
             val wfSpeed = Constants.wfSpedToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.wfSpeed = wfSpeed
             preferences.saveNow()
             item.setChecked(true)
-        } else if (item.groupId == R.id.wf_colormap_group) {
+        } else if (item.groupId == R.id.menu_wf_colormap_group) {
             val colorMap = Constants.wfColormapToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.wfColorMap = colorMap
             preferences.saveNow()

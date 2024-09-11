@@ -2,19 +2,19 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_playpause"
+        android:id="@+id/menu_playpause"
         android:icon="@drawable/ic_play"
         android:orderInCategory="1"
         android:title="@string/action_play"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/action_open"
+        android:id="@+id/menu_open"
         android:icon="@drawable/ic_open"
         android:orderInCategory="2"
         android:title="@string/action_open"
         app:showAsAction="ifRoom" />
     <item
-        android:id="@+id/record"
+        android:id="@+id/menu_record"
         android:icon="@drawable/ic_record_off"
         android:orderInCategory="3"
         android:title="@string/action_record"
@@ -25,7 +25,7 @@
         app:showAsAction="never">
         <menu>
             <group
-                android:id="@+id/source_type_group"
+                android:id="@+id/menu_source_type_group"
                 android:checkableBehavior="single">
                 <item
                     android:id="@+id/menu_source_tone_generator"
@@ -48,7 +48,7 @@
         app:showAsAction="never">
         <menu>
             <group
-                android:id="@+id/frequency_step_group"
+                android:id="@+id/menu_frequency_step_group"
                 android:checkableBehavior="single">
                 <item
                     android:id="@+id/menu_fstep_1"
@@ -74,7 +74,7 @@
         app:showAsAction="never">
         <menu>
             <group
-                android:id="@+id/fps_limit_group"
+                android:id="@+id/menu_fps_limit_group"
                 android:checkableBehavior="single">
                 <item
                     android:id="@+id/menu_fps_10"
@@ -99,7 +99,7 @@
     </item>
     <group android:id="@+id/settings_group">
         <item
-            android:id="@+id/action_recorder_settings"
+            android:id="@+id/menu_recorder_settings"
             android:orderInCategory="93"
             android:title="@string/action_recorder_settings"
             app:showAsAction="never" />
