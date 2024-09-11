@@ -26,6 +26,7 @@ import com.hypermagik.spectrum.lib.data.SampleFIFO
 import com.hypermagik.spectrum.lib.dsp.FFT
 import com.hypermagik.spectrum.source.BladeRF
 import com.hypermagik.spectrum.source.IQFile
+import com.hypermagik.spectrum.source.RTLSDR
 import com.hypermagik.spectrum.source.Source
 import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.source.ToneGenerator
@@ -116,6 +117,7 @@ class MainActivity : AppCompatActivity() {
             SourceType.ToneGenerator -> ToneGenerator(preferences, recorder)
             SourceType.IQFile -> IQFile(this)
             SourceType.BladeRF -> BladeRF(this, recorder)
+            SourceType.RTLSDR -> RTLSDR(this, recorder)
         }
 
         supportActionBar!!.subtitle = source.getName()

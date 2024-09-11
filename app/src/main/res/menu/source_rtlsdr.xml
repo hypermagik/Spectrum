@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group
+        android:id="@+id/source_rtlsdr_group"
+        android:orderInCategory="11">
+        <item
+            android:id="@+id/set_frequency"
+            android:title="@string/menu_set_frequency" />
+        <item android:title="@string/menu_sample_rate">
+            <menu>
+                <group
+                    android:id="@id/sample_rate_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_sr_1_024M"
+                        android:title="@string/menu_sr_1_024M" />
+                    <item
+                        android:id="@+id/menu_sr_1_536M"
+                        android:title="@string/menu_sr_1_536M" />
+                    <item
+                        android:id="@+id/menu_sr_2_048M"
+                        android:title="@string/menu_sr_2_048M" />
+                    <item
+                        android:id="@+id/menu_sr_2_40M"
+                        android:title="@string/menu_sr_2_40M" />
+                    <item
+                        android:id="@+id/menu_sr_2_88M"
+                        android:title="@string/menu_sr_2_88M" />
+                    <item
+                        android:id="@+id/menu_sr_3_20M"
+                        android:title="@string/menu_sr_3_20M" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:id="@+id/toggle_agc"
+            android:checkable="true"
+            android:title="@string/menu_toggle_agc" />
+    </group>
+</menu>

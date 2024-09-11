@@ -36,6 +36,9 @@
                 <item
                     android:id="@+id/menu_source_bladerf"
                     android:title="@string/menu_source_bladerf" />
+                <item
+                    android:id="@+id/menu_source_rtlsdr"
+                    android:title="@string/menu_source_rtlsdr" />
             </group>
         </menu>
     </item>

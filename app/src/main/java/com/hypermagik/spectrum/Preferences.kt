@@ -12,12 +12,13 @@ import kotlin.concurrent.schedule
 
 class Preferences(private val activity: Activity?) {
 
-    data class SourceSettings(var frequency: Long, var sampleRate: Int, var gain: Int, var agc: Boolean)
+    data class SourceSettings(var frequency: Long, var sampleRate: Int, var gain: Int, var agc: Boolean = false)
 
     private var allSourceSettings = mapOf(
-        SourceType.ToneGenerator to SourceSettings(3000000000L, 1000000, 0, false),
-        SourceType.IQFile to SourceSettings(0, 0, 0, false),
-        SourceType.BladeRF to SourceSettings(100000000L, 1000000, 0, false),
+        SourceType.ToneGenerator to SourceSettings(3000000000L, 1000000, 0),
+        SourceType.IQFile to SourceSettings(0, 0, 0),
+        SourceType.BladeRF to SourceSettings(100000000L, 1000000, 0),
+        SourceType.RTLSDR to SourceSettings(100000000L, 1024000, 25),
     )
 
     var sourceType = SourceType.ToneGenerator

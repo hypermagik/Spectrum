@@ -8,7 +8,13 @@ class Constants {
     companion object {
         val sampleRateToMenuItem = mapOf(
             1000000 to R.id.menu_sr_1M,
+            1024000 to R.id.menu_sr_1_024M,
+            1536000 to R.id.menu_sr_1_536M,
             2000000 to R.id.menu_sr_2M,
+            2048000 to R.id.menu_sr_2_048M,
+            2400000 to R.id.menu_sr_2_40M,
+            2880000 to R.id.menu_sr_2_88M,
+            3200000 to R.id.menu_sr_3_20M,
             5000000 to R.id.menu_sr_5M,
             10000000 to R.id.menu_sr_10M,
             10240000 to R.id.menu_sr_10_24M,
@@ -91,12 +97,14 @@ class Constants {
             SourceType.ToneGenerator to R.menu.source_tone_generator,
             SourceType.IQFile to R.menu.source_iq_file,
             SourceType.BladeRF to R.menu.source_bladerf,
+            SourceType.RTLSDR to R.menu.source_rtlsdr,
         )
 
         val sourceTypeToMenuItem = mapOf(
             SourceType.ToneGenerator to R.id.menu_source_tone_generator,
             SourceType.IQFile to R.id.menu_source_iq_file,
             SourceType.BladeRF to R.id.menu_source_bladerf,
+            SourceType.RTLSDR to R.id.menu_source_rtlsdr,
         )
 
         val sampleTypeToMenuItem = mapOf(

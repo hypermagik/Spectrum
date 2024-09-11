@@ -16,6 +16,7 @@
     <string name="menu_source_tone_generator">Tone generator</string>
     <string name="menu_source_iq_file">IQ file</string>
     <string name="menu_source_bladerf">bladeRF 2.0</string>
+    <string name="menu_source_rtlsdr">RTL-SDR</string>
 
     <string name="frequency">Frequency</string>
     <string name="set_frequency">Set frequency</string>
@@ -24,7 +25,13 @@
 
     <string name="menu_sample_rate">Sample rate</string>
     <string name="menu_sr_1M">1.00 Msps</string>
+    <string name="menu_sr_1_024M">1.024 Msps</string>
+    <string name="menu_sr_1_536M">1.536 Msps</string>
     <string name="menu_sr_2M">2.00 Msps</string>
+    <string name="menu_sr_2_048M">2.048 Msps</string>
+    <string name="menu_sr_2_40M">2.40 Msps</string>
+    <string name="menu_sr_2_88M">2.88 Msps</string>
+    <string name="menu_sr_3_20M">3.20 Msps</string>
     <string name="menu_sr_5M">5.00 Msps</string>
     <string name="menu_sr_10M">10.00 Msps</string>
     <string name="menu_sr_10_24M">10.24 Msps</string>

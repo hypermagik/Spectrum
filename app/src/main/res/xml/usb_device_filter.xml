@@ -2,4 +2,8 @@
 <resources>
     <!-- bladeRF 2.0 -->
     <usb-device vendor-id="11504" product-id="21072" />
+    <!-- RTL-SDR - Realtek RTL2832 -->
+    <usb-device vendor-id="3034" product-id="10290" />
+    <!-- RTL-SDR - Realtek RTL2838 -->
+    <usb-device vendor-id="3034" product-id="10296" />
 </resources>
