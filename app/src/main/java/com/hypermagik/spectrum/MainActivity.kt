@@ -32,6 +32,7 @@ import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.source.ToneGenerator
 import com.hypermagik.spectrum.utils.TAG
 import com.hypermagik.spectrum.utils.Throttle
+import java.text.DecimalFormat
 import kotlin.concurrent.thread
 
 class MainActivity : AppCompatActivity() {
@@ -120,7 +121,7 @@ class MainActivity : AppCompatActivity() {
             SourceType.RTLSDR -> RTLSDR(this, recorder)
         }
 
-        supportActionBar!!.subtitle = source.getName()
+        updateActionBarSubtitle()
 
         if (!force) {
             analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
@@ -168,6 +169,15 @@ class MainActivity : AppCompatActivity() {
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
         analyzerView.restoreInstanceState(savedInstanceState)
+    }
+
+    private fun updateActionBarSubtitle() {
+        if (source.getType() == SourceType.IQFile) {
+            supportActionBar!!.subtitle = source.getName()
+        } else {
+            val sampleRate = DecimalFormat("0.###").format(preferences.sourceSettings.sampleRate / 1e6f)
+            supportActionBar!!.subtitle = String.format("${source.getName()} @ %s Msps", sampleRate)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -280,6 +290,7 @@ class MainActivity : AppCompatActivity() {
                 preferences.saveNow()
             }
             item.setChecked(true)
+            updateActionBarSubtitle()
         } else if (item.groupId == R.id.sample_type_group) {
             val sampleType = Constants.sampleTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
@@ -518,7 +529,7 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        supportActionBar!!.subtitle = source.getName()
+        updateActionBarSubtitle()
 
         if (fft.size != preferences.fftSize || fft.windowType != preferences.fftWindowType) {
             fft = FFT(preferences.fftSize, preferences.fftWindowType)
