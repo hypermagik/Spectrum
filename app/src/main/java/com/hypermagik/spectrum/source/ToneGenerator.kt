@@ -78,7 +78,7 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
         Log.d(TAG, "Stopping")
     }
 
-    override fun read(output: Complex32Array) {
+    override fun read(output: Complex32Array): Boolean {
         throttle.sync(1000000000L * output.size / sampleRate)
 
         val frequencyRange = LongRange(currentFrequency - sampleRate / 2, currentFrequency + sampleRate / 2)
@@ -94,6 +94,8 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
         }
 
         recorder.record(output)
+
+        return true
     }
 
     override fun setFrequency(frequency: Long) {

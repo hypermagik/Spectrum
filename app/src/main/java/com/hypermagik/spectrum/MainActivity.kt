@@ -593,6 +593,7 @@ class MainActivity : AppCompatActivity() {
     private fun sourceThreadFn() {
         Log.d(TAG, "Starting source thread")
 
+        var buffer: Complex32Array? = null
         val scratch = Complex32Array(sampleFifo.bufferSize) { Complex32() }
 
         val frequency = PreferencesWrapper.Frequency(preferences)
@@ -603,15 +604,27 @@ class MainActivity : AppCompatActivity() {
         source.start()
 
         while (state == State.Running) {
+            if (buffer == null || buffer === scratch) {
+                buffer = sampleFifo.getPushBuffer()
+            }
+            if (buffer == null) {
+                buffer = scratch
+            }
             try {
-                val buffer = sampleFifo.getPushBuffer()
-                if (buffer != null) {
-                    source.read(buffer)
-                    sampleFifo.push()
-                } else {
-                    source.read(scratch)
+                if (source.read(buffer)) {
+                    if (scratch !== buffer) {
+                        sampleFifo.push()
+                        buffer = null
+                    }
                 }
-            } catch (_: InterruptedException) {
+            } catch (e: InterruptedException) {
+                break
+            } catch (e: Exception) {
+                Log.e(TAG, "Error while reading from source", e)
+                runOnUiThread {
+                    Toast.makeText(this, "Error while reading from source", Toast.LENGTH_SHORT).show()
+                    stop(false)
+                }
                 break
             }
 

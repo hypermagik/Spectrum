@@ -84,16 +84,8 @@ class RTLSDR(private val context: Context, private val recorder: IQRecorder) : S
         device.cancelUSBRequests(requests)
     }
 
-    override fun read(output: Complex32Array) {
-        val request = device.getSamples()
-        if (request == null) {
-            for (c in output) {
-                c.re = 0.0f
-                c.im = 0.0f
-            }
-            return
-        }
-
+    override fun read(output: Complex32Array): Boolean {
+        val request = device.getSamples() ?: return false
         val buffer = request.clientData as ByteBuffer
 
         buffer.rewind()
@@ -104,6 +96,8 @@ class RTLSDR(private val context: Context, private val recorder: IQRecorder) : S
 
         buffer.rewind()
         device.queueUSBRequest(request, buffer)
+
+        return true
     }
 
     override fun setFrequency(frequency: Long) {

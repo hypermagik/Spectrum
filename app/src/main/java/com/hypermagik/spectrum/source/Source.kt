@@ -17,7 +17,7 @@ interface Source {
     fun start()
     fun stop()
 
-    fun read(output: Complex32Array)
+    fun read(output: Complex32Array): Boolean
 
     fun setFrequency(frequency: Long)
     fun getMinimumFrequency(): Long

@@ -149,8 +149,8 @@ class IQFile(private val context: Context) : Source {
 
     override fun stop() {}
 
-    override fun read(output: Complex32Array) {
-        val channel = this.channel ?: return
+    override fun read(output: Complex32Array): Boolean {
+        val channel = this.channel ?: throw Exception("Channel is null")
 
         byteBuffer.rewind()
 
@@ -161,7 +161,7 @@ class IQFile(private val context: Context) : Source {
                 }
             }
         } catch (e: ClosedByInterruptException) {
-            return
+            return false
         }
 
         byteBuffer.rewind()
@@ -180,6 +180,8 @@ class IQFile(private val context: Context) : Source {
         }
 
         throttle.sync(1000000000L * output.size / sampleRate)
+
+        return true
     }
 
     override fun setFrequency(frequency: Long) {}
