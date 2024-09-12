@@ -54,6 +54,7 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     private var colorMap = -1
     private var colors = intArrayOf(Color.RED)
 
+    private var top = 0.5f
     private var viewHeight = 0
     private var currentLine = 0
 
@@ -117,12 +118,13 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         }
     }
 
-    fun onSurfaceChanged(height: Int) {
+    fun onSurfaceChanged(height: Int, top: Float) {
         if (!isVisible) {
             return
         }
 
-        if (viewHeight != height) {
+        if (this.top != top || viewHeight != height) {
+            this.top = top
             viewHeight = height
             currentLine = 0
             isDirty = true
@@ -164,25 +166,24 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         }
 
         GLES20.glEnableVertexAttribArray(vPosition)
-        GLES20.glVertexAttribPointer(
-            vPosition, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, vertexBuffer
-        )
+        GLES20.glVertexAttribPointer(vPosition, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, vertexBuffer)
 
         GLES20.glEnableVertexAttribArray(aTexCoord)
-        GLES20.glVertexAttribPointer(
-            aTexCoord, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, texCoordsBuffer
-        )
+        GLES20.glVertexAttribPointer(aTexCoord, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, texCoordsBuffer)
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0])
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST)
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST)
 
-        val textureHeight = viewHeight / 2 / speed
+        val textureHeight = ((1.0f - top) * viewHeight / speed).toInt()
 
         if (isDirty) {
             isDirty = false
             currentLine = 0
+
+            vertexBuffer.putFloat(1 * Float.SIZE_BYTES, top)
+            vertexBuffer.putFloat(7 * Float.SIZE_BYTES, top)
 
             val clearBuffer = ByteBuffer.allocateDirect(fftSize * textureHeight * Float.SIZE_BYTES)
             if (useFloatTexture) {

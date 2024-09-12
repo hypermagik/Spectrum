@@ -138,7 +138,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val fftBottom = if (isLandscape) 0.0f else 0.50f
         fft.onSurfaceChanged(width, height, fftTop, fftBottom)
 
-        waterfall.onSurfaceChanged(height)
+        waterfall.onSurfaceChanged(height, fftBottom)
 
         updateFFT()
 
