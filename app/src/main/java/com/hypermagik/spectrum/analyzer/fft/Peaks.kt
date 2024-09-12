@@ -151,14 +151,10 @@ class Peaks(context: Context, private val fft: FFT) {
 
     fun draw() {
         GLES20.glEnableVertexAttribArray(vPosition)
-        GLES20.glVertexAttribPointer(
-            vPosition, 3, GLES20.GL_FLOAT, false, 3 * Float.SIZE_BYTES, vertexBuffer
-        )
+        GLES20.glVertexAttribPointer(vPosition, 3, GLES20.GL_FLOAT, false, 3 * Float.SIZE_BYTES, vertexBuffer)
 
         GLES20.glEnableVertexAttribArray(aTexCoord)
-        GLES20.glVertexAttribPointer(
-            aTexCoord, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, coordBuffer
-        )
+        GLES20.glVertexAttribPointer(aTexCoord, 2, GLES20.GL_FLOAT, false, 2 * Float.SIZE_BYTES, coordBuffer)
 
         GLES20.glActiveTexture(GLES20.GL_TEXTURE0)
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[0])

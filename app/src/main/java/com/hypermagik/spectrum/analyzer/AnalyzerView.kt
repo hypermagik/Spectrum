@@ -30,6 +30,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     constructor(context: Context) : this(context, Preferences(null))
 
+    private val isLandscape = context.resources.configuration.orientation == ORIENTATION_LANDSCAPE
+
     private var program: Int = 0
 
     private var info = Info(context)
@@ -129,7 +131,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         GLES20.glViewport(-width, -height, width * 2, height * 2)
 
         info.onSurfaceChanged(width, height)
-        fft.onSurfaceChanged(width, height)
+
+        // FFT is set to full height in landscape mode
+        // and to half height in portrait mode.
+        val fftTop = 1.0f - (Info.HEIGHT * context.resources.displayMetrics.density) / height
+        val fftBottom = if (isLandscape) 0.0f else 0.50f
+        fft.onSurfaceChanged(width, height, fftTop, fftBottom)
+
         waterfall.onSurfaceChanged(height)
 
         updateFFT()
@@ -259,13 +267,15 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val frequencyStart = viewFrequency - viewBandwidth / 2
         val frequencyEnd = viewFrequency + viewBandwidth / 2
 
-        fft.updateX(scale.toFloat(), translate.toFloat(), frequency0, frequency1, frequencyStart, frequencyEnd)
-
         viewDBRange = viewDBRange.coerceIn(minDBRange, maxDBRange)
         viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
+
         updatePreferencesDB()
 
-        fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
+        synchronized(fft) {
+            fft.updateX(scale.toFloat(), translate.toFloat(), frequency0, frequency1, frequencyStart, frequencyEnd)
+            fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
+        }
 
         requestRender()
     }
@@ -288,7 +298,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun onScale(scaleFactor: Float, focusX: Float, focusY: Float) {
-        val fftHeight = if (context.resources.configuration.orientation == ORIENTATION_LANDSCAPE) height else height / 2
+        val fftHeight = if (isLandscape) height else height / 2
 
         if (focusX < fft.grid.leftScaleSize * 1.5f && focusY < fftHeight) {
             // Scale the Y axis.
@@ -312,7 +322,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun onScroll(x: Float, y: Float, deltaX: Float, deltaY: Float) {
-        val fftHeight = if (context.resources.configuration.orientation == ORIENTATION_LANDSCAPE) height else height / 2
+        val fftHeight = if (isLandscape) height else height / 2
 
         if (x < fft.grid.leftScaleSize * 1.5f && y < fftHeight) {
             // Scroll the Y axis.
