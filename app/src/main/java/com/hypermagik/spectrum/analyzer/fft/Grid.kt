@@ -168,10 +168,10 @@ class Grid(val context: Context, private val fft: FFT) {
                 i -= step
             }
         } else {
-            val labelWidth = paint.measureText(String.format(Locale.getDefault(), " %.3fM ", end / 1000000.0)).toInt()
+            val labelWidth = paint.measureText(String.format(Locale.getDefault(), "   %.3fM   ", end / 1000000.0)).toInt()
             val numLabels = (end - start).toInt() / step
             val maxLabels = min(numLabels, width.toInt() / labelWidth)
-            val labelStep = (numLabels + maxLabels) / maxLabels
+            val labelStep = (numLabels + maxLabels - 1) / maxLabels
 
             var i = ((start + step - 1) / step).toLong() * step.toDouble()
             while (i < end) {
@@ -203,6 +203,11 @@ class Grid(val context: Context, private val fft: FFT) {
         val usableHeight = height - top
         val pixelsPerUnit = usableHeight / (fft.maxDB - fft.minDB)
 
+        val labelHeight = textVerticalCenterOffset * 5
+        val numLabels = range.toInt() / step
+        val maxLabels = min(numLabels, (usableHeight / labelHeight).toInt())
+        val labelStep = (numLabels + maxLabels - 1) / maxLabels
+
         var i = fft.maxDB - (fft.maxDB - (step - 1) + step * if (fft.maxDB > 0) 1 else 0).toInt() / step * step.toFloat()
         while (i < range) {
             // Don't draw over the other axis' labels.
@@ -211,7 +216,11 @@ class Grid(val context: Context, private val fft: FFT) {
                 break
             }
             yCoord[yCount] = y
-            yText[yCount] = String.format(Locale.getDefault(), "%.0f", fft.maxDB - i)
+            if (round((fft.maxDB - i) / step).toLong() % labelStep == 0L) {
+                yText[yCount] = String.format(Locale.getDefault(), "%.0f", fft.maxDB - i)
+            } else {
+                yText[yCount] = ""
+            }
             yCount += 1
             i += step
         }
