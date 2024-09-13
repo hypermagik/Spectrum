@@ -11,6 +11,7 @@ class FFT(val size: Int = 256, val windowType: Window.Type = Window.Type.FLAT_TO
     private val m: Int = (ln(size.toDouble()) / ln(2.0)).toInt()
     private val twiddles: Array<Complex32Array>
     private var window: FloatArray
+    private val product = Complex32()
 
     init {
         if (size != 1 shl m) {
@@ -63,12 +64,9 @@ class FFT(val size: Int = 256, val windowType: Window.Type = Window.Type.FLAT_TO
 
                 var pair = group
                 while (pair < size) {
-                    val d1 = data[pair]
-                    val d2 = data[pair + step]
-                    val prodre = twiddle.re * d2.re - twiddle.im * d2.im
-                    val prodim = twiddle.im * d2.re + twiddle.re * d2.im
-                    d2.set(d1.re - prodre, d1.im - prodim)
-                    d1.add(prodre, prodim)
+                    product.setmul(twiddle, data[pair + step])
+                    data[pair + step].setdif(data[pair], product)
+                    data[pair].add(product)
                     pair += step * 2
                 }
             }
@@ -90,7 +88,7 @@ class FFT(val size: Int = 256, val windowType: Window.Type = Window.Type.FLAT_TO
         val half = size / 2
         val scale = 1.0f / size
 
-        for (i in output.indices) {
+        for (i in 0 until size) {
             output[(i + half) % size] = data[i].mag(scale)
         }
     }
