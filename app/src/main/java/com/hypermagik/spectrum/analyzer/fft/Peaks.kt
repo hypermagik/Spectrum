@@ -12,6 +12,7 @@ import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.util.Locale
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.abs
 import kotlin.math.pow
 
 class Peaks(context: Context, private val fft: FFT) {
@@ -108,8 +109,16 @@ class Peaks(context: Context, private val fft: FFT) {
         paint.style = Paint.Style.STROKE
         canvas.drawCircle(midPoint, midPoint, midPoint / 6.0f, paint)
 
+        val text = if (abs(peakFrequency) < 1000) {
+            String.format(Locale.getDefault(), "%.0fHz", peakFrequency)
+        } else if (abs(peakFrequency) < 1000000) {
+            String.format(Locale.getDefault(), "%.3fK", peakFrequency / 1000.0f)
+        } else {
+            String.format(Locale.getDefault(), "%.3fM", peakFrequency / 1000000.0f)
+        }
+
         paint.style = Paint.Style.FILL
-        canvas.drawText(String.format(Locale.getDefault(), "%.3fM", peakFrequency / 1000000.0f), midPoint, midPoint / 2.0f, paint)
+        canvas.drawText(text, midPoint, midPoint / 2.0f, paint)
 
         val halfWidth = bitmap.width.toFloat() / fft.viewWidth / 2.0f / fft.xScale
         var halfHeight = bitmap.height.toFloat() / fft.viewHeight / 2.0f

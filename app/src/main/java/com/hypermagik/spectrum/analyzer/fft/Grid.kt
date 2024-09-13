@@ -7,6 +7,7 @@ import android.graphics.Rect
 import com.hypermagik.spectrum.R
 import com.hypermagik.spectrum.analyzer.Texture
 import java.util.Locale
+import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.round
 
@@ -130,11 +131,21 @@ class Grid(val context: Context, private val fft: FFT) {
         labels.draw()
     }
 
+    private fun getFrequencyLabel(value: Double): String {
+        return if (abs(value) < 1000) {
+            String.format(Locale.getDefault(), "%.0fHz", value)
+        } else if (abs(value) < 1000000) {
+            String.format(Locale.getDefault(), "%.3fK", value / 1000.0)
+        } else {
+            String.format(Locale.getDefault(), "%.3fM", value / 1000000.0)
+        }
+    }
+
     @Synchronized
     fun setFrequencyRange(start: Double, end: Double) {
         var step = 1000
         val range = end - start
-        while (range / step > xMaxLines) {
+        while (range / step > xMaxLines - 1) {
             step *= 2
         }
 
@@ -145,7 +156,7 @@ class Grid(val context: Context, private val fft: FFT) {
             val center = ((start + range / 2) / step).toLong() * step.toDouble()
 
             xCoord[xCount] = ((center - start) * pixelsPerUnit).toFloat()
-            xText[xCount] = String.format(Locale.getDefault(), "%.3fM", center / 1000000.0)
+            xText[xCount] = getFrequencyLabel(center)
             xCount += 1
 
             var i = center + step
@@ -170,13 +181,13 @@ class Grid(val context: Context, private val fft: FFT) {
             val maxLabels = min(numLabels, width.toInt() / labelWidth)
             val labelStep = (numLabels + maxLabels - 1) / maxLabels
 
-            var i = ((start + step - 1) / step).toLong() * step.toDouble()
+            var i = if (start < 0) (start / step).toLong() * step.toDouble() else ((start + step - 1) / step).toLong() * step.toDouble()
             while (i < end) {
                 val x = (i - start) * pixelsPerUnit
                 xCoord[xCount] = x.toFloat()
                 // Hide some labels if they are overlapping.
                 if (round(i / step).toLong() % labelStep == 0L) {
-                    xText[xCount] = String.format(Locale.getDefault(), "%.3fM", i / 1000000.0)
+                    xText[xCount] = getFrequencyLabel(i)
                 } else {
                     xText[xCount] = ""
                 }
@@ -192,7 +203,7 @@ class Grid(val context: Context, private val fft: FFT) {
     fun updateY() {
         var step = 1
         val range = round(fft.maxDB - fft.minDB)
-        while (range / step > yMaxLines) {
+        while (range / step > yMaxLines - 1) {
             step += 1
         }
 
