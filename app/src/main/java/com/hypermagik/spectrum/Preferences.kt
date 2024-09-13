@@ -3,7 +3,7 @@ package com.hypermagik.spectrum
 import android.app.Activity
 import android.util.Log
 import com.hypermagik.spectrum.lib.data.SampleType
-import com.hypermagik.spectrum.lib.dsp.FFT.WindowType
+import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.utils.TAG
 import java.util.Timer
@@ -40,7 +40,7 @@ class Preferences(private val activity: Activity?) {
     var frequencyStep = 1000
 
     var fftSize = 256
-    var fftWindowType = WindowType.FLAT_TOP
+    var fftWindowType = Window.Type.FLAT_TOP
 
     var dbCenterDefault = -55.0f
     var dbRangeDefault = 120.0f
@@ -80,7 +80,7 @@ class Preferences(private val activity: Activity?) {
             recordLocation = getString("recordLocation", recordLocation)
             recordLimit = getLong("recordLimit", recordLimit)
             fftSize = getInt("fftSize", fftSize)
-            fftWindowType = WindowType.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
+            fftWindowType = Window.Type.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             dbCenter = getFloat("dbCenter", dbCenter)
             dbRange = getFloat("dbRange", dbRange)
             peakHoldEnabled = getBoolean("peakHoldEnabled", peakHoldEnabled)

@@ -5,12 +5,9 @@ import com.hypermagik.spectrum.lib.data.Complex32Array
 import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.ln
-import kotlin.math.log10
 import kotlin.math.sin
 
-class FFT(val size: Int = 256, val windowType: WindowType = WindowType.FLAT_TOP) {
-    enum class WindowType { HAMMING, BLACKMAN_HARRIS, FLAT_TOP }
-
+class FFT(val size: Int = 256, val windowType: Window.Type = Window.Type.FLAT_TOP) {
     private val m: Int = (ln(size.toDouble()) / ln(2.0)).toInt()
     private val twiddles: Array<Complex32Array>
     private var window: FloatArray
@@ -30,26 +27,7 @@ class FFT(val size: Int = 256, val windowType: WindowType = WindowType.FLAT_TOP)
             }
         }
 
-        window = FloatArray(size)
-
-        for (i in window.indices) {
-            val w = when (windowType) {
-                WindowType.HAMMING -> 0.54f - 0.46f * cos(2 * PI * i / (size - 1))
-
-                WindowType.BLACKMAN_HARRIS -> 0.35875f -
-                        0.48829f * cos(2 * PI * i / (size - 1)) +
-                        0.14128f * cos(4 * PI * i / (size - 1)) -
-                        0.01168f * cos(6 * PI * i / (size - 1))
-
-                WindowType.FLAT_TOP -> 1.0f -
-                        1.930f * cos(2 * PI * i / (size - 1)) +
-                        1.290f * cos(4 * PI * i / (size - 1)) -
-                        0.388f * cos(6 * PI * i / (size - 1)) +
-                        0.028f * cos(8 * PI * i / (size - 1))
-            }
-
-            window[i] = w.toFloat()
-        }
+        window = Window.make(windowType, size)
     }
 
     fun applyWindow(data: Complex32Array) {

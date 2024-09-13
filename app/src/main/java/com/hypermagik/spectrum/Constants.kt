@@ -1,7 +1,7 @@
 package com.hypermagik.spectrum
 
 import com.hypermagik.spectrum.lib.data.SampleType
-import com.hypermagik.spectrum.lib.dsp.FFT
+import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.source.SourceType
 
 class Constants {
@@ -55,9 +55,9 @@ class Constants {
         )
 
         val fftWindowToMenuItem = mapOf(
-            FFT.WindowType.FLAT_TOP to R.id.menu_fft_flat_top,
-            FFT.WindowType.BLACKMAN_HARRIS to R.id.menu_fft_blackman_harris,
-            FFT.WindowType.HAMMING to R.id.menu_fft_hamming,
+            Window.Type.FLAT_TOP to R.id.menu_fft_flat_top,
+            Window.Type.BLACKMAN_HARRIS to R.id.menu_fft_blackman_harris,
+            Window.Type.HAMMING to R.id.menu_fft_hamming,
         )
 
         val peakHoldDecayToMenuItem = mapOf(
