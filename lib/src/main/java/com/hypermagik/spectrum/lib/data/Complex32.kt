@@ -69,6 +69,11 @@ data class Complex32(var re: Float, var im: Float) {
         this.im = mim
     }
 
+    fun addmul(c1: Complex32, constant: Float) {
+        this.re += c1.re * constant
+        this.im += c1.im * constant
+    }
+
     fun swap(c: Complex32) {
         val re = c.re
         val im = c.im
