@@ -12,6 +12,7 @@ android {
         minSdk = 28
 
         testInstrumentationRunner = "androidx.benchmark.junit4.AndroidBenchmarkRunner"
+        testInstrumentationRunnerArguments["androidx.benchmark.suppressErrors"] = "EMULATOR,LOW-BATTERY"
         //testInstrumentationRunnerArguments["androidx.benchmark.profiling.mode"] = "StackSampling"
     }
 
