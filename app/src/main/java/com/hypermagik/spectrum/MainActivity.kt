@@ -309,17 +309,21 @@ class MainActivity : AppCompatActivity() {
             analyzer.showSetFrequencyDialog()
         } else if (item.groupId == R.id.menu_sample_rate_group) {
             val sampleRate = Constants.sampleRateToMenuItem.filterValues { it == item.itemId }.keys.first()
-            restartIfRunning {
-                preferences.sourceSettings.sampleRate = sampleRate
-                preferences.saveNow()
+            if (preferences.sourceSettings.sampleRate != sampleRate) {
+                restartIfRunning {
+                    preferences.sourceSettings.sampleRate = sampleRate
+                    preferences.saveNow()
+                }
             }
             item.setChecked(true)
             updateActionBarSubtitle()
         } else if (item.groupId == R.id.menu_sample_type_group) {
             val sampleType = Constants.sampleTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
-            restartIfRunning {
-                preferences.iqFileType = sampleType
-                preferences.saveNow()
+            if (preferences.iqFileType != sampleType) {
+                restartIfRunning {
+                    preferences.iqFileType = sampleType
+                    preferences.saveNow()
+                }
             }
             item.setChecked(true)
         } else if (item.itemId == R.id.menu_toggle_agc) {
@@ -571,7 +575,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         createDemodulator()
-        analyzerInput = 0
 
         setState(State.Running)
 
