@@ -29,7 +29,7 @@ class Preferences(private val activity: Activity?) {
     var sourceSettings = allSourceSettings[sourceType]!!
 
     var iqFile: String? = null
-    var iqFileType: SampleType = SampleType.U8
+    var iqFileType: SampleType = SampleType.NONE
 
     var recordLocation: String? = null
     var recordLimit = 32 * 1024 * 1024L
