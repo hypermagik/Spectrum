@@ -1,12 +1,12 @@
 package com.hypermagik.spectrum.lib.data
 
 class SampleFIFO(bufferCount: Int, val bufferSize: Int) {
-    private val queue: Array<Complex32Array> = Array(bufferCount) { Complex32Array(bufferSize) { Complex32() } }
+    private val queue = Array(bufferCount) { SampleBuffer(bufferSize) }
 
     private var popIndex = 0
     private var pushIndex = 0
 
-    fun getPopBuffer(): Complex32Array? {
+    fun getPopBuffer(): SampleBuffer? {
         if (popIndex == pushIndex) {
             return null
         }
@@ -17,7 +17,7 @@ class SampleFIFO(bufferCount: Int, val bufferSize: Int) {
         popIndex = (popIndex + 1) % queue.size
     }
 
-    fun getPushBuffer(): Complex32Array? {
+    fun getPushBuffer(): SampleBuffer? {
         if ((pushIndex + 1) % queue.size == popIndex) {
             return null
         }

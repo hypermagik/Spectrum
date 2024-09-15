@@ -131,12 +131,6 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         }
     }
 
-    fun start() {
-    }
-
-    fun stop() {
-    }
-
     fun update(magnitudes: FloatArray, size: Int) {
         if (!isVisible) {
             return

@@ -6,6 +6,7 @@ import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.PreferencesWrapper
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.dsp.FFT
 import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.utils.Throttle
@@ -79,19 +80,28 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         return throttle.isSynced()
     }
 
-    fun analyze(samples: Complex32Array, preserveSamples: Boolean) {
-        if (!preserveSamples) {
-            analyze(samples)
-        } else {
-            for (i in samples.indices) {
-                fftInput[i] = samples[i]
-            }
-            analyze(fftInput)
+    fun analyze(buffer: SampleBuffer, preserveSamples: Boolean) {
+        if (view.frequency != buffer.frequency) {
+            view.updateFrequency(buffer.frequency)
         }
+
+        if (view.sampleRate != buffer.sampleRate) {
+            view.updateSampleRate(buffer.sampleRate)
+        }
+
+        var input = buffer.samples
+        if (preserveSamples) {
+            val n = min(buffer.sampleCount, preferences.fftSize)
+            for (i in 0 until n) {
+                fftInput[i] = buffer.samples[i]
+            }
+            input = fftInput
+        }
+        analyze(input, buffer.sampleCount)
     }
 
-    private fun analyze(samples: Complex32Array) {
-        val fftSize = min(samples.size, preferences.fftSize)
+    private fun analyze(samples: Complex32Array, sampleCount: Int) {
+        val fftSize = min(sampleCount, preferences.fftSize)
 
         val index = log2(fftSize.toDouble()).toInt() - 4
         if (index < 0) {

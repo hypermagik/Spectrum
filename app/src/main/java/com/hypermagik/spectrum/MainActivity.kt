@@ -20,8 +20,7 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.slider.Slider
 import com.hypermagik.spectrum.analyzer.Analyzer
 import com.hypermagik.spectrum.databinding.ActivityMainBinding
-import com.hypermagik.spectrum.lib.data.Complex32
-import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.data.SampleFIFO
 import com.hypermagik.spectrum.source.BladeRF
 import com.hypermagik.spectrum.source.IQFile
@@ -577,8 +576,8 @@ class MainActivity : AppCompatActivity() {
     private fun sourceThreadFn() {
         Log.d(TAG, "Starting source thread")
 
-        var buffer: Complex32Array? = null
-        val scratch = Complex32Array(sampleFifo.bufferSize) { Complex32() }
+        var buffer: SampleBuffer? = null
+        val scratch = SampleBuffer(sampleFifo.bufferSize)
 
         val frequency = PreferencesWrapper.Frequency(preferences)
         val gain = PreferencesWrapper.Gain(preferences)
@@ -595,8 +594,11 @@ class MainActivity : AppCompatActivity() {
                 buffer = scratch
             }
             try {
-                if (source.read(buffer)) {
+                if (source.read(buffer.samples)) {
                     if (scratch !== buffer) {
+                        buffer.sampleCount = buffer.samples.size
+                        buffer.frequency = preferences.sourceSettings.frequency
+                        buffer.sampleRate = preferences.sourceSettings.sampleRate
                         sampleFifo.push()
                         buffer = null
                     }
@@ -644,7 +646,7 @@ class MainActivity : AppCompatActivity() {
         analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
 
         while (state == State.Running) {
-            var samples: Complex32Array?
+            var samples: SampleBuffer?
 
             while (true) {
                 samples = sampleFifo.getPopBuffer()
