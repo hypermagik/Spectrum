@@ -153,7 +153,7 @@ class Grid(val context: Context, private val fft: FFT) {
         val pixelsPerUnit = width / (end - start)
 
         if (step == 1000) {
-            val center = ((start + range / 2) / step).toLong() * step.toDouble()
+            val center = start + range / 2
 
             xCoord[xCount] = ((center - start) * pixelsPerUnit).toFloat()
             xText[xCount] = getFrequencyLabel(center)
