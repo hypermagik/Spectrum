@@ -38,7 +38,7 @@ class Info(context: Context) {
     private var isFrequencyLocked = false
     private var gain = 0
     private var fftSize = 0
-    private var bandwidth = 0
+    private var sampleRate = 0
     private var inputName = "Source"
     private var inputDetails = ""
 
@@ -139,12 +139,12 @@ class Info(context: Context) {
         textX = spacer
         textY = textY2
 
-        val sampleRateInHz = bandwidth < 1000000
+        val sampleRateInHz = sampleRate < 1000000
 
         text = "000.000"
         putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
         textX += paint.measureText(text)
-        text = DecimalFormat("###,###", decimalSymbols).format(if (sampleRateInHz) bandwidth else bandwidth / 1000)
+        text = DecimalFormat("###,###", decimalSymbols).format(if (sampleRateInHz) sampleRate else sampleRate / 1000)
         putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
         text = if (sampleRateInHz) " HZ " else " KHZ"
         putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
@@ -216,9 +216,9 @@ class Info(context: Context) {
         }
     }
 
-    fun setBandwidth(bandwidth: Int) {
-        if (this.bandwidth != bandwidth) {
-            this.bandwidth = bandwidth
+    fun setSampleRate(sampleRate: Int) {
+        if (this.sampleRate != sampleRate) {
+            this.sampleRate = sampleRate
             isDirty = true
         }
     }

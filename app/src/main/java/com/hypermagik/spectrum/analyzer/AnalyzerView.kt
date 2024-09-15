@@ -239,7 +239,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     fun updateSampleRate(sampleRate: Int) {
         this.sampleRate = sampleRate
-        info.setBandwidth(sampleRate)
+        info.setSampleRate(sampleRate)
         resetFrequencyScale()
         updateFFT()
     }
@@ -308,7 +308,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private fun updateInfoBar() {
         info.setFrequency(frequency)
         info.setFrequencyLock(isFrequencyLocked)
-        info.setBandwidth(sampleRate)
+        info.setSampleRate(sampleRate)
         info.setGain(gain.value)
         info.setFFTSize(fft.fftSize)
     }
