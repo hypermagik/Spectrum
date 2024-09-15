@@ -1,11 +1,34 @@
 package com.hypermagik.spectrum
 
+import com.hypermagik.spectrum.demodulator.DemodulatorType
 import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.source.SourceType
 
 class Constants {
     companion object {
+        val sourceTypeToMenu = mapOf(
+            SourceType.ToneGenerator to R.menu.source_tone_generator,
+            SourceType.IQFile to R.menu.source_iq_file,
+            SourceType.BladeRF to R.menu.source_bladerf,
+            SourceType.RTLSDR to R.menu.source_rtlsdr,
+        )
+
+        val sourceTypeToMenuItem = mapOf(
+            SourceType.ToneGenerator to R.id.menu_source_tone_generator,
+            SourceType.IQFile to R.id.menu_source_iq_file,
+            SourceType.BladeRF to R.id.menu_source_bladerf,
+            SourceType.RTLSDR to R.id.menu_source_rtlsdr,
+        )
+
+        val sampleTypeToMenuItem = mapOf(
+            SampleType.NONE to R.id.menu_sample_type_none,
+            SampleType.S8 to R.id.menu_sample_type_s8,
+            SampleType.U8 to R.id.menu_sample_type_u8,
+            SampleType.S12P to R.id.menu_sample_type_s12p,
+            SampleType.F32 to R.id.menu_sample_type_f32,
+        )
+
         val sampleRateToMenuItem = mapOf(
             1000000 to R.id.menu_sr_1M,
             1024000 to R.id.menu_sr_1_024M,
@@ -27,21 +50,9 @@ class Constants {
             61440000 to R.id.menu_sr_61_44M,
         )
 
-        val fpsLimitToMenuItem = mapOf(
-            0 to R.id.menu_fps_unlimited,
-            10 to R.id.menu_fps_10,
-            20 to R.id.menu_fps_20,
-            30 to R.id.menu_fps_30,
-            60 to R.id.menu_fps_60,
-            120 to R.id.menu_fps_120,
-        )
-
-        val frequencyStepToMenuItem = mapOf(
-            1 to R.id.menu_fstep_1,
-            10 to R.id.menu_fstep_10,
-            100 to R.id.menu_fstep_100,
-            1000 to R.id.menu_fstep_1000,
-            10000 to R.id.menu_fstep_10000,
+        val demodulatorTypeToMenuItem = mapOf(
+            DemodulatorType.None to R.id.menu_demodulator_none,
+            DemodulatorType.WFM to R.id.menu_demodulator_wfm,
         )
 
         val fftSizeToMenuItem = mapOf(
@@ -93,26 +104,21 @@ class Constants {
             3 to R.raw.colormap_vivid,
         )
 
-        val sourceTypeToMenu = mapOf(
-            SourceType.ToneGenerator to R.menu.source_tone_generator,
-            SourceType.IQFile to R.menu.source_iq_file,
-            SourceType.BladeRF to R.menu.source_bladerf,
-            SourceType.RTLSDR to R.menu.source_rtlsdr,
+        val frequencyStepToMenuItem = mapOf(
+            1 to R.id.menu_fstep_1,
+            10 to R.id.menu_fstep_10,
+            100 to R.id.menu_fstep_100,
+            1000 to R.id.menu_fstep_1000,
+            10000 to R.id.menu_fstep_10000,
         )
 
-        val sourceTypeToMenuItem = mapOf(
-            SourceType.ToneGenerator to R.id.menu_source_tone_generator,
-            SourceType.IQFile to R.id.menu_source_iq_file,
-            SourceType.BladeRF to R.id.menu_source_bladerf,
-            SourceType.RTLSDR to R.id.menu_source_rtlsdr,
-        )
-
-        val sampleTypeToMenuItem = mapOf(
-            SampleType.NONE to R.id.menu_sample_type_none,
-            SampleType.S8 to R.id.menu_sample_type_s8,
-            SampleType.U8 to R.id.menu_sample_type_u8,
-            SampleType.S12P to R.id.menu_sample_type_s12p,
-            SampleType.F32 to R.id.menu_sample_type_f32,
+        val fpsLimitToMenuItem = mapOf(
+            0 to R.id.menu_fps_unlimited,
+            10 to R.id.menu_fps_10,
+            20 to R.id.menu_fps_20,
+            30 to R.id.menu_fps_30,
+            60 to R.id.menu_fps_60,
+            120 to R.id.menu_fps_120,
         )
     }
 }

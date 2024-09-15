@@ -348,7 +348,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             // Scroll the X axis.
             viewFrequency += viewBandwidth * deltaX / width
 
-            if (isRunning && !isFrequencyLocked && !preferences.isRecording) {
+            if (isRunning && !isFrequencyLocked && !preferences.isRecording && maxFrequency > 0) {
                 // If locked or recording, can't change frequency.
                 var newFrequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
                 newFrequency = newFrequency.coerceIn(minFrequency, maxFrequency)

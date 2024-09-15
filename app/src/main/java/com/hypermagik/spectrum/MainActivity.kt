@@ -20,6 +20,9 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.slider.Slider
 import com.hypermagik.spectrum.analyzer.Analyzer
 import com.hypermagik.spectrum.databinding.ActivityMainBinding
+import com.hypermagik.spectrum.demodulator.Demodulator
+import com.hypermagik.spectrum.demodulator.DemodulatorType
+import com.hypermagik.spectrum.demodulator.WFM
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.data.SampleFIFO
 import com.hypermagik.spectrum.source.BladeRF
@@ -46,6 +49,9 @@ class MainActivity : AppCompatActivity() {
     private lateinit var sampleFifo: SampleFIFO
 
     private lateinit var analyzer: Analyzer
+    private var demodulator: Demodulator? = null
+
+    private var analyzerInput = 0
 
     private var sourceThread: Thread? = null
     private var workerThread: Thread? = null
@@ -117,6 +123,13 @@ class MainActivity : AppCompatActivity() {
         updateGainSlider()
     }
 
+    private fun createDemodulator() {
+        demodulator = when (preferences.demodulatorType) {
+            DemodulatorType.None -> null
+            DemodulatorType.WFM -> WFM(preferences.demodulatorAudio)
+        }
+    }
+
     override fun onResume() {
         super.onResume()
 
@@ -181,6 +194,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.setGroupDividerEnabled(true)
         menuInflater.inflate(R.menu.main, menu)
+        menuInflater.inflate(R.menu.demodulator, menu)
         menuInflater.inflate(R.menu.fft, menu)
         menuInflater.inflate(R.menu.waterfall, menu)
         Constants.sourceTypeToMenu[source.getType()]?.also { menuInflater.inflate(it, menu) }
@@ -222,24 +236,26 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        menu.findItem(R.id.menu_toggle_analyzer_input)?.setVisible(preferences.demodulatorType != DemodulatorType.None)
+
         Constants.sourceTypeToMenuItem[source.getType()]?.also {
             menu.findItem(it)?.setChecked(true)
         }
         Constants.sampleRateToMenuItem[preferences.sourceSettings.sampleRate]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-
-        menu.findItem(R.id.menu_toggle_agc)?.setChecked(preferences.sourceSettings.agc)
-
         Constants.sampleTypeToMenuItem[preferences.iqFileType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.fpsLimitToMenuItem[preferences.fpsLimit]?.also {
+
+        menu.findItem(R.id.menu_toggle_agc)?.setChecked(preferences.sourceSettings.agc)
+
+        Constants.demodulatorTypeToMenuItem[preferences.demodulatorType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
-            menu.findItem(it)?.setChecked(true)
-        }
+
+        menu.findItem(R.id.menu_demodulator_toggle_audio_output)?.setChecked(preferences.demodulatorAudio)
+
         Constants.fftSizeToMenuItem[preferences.fftSize]?.also {
             menu.findItem(it)?.setChecked(true)
         }
@@ -257,6 +273,12 @@ class MainActivity : AppCompatActivity() {
             menu.findItem(it)?.setChecked(true)
         }
         Constants.wfColormapToMenuItem[preferences.wfColorMap]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
+        Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
+        Constants.fpsLimitToMenuItem[preferences.fpsLimit]?.also {
             menu.findItem(it)?.setChecked(true)
         }
     }
@@ -279,6 +301,10 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             invalidateOptionsMenu()
             createSource()
+        } else if (item.itemId == R.id.menu_toggle_analyzer_input) {
+            demodulator?.run {
+                analyzerInput = (analyzerInput + 1) % (1 + getOutputCount())
+            }
         } else if (item.itemId == R.id.menu_set_frequency) {
             analyzer.showSetFrequencyDialog()
         } else if (item.groupId == R.id.menu_sample_rate_group) {
@@ -301,18 +327,24 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             item.setChecked(preferences.sourceSettings.agc)
             updateGainSlider()
-        } else if (item.groupId == R.id.menu_fps_limit_group) {
-            val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
-            preferences.fpsLimit = fpsLimit
-            preferences.saveNow()
+        } else if (item.groupId == R.id.menu_demodulator_group) {
+            val demodulatorType = Constants.demodulatorTypeToMenuItem.filterValues { it == item.itemId }.keys.first()
+            if (preferences.demodulatorType != demodulatorType) {
+                restartIfRunning {
+                    preferences.demodulatorType = demodulatorType
+                    preferences.saveNow()
+                    analyzerInput = 0
+                }
+            }
             item.setChecked(true)
-        } else if (item.itemId == R.id.menu_recorder_settings) {
-            showRecorderSettings()
-        } else if (item.groupId == R.id.menu_frequency_step_group) {
-            val frequencyStep = Constants.frequencyStepToMenuItem.filterValues { it == item.itemId }.keys.first()
-            preferences.frequencyStep = frequencyStep
+            invalidateOptionsMenu()
+        } else if (item.itemId == R.id.menu_demodulator_toggle_audio_output) {
+            preferences.demodulatorAudio = !preferences.demodulatorAudio
             preferences.saveNow()
-            item.setChecked(true)
+            item.setChecked(preferences.demodulatorAudio)
+            if (preferences.demodulatorType != DemodulatorType.None) {
+                restartIfRunning { }
+            }
         } else if (item.groupId == R.id.menu_fft_size_group) {
             val fftSize = Constants.fftSizeToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.fftSize = fftSize
@@ -349,6 +381,18 @@ class MainActivity : AppCompatActivity() {
             preferences.saveNow()
             item.setChecked(true)
             analyzer.view.requestRender()
+        } else if (item.groupId == R.id.menu_frequency_step_group) {
+            val frequencyStep = Constants.frequencyStepToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.frequencyStep = frequencyStep
+            preferences.saveNow()
+            item.setChecked(true)
+        } else if (item.groupId == R.id.menu_fps_limit_group) {
+            val fpsLimit = Constants.fpsLimitToMenuItem.filterValues { it == item.itemId }.keys.first()
+            preferences.fpsLimit = fpsLimit
+            preferences.saveNow()
+            item.setChecked(true)
+        } else if (item.itemId == R.id.menu_recorder_settings) {
+            showRecorderSettings()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -526,6 +570,9 @@ class MainActivity : AppCompatActivity() {
             sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
         }
 
+        createDemodulator()
+        analyzerInput = 0
+
         setState(State.Running)
 
         workerThread = thread { workerThreadFn(source) }
@@ -546,6 +593,7 @@ class MainActivity : AppCompatActivity() {
         workerThread?.interrupt()
         workerThread?.join()
 
+        demodulator = null
 
         sampleFifo.clear()
 
@@ -636,8 +684,12 @@ class MainActivity : AppCompatActivity() {
     private fun workerThreadFn(source: Source) {
         Log.d(TAG, "Starting worker thread")
 
+        var analyzerInput = analyzerInput
+
         analyzer.start()
         analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
+
+        demodulator?.start()
 
         while (state == State.Running) {
             var samples: SampleBuffer?
@@ -657,10 +709,28 @@ class MainActivity : AppCompatActivity() {
             }
 
             if (samples != null) {
+                if (analyzerInput != this.analyzerInput) {
+                    analyzerInput = this.analyzerInput
+                    if (analyzerInput == 0) {
+                        analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
+                    } else {
+                        analyzer.setDemodulatorInput(demodulator!!.getOutputName(analyzerInput))
+                    }
+                }
+
                 try {
                     val analyzerNeedsSamples = analyzer.needsSamples()
-                    if (analyzerNeedsSamples) {
-                        analyzer.analyze(samples, false)
+
+                    if (demodulator == null) {
+                        if (analyzerNeedsSamples) {
+                            analyzer.analyze(samples, false)
+                        }
+                    } else {
+                        demodulator!!.demodulate(samples, analyzerInput) { buffer, preserveSamples ->
+                            if (analyzerNeedsSamples) {
+                                analyzer.analyze(buffer, preserveSamples)
+                            }
+                        }
                     }
                 } catch (_: InterruptedException) {
                     break
@@ -670,6 +740,7 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        demodulator?.stop()
         analyzer.stop(state == State.Restarting)
 
         Log.d(TAG, "Stopping analyzer thread")

@@ -58,6 +58,10 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         view.setInputInfo("Source", name, minFrequency, maxFrequency)
     }
 
+    fun setDemodulatorInput(name: String) {
+        view.setInputInfo("Demodulator", name, 0, 0)
+    }
+
     fun showSetFrequencyDialog() {
         view.showSetFrequencyDialog()
     }
@@ -93,7 +97,7 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         if (preserveSamples) {
             val n = min(buffer.sampleCount, preferences.fftSize)
             for (i in 0 until n) {
-                fftInput[i] = buffer.samples[i]
+                fftInput[i].set(buffer.samples[i])
             }
             input = fftInput
         }

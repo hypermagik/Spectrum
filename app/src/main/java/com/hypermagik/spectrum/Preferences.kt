@@ -2,6 +2,7 @@ package com.hypermagik.spectrum
 
 import android.app.Activity
 import android.util.Log
+import com.hypermagik.spectrum.demodulator.DemodulatorType
 import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.source.SourceType
@@ -37,7 +38,8 @@ class Preferences(private val activity: Activity?) {
     // Internal use only, not serialized.
     var isRecording = false
 
-    var frequencyStep = 1000
+    var demodulatorType = DemodulatorType.None
+    var demodulatorAudio = false
 
     var fftSize = 256
     var fftWindowType = Window.Type.FLAT_TOP
@@ -54,6 +56,7 @@ class Preferences(private val activity: Activity?) {
     var wfSpeed = 2
     var wfColorMap = 0
 
+    var frequencyStep = 1000
     var fpsLimit = 60
 
     private val timer = Timer()
@@ -79,6 +82,8 @@ class Preferences(private val activity: Activity?) {
             iqFileType = SampleType.entries.toTypedArray()[getInt("iqFileType", iqFileType.ordinal)]
             recordLocation = getString("recordLocation", recordLocation)
             recordLimit = getLong("recordLimit", recordLimit)
+            demodulatorType = DemodulatorType.entries.toTypedArray()[getInt("demodulatorType", demodulatorType.ordinal)]
+            demodulatorAudio = getBoolean("demodulatorAudio", demodulatorAudio)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = Window.Type.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             dbCenter = getFloat("dbCenter", dbCenter)
@@ -115,6 +120,8 @@ class Preferences(private val activity: Activity?) {
             putInt("iqFileType", iqFileType.ordinal)
             putString("recordLocation", recordLocation)
             putLong("recordLimit", recordLimit)
+            putInt("demodulatorType", demodulatorType.ordinal)
+            putBoolean("demodulatorAudio", demodulatorAudio)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
             putFloat("dbCenter", dbCenter)
