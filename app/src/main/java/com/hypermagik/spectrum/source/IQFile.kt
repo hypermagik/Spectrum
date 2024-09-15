@@ -59,6 +59,7 @@ class IQFile(private val context: Context) : Source {
         val fd = context.contentResolver.openFileDescriptor(uri, "r") ?: return "Failed to open IQ file."
         val stream = FileInputStream(fd.fileDescriptor)
 
+        sampleRate = 0
         parseWaveHeader(stream)
 
         if (sampleRate == 0) {
