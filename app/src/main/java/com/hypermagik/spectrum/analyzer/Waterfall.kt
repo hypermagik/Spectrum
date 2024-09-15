@@ -137,13 +137,13 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     fun stop() {
     }
 
-    fun update(magnitudes: FloatArray) {
+    fun update(magnitudes: FloatArray, size: Int) {
         if (!isVisible) {
             return
         }
 
-        if (fftSize != magnitudes.size) {
-            fftSize = magnitudes.size
+        if (fftSize != size) {
+            fftSize = size
             sampleBuffer = ByteBuffer.allocateDirect(fftSize * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
             isDirty = true
         }
@@ -155,8 +155,8 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
 
         sampleBuffer.rewind()
 
-        for (i in magnitudes) {
-            sampleBuffer.putFloat(i)
+        for (i in 0 until fftSize) {
+            sampleBuffer.putFloat(magnitudes[i])
         }
     }
 

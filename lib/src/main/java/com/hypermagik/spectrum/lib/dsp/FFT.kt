@@ -7,10 +7,9 @@ import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.sin
 
-class FFT(val size: Int = 256, val windowType: Window.Type = Window.Type.FLAT_TOP) {
+class FFT(val size: Int = 256) {
     private val m: Int = (ln(size.toDouble()) / ln(2.0)).toInt()
     private val twiddles: Array<Complex32Array>
-    private var window: FloatArray
     private val product = Complex32()
 
     init {
@@ -26,14 +25,6 @@ class FFT(val size: Int = 256, val windowType: Window.Type = Window.Type.FLAT_TO
                 val angle = -PI * group / step
                 twiddles[p][group] = Complex32(cos(angle), sin(angle))
             }
-        }
-
-        window = Window.make(windowType, size)
-    }
-
-    fun applyWindow(data: Complex32Array) {
-        for (i in 0 until size) {
-            data[i].mul(window[i])
         }
     }
 

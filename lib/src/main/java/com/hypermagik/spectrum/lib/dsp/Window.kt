@@ -1,7 +1,9 @@
 package com.hypermagik.spectrum.lib.dsp
 
+import com.hypermagik.spectrum.lib.data.Complex32Array
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.min
 
 class Window {
     enum class Type { HAMMING, BLACKMAN_HARRIS, FLAT_TOP }
@@ -30,6 +32,13 @@ class Window {
             }
 
             return window
+        }
+
+        fun apply(window: FloatArray, samples: Complex32Array) {
+            val n = min(window.size, samples.size)
+            for (i in 0 until n) {
+                samples[i].mul(window[i])
+            }
         }
     }
 }

@@ -229,18 +229,18 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         maxFrequency = maximumFrequency
     }
 
-    fun updateFFT(magnitudes: FloatArray) {
+    fun updateFFT(magnitudes: FloatArray, size: Int) {
         if (!isReady) {
             Log.d(TAG, "Dropping FFT update, surface not ready")
             return
         }
 
         synchronized(fft) {
-            fft.update(magnitudes)
+            fft.update(magnitudes, size)
         }
 
         synchronized(waterfall) {
-            waterfall.update(magnitudes)
+            waterfall.update(magnitudes, size)
         }
 
         info.updateFPS()

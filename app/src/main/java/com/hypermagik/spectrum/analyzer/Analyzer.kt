@@ -7,19 +7,43 @@ import com.hypermagik.spectrum.PreferencesWrapper
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.dsp.FFT
+import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.utils.Throttle
+import kotlin.math.log2
+import kotlin.math.min
 
 class Analyzer(context: Context, private val preferences: Preferences) {
     val view: AnalyzerView = AnalyzerView(context, preferences)
 
-    var fft: FFT = FFT(preferences.fftSize, preferences.fftWindowType)
-        private set
+    private val fftMinSize = 16
+    private val fftMaxSize = 16384
 
-    private var fftInput: Complex32Array = Complex32Array(preferences.fftSize) { Complex32() }
-    private var fftOutput: FloatArray = FloatArray(preferences.fftSize) { 0.0f }
+    private val ffts: List<FFT>
+    private val windows: List<Map<Window.Type, FloatArray>>
+
+    private var fftInput: Complex32Array = Complex32Array(16384) { Complex32() }
+    private var fftOutput: FloatArray = FloatArray(16384) { 0.0f }
 
     private val throttle = Throttle()
     private val fpsLimit = PreferencesWrapper.FPSLimit(preferences)
+
+    init {
+        ffts = ArrayList()
+        windows = ArrayList()
+
+        var fftSize = fftMinSize
+        while (fftSize <= fftMaxSize) {
+            ffts.add(FFT(fftSize))
+
+            val map = HashMap<Window.Type, FloatArray>()
+            for (windowType in Window.Type.entries) {
+                map[windowType] = Window.make(windowType, fftSize)
+            }
+            windows.add(map)
+
+            fftSize *= 2
+        }
+    }
 
     fun saveInstanceState(outState: Bundle) {
         view.saveInstanceState(outState)
@@ -38,14 +62,6 @@ class Analyzer(context: Context, private val preferences: Preferences) {
     }
 
     fun start() {
-        if (fft.size != preferences.fftSize || fft.windowType != preferences.fftWindowType) {
-            fft = FFT(preferences.fftSize, preferences.fftWindowType)
-        }
-
-        if (fftOutput.size != fft.size) {
-            fftOutput = FloatArray(fft.size) { 0.0f }
-        }
-
         fpsLimit.update()
         throttle.setFPS(fpsLimit.value)
 
@@ -75,10 +91,21 @@ class Analyzer(context: Context, private val preferences: Preferences) {
     }
 
     private fun analyze(samples: Complex32Array) {
-        fft.applyWindow(samples)
+        val fftSize = min(samples.size, preferences.fftSize)
+
+        val index = log2(fftSize.toDouble()).toInt() - 4
+        if (index < 0) {
+            return
+        }
+
+        val fft = ffts[index]
+        val window = windows[index][preferences.fftWindowType]!!
+
+        Window.apply(window, samples)
+
         fft.fft(samples)
         fft.magnitudes(samples, fftOutput)
 
-        view.updateFFT(fftOutput, fftSize)
+        view.updateFFT(fftOutput, fft.size)
     }
 }

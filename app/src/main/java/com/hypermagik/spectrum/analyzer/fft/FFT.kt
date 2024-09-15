@@ -190,8 +190,8 @@ class FFT(context: Context, private val preferences: Preferences) {
         }
     }
 
-    fun update(magnitudes: FloatArray) {
-        updateFFTSize(magnitudes.size)
+    fun update(magnitudes: FloatArray, size: Int) {
+        updateFFTSize(size)
 
         val peakHoldEnabled = preferences.peakHoldEnabled
 
@@ -205,7 +205,7 @@ class FFT(context: Context, private val preferences: Preferences) {
         // - https://github.com/bane9/OpenGLFFT/tree/main/OpenGLFFT
 
         // Scaling is done in the vertex shader.
-        for (i in magnitudes.indices) {
+        for (i in 0 until size) {
             val bufferIndex = (i * coordsPerVertex + 1) * Float.SIZE_BYTES
             val magnitude = magnitudes[i]
 

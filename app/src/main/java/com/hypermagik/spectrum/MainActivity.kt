@@ -245,10 +245,10 @@ class MainActivity : AppCompatActivity() {
         Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.fftSizeToMenuItem[analyzer.fft.size]?.also {
+        Constants.fftSizeToMenuItem[preferences.fftSize]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.fftWindowToMenuItem[analyzer.fft.windowType]?.also {
+        Constants.fftWindowToMenuItem[preferences.fftWindowType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
 
@@ -320,21 +320,13 @@ class MainActivity : AppCompatActivity() {
             item.setChecked(true)
         } else if (item.groupId == R.id.menu_fft_size_group) {
             val fftSize = Constants.fftSizeToMenuItem.filterValues { it == item.itemId }.keys.first()
-            if (fftSize != analyzer.fft.size) {
-                restartIfRunning {
-                    preferences.fftSize = fftSize
-                    preferences.saveNow()
-                }
-            }
+            preferences.fftSize = fftSize
+            preferences.saveNow()
             item.setChecked(true)
         } else if (item.groupId == R.id.menu_fft_window_group) {
             val fftWindow = Constants.fftWindowToMenuItem.filterValues { it == item.itemId }.keys.first()
-            if (fftWindow != analyzer.fft.windowType) {
-                restartIfRunning {
-                    preferences.fftWindowType = fftWindow
-                    preferences.saveNow()
-                }
-            }
+            preferences.fftWindowType = fftWindow
+            preferences.saveNow()
             item.setChecked(true)
         } else if (item.itemId == R.id.menu_peak_hold) {
             preferences.peakHoldEnabled = !preferences.peakHoldEnabled
