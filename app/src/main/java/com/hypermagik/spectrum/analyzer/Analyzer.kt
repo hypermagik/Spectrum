@@ -54,8 +54,8 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         view.restoreInstanceState(savedInstanceState)
     }
 
-    fun setFrequencyRange(minFrequency: Long, maxFrequency: Long) {
-        view.setFrequencyRange(minFrequency, maxFrequency)
+    fun setSourceInput(name: String, minFrequency: Long, maxFrequency: Long) {
+        view.setInputInfo("Source", name, minFrequency, maxFrequency)
     }
 
     fun showSetFrequencyDialog() {

@@ -77,8 +77,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         gestureDetector = GestureDetector(context, gestureHandler)
         gestureDetector.setOnDoubleTapListener(gestureHandler)
 
-        info.setFrequency(frequency)
-        info.setGain(gain.value)
+        updateInfoBar()
     }
 
     override fun onSurfaceCreated(unused: GL10, config: EGLConfig) {
@@ -175,6 +174,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putDouble("viewBandwidth", viewBandwidth)
 
         fft.saveInstanceState(bundle)
+        info.saveInstanceState(bundle)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
@@ -187,6 +187,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewBandwidth = bundle.getDouble("viewBandwidth")
 
         fft.restoreInstanceState(bundle)
+        info.restoreInstanceState(bundle)
 
         updateInfoBar()
     }
@@ -201,6 +202,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         if (isReady) {
             updateFFT()
         }
+
+        updateInfoBar()
     }
 
     fun stop(restart: Boolean) {
@@ -215,7 +218,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
     }
 
-    fun setFrequencyRange(minimumFrequency: Long, maximumFrequency: Long) {
+    fun setInputInfo(name: String, details: String, minimumFrequency: Long, maximumFrequency: Long) {
+        info.setInputInfo(name, details)
         minFrequency = minimumFrequency
         maxFrequency = maximumFrequency
     }
@@ -227,14 +231,14 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     fun updateFrequency(frequency: Long) {
         this.frequency = frequency
-        updateInfoBar()
+        info.setFrequency(frequency)
         updateFFT()
     }
 
     fun updateSampleRate(sampleRate: Int) {
         this.sampleRate = sampleRate
+        info.setBandwidth(sampleRate)
         resetFrequencyScale()
-        updateInfoBar()
         updateFFT()
     }
 
@@ -252,6 +256,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             waterfall.update(magnitudes, size)
         }
 
+        info.setFFTSize(fft.fftSize)
         info.updateFPS()
 
         requestRender()
@@ -291,7 +296,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private fun updateInfoBar() {
         info.setFrequency(frequency)
-        info.setFrequencyLock(isFrequencyLocked)
+        info.setBandwidth(sampleRate)
+        info.setGain(gain.value)
+        info.setFFTSize(fft.fftSize)
     }
 
     private fun updatePreferencesDB() {
@@ -350,7 +357,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 preferences.save()
 
                 frequency = newFrequency
-                updateInfoBar()
+                info.setFrequency(frequency)
             }
         }
 
@@ -362,6 +369,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         if (y < infoArea) {
             // Info bar tapped, lock/unlock frequency.
             isFrequencyLocked = !isFrequencyLocked
+            info.setFrequencyLock(isFrequencyLocked)
             if (!isFrequencyLocked) {
                 // When unlocked, reset the X axis.
                 resetFrequencyScale()
@@ -369,7 +377,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             } else {
                 requestRender()
             }
-            updateInfoBar()
         }
     }
 
@@ -447,8 +454,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             frequency = newFrequency.toLong()
             viewFrequency = frequency.toDouble()
 
+            info.setFrequency(frequency)
+
             updateFFT()
-            updateInfoBar()
         }
 
         dialog?.dismiss()

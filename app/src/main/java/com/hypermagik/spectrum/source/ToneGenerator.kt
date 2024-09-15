@@ -33,6 +33,7 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
     private var throttle = Throttle()
 
     override fun getName(): String = "Tone generator"
+    override fun getShortName(): String = "Tone gen"
     override fun getType(): SourceType = SourceType.ToneGenerator
     override fun getSampleType(): SampleType = SampleType.F32
     override fun getUsbDevice(): UsbDevice? = null

@@ -25,6 +25,7 @@ class RTLSDR(private val context: Context, private val recorder: IQRecorder) : S
     private var requests = Array(0) { UsbRequest() }
 
     override fun getName(): String = "RTL-SDR"
+    override fun getShortName(): String = "RTL-SDR"
     override fun getType(): SourceType = SourceType.RTLSDR
     override fun getSampleType(): SampleType = SampleType.U8
     override fun getUsbDevice(): UsbDevice? = device.getDevice(context)

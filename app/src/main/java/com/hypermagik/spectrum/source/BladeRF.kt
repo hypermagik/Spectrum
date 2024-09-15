@@ -25,6 +25,7 @@ class BladeRF(private val context: Context, private val recorder: IQRecorder) : 
     private var requests = Array(0) { UsbRequest() }
 
     override fun getName(): String = "bladeRF 2.0"
+    override fun getShortName(): String = "bladeRF"
     override fun getType(): SourceType = SourceType.BladeRF
     override fun getSampleType(): SampleType = SampleType.S12P
     override fun getUsbDevice(): UsbDevice? = device.getDevice(context)

@@ -88,7 +88,7 @@ class MainActivity : AppCompatActivity() {
         sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
 
         analyzer = Analyzer(this, preferences)
-        analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
+        analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
 
         analyzerFrame = binding.appBarMain.analyzerFrame
         analyzerFrame.setBackgroundColor(resources.getColor(R.color.black, null))
@@ -115,10 +115,6 @@ class MainActivity : AppCompatActivity() {
 
         updateActionBarSubtitle()
         updateGainSlider()
-
-        if (!force) {
-            analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
-        }
     }
 
     override fun onResume() {
@@ -368,12 +364,9 @@ class MainActivity : AppCompatActivity() {
 
         contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
 
-        preferences.iqFile = uri.toString()
-        preferences.save()
-
-        if (state == State.Running) {
-            stop(false)
-            start()
+        restartIfRunning {
+            preferences.iqFile = uri.toString()
+            preferences.saveNow()
         }
     }
 
@@ -597,6 +590,7 @@ class MainActivity : AppCompatActivity() {
                 if (source.read(buffer.samples)) {
                     if (scratch !== buffer) {
                         buffer.sampleCount = buffer.samples.size
+                        // TODO: should probably come from source
                         buffer.frequency = preferences.sourceSettings.frequency
                         buffer.sampleRate = preferences.sourceSettings.sampleRate
                         sampleFifo.push()
@@ -643,7 +637,7 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Starting worker thread")
 
         analyzer.start()
-        analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
+        analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
 
         while (state == State.Running) {
             var samples: SampleBuffer?

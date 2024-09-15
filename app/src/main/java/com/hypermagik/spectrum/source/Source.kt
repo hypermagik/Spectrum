@@ -7,8 +7,11 @@ import com.hypermagik.spectrum.lib.data.SampleType
 
 interface Source {
     fun getName(): String
+    fun getShortName(): String
+
     fun getType(): SourceType
     fun getSampleType(): SampleType
+
     fun getUsbDevice(): UsbDevice?
 
     fun open(preferences: Preferences): String?

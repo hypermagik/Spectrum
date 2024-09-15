@@ -42,7 +42,7 @@ class Preferences(private val activity: Activity?) {
     var fftSize = 256
     var fftWindowType = Window.Type.FLAT_TOP
 
-    var dbCenterDefault = -52.0f
+    var dbCenterDefault = -55.0f
     var dbRangeDefault = 110.0f
     var dbCenter = dbCenterDefault
     var dbRange = dbRangeDefault

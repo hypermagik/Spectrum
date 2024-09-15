@@ -3,6 +3,7 @@ package com.hypermagik.spectrum.analyzer
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.os.Bundle
 import com.hypermagik.spectrum.R
 import java.text.DecimalFormat
 import java.text.DecimalFormatSymbols
@@ -11,7 +12,7 @@ import kotlin.math.roundToInt
 
 class Info(context: Context) {
     companion object {
-        const val HEIGHT = 30.0f
+        const val HEIGHT = 2 * 14.0f + 3 * 6.0f
     }
 
     private val textColor = context.resources.getColor(R.color.fft_info_text, null)
@@ -20,9 +21,13 @@ class Info(context: Context) {
     private val backgroundColor = context.resources.getColor(R.color.fft_info_background, null)
 
     private val height = HEIGHT * context.resources.displayMetrics.density
-    private val textSize = 20.0f * context.resources.displayMetrics.density
-    private val textY = height - 7.0f * context.resources.displayMetrics.density
-    private val textYs = height - 17.0f * context.resources.displayMetrics.density
+
+    private val textSize = 18.0f * context.resources.displayMetrics.density
+    private val textY1 = (6.0f + 14.0f) * context.resources.displayMetrics.density
+    private val textY1s = (6.0f + 6.0f) * context.resources.displayMetrics.density
+    private val textY2 = height - 6.0f * context.resources.displayMetrics.density
+    private var textY = textY1
+
     private val decimalSymbols = DecimalFormatSymbols(Locale.ITALY)
 
     private var paint = Paint()
@@ -32,6 +37,10 @@ class Info(context: Context) {
     private var frequency = 0L
     private var isFrequencyLocked = false
     private var gain = 0
+    private var fftSize = 0
+    private var bandwidth = 0
+    private var inputName = "Source"
+    private var inputDetails = ""
 
     private var referenceTime = System.nanoTime()
     private var frameCounter = 0
@@ -100,16 +109,19 @@ class Info(context: Context) {
         canvas.drawLine(0.0f, height - 1, texture.width.toFloat(), height - 1, paint)
 
         paint.textSize = textSize / 2
-        var textX = paint.measureText(" ")
+        val spacer = paint.measureText(" ")
 
-        var text = "0.000.000.000"
+        var textX = spacer
+        textY = textY1
+
+        var text = "000.000.000.000"
         putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
         textX += paint.measureText(text)
-        text = DecimalFormat("#,###,###,###", decimalSymbols).format(frequency)
+        text = DecimalFormat("###,###,###,###", decimalSymbols).format(frequency)
         putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
         text = " •"
-        putText(canvas, text, textX, textYs, textSize / 2, if (isFrequencyLocked) textColor else shadowColor, Paint.Align.LEFT)
-        text = " HZ"
+        putText(canvas, text, textX, textY1s, textSize / 2, if (isFrequencyLocked) textColor else shadowColor, Paint.Align.LEFT)
+        text = " HZ "
         putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
         textX += paint.measureText(text)
 
@@ -121,19 +133,43 @@ class Info(context: Context) {
         text = " DB"
         putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
 
+        textX = texture.width.toFloat() - spacer
+        putText(canvas, inputName, textX, textSize, textColor, Paint.Align.RIGHT)
+
+        textX = spacer
+        textY = textY2
+
+        text = "000.000"
+        putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
+        textX += paint.measureText(text)
+        text = DecimalFormat("###,###", decimalSymbols).format(bandwidth / 1000)
+        putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
+        text = " KHZ"
+        putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
+        textX += paint.measureText(text)
+
+        text = " 00000"
+        putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
+        textX += paint.measureText(text)
+        text = DecimalFormat("#####", decimalSymbols).format(fftSize)
+        putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
+        text = " FFT"
+        putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
+        textX += paint.measureText(text)
+
+        text = " 000"
+        putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
+        textX += paint.measureText(text)
         val showFPS = isRunning && fps > 0
-
-        textX = texture.width.toFloat()
-        text = " FPS "
-        putText(canvas, text, textX, textSize / 2, if (showFPS) textColor else shadowColor, Paint.Align.RIGHT)
-        textX -= paint.measureText(text)
-        text = "000"
-        putText(canvas, text, textX, textSize, shadowColor, Paint.Align.RIGHT)
-
         if (showFPS) {
             text = String.format(Locale.getDefault(), "%d", fps.roundToInt())
             putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
         }
+        text = " FPS"
+        putText(canvas, text, textX, textSize / 2, if (showFPS) textColor else shadowColor, Paint.Align.LEFT)
+
+        textX = texture.width.toFloat() - spacer
+        putText(canvas, inputDetails, textX, textSize, textColor, Paint.Align.RIGHT)
 
         texture.update()
     }
@@ -153,18 +189,57 @@ class Info(context: Context) {
         isDirty = true
     }
 
-    fun setFrequency(frequency: Long) {
-        this.frequency = frequency
+    fun saveInstanceState(bundle: Bundle) {
+        bundle.putString("inputName", inputName)
+        bundle.putString("inputDetails", inputDetails)
+    }
+
+    fun restoreInstanceState(bundle: Bundle) {
+        inputName = bundle.getString("inputName", inputName)
+        inputDetails = bundle.getString("inputDetails", inputDetails)
         isDirty = true
     }
 
-    fun setFrequencyLock(frequencyLocked: Boolean) {
-        this.isFrequencyLocked = frequencyLocked
-        isDirty = true
+    fun setFrequency(frequency: Long) {
+        if (this.frequency != frequency) {
+            this.frequency = frequency
+            isDirty = true
+        }
+    }
+
+    fun setFrequencyLock(isFrequencyLocked: Boolean) {
+        if (this.isFrequencyLocked != isFrequencyLocked) {
+            this.isFrequencyLocked = isFrequencyLocked
+            isDirty = true
+        }
+    }
+
+    fun setBandwidth(bandwidth: Int) {
+        if (this.bandwidth != bandwidth) {
+            this.bandwidth = bandwidth
+            isDirty = true
+        }
     }
 
     fun setGain(gain: Int) {
-        this.gain = gain
-        isDirty = true
+        if (this.gain != gain) {
+            this.gain = gain
+            isDirty = true
+        }
+    }
+
+    fun setFFTSize(fftSize: Int) {
+        if (this.fftSize != fftSize) {
+            this.fftSize = fftSize
+            isDirty = true
+        }
+    }
+
+    fun setInputInfo(name: String, details: String) {
+        if (inputName != name || inputDetails != details) {
+            inputName = name
+            inputDetails = details
+            isDirty = true
+        }
     }
 }

@@ -41,6 +41,7 @@ class IQFile(private val context: Context) : Source {
     private val throttle = Throttle()
 
     override fun getName(): String = if (fileName.isEmpty()) "IQ file" else "IQ file: $fileName"
+    override fun getShortName(): String = "File"
     override fun getType(): SourceType = SourceType.IQFile
     override fun getSampleType(): SampleType = SampleType.NONE
     override fun getUsbDevice(): UsbDevice? = null
