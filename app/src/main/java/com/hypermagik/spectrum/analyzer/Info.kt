@@ -139,12 +139,14 @@ class Info(context: Context) {
         textX = spacer
         textY = textY2
 
+        val sampleRateInHz = bandwidth < 1000000
+
         text = "000.000"
         putText(canvas, text, textX, textSize, shadowColor, Paint.Align.LEFT)
         textX += paint.measureText(text)
-        text = DecimalFormat("###,###", decimalSymbols).format(bandwidth / 1000)
+        text = DecimalFormat("###,###", decimalSymbols).format(if (sampleRateInHz) bandwidth else bandwidth / 1000)
         putText(canvas, text, textX, textSize, textColor, Paint.Align.RIGHT)
-        text = " KHZ"
+        text = if (sampleRateInHz) " HZ " else " KHZ"
         putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
         textX += paint.measureText(text)
 
