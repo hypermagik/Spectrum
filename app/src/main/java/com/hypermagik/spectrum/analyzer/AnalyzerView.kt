@@ -51,6 +51,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         private set
     var sampleRate = preferences.sourceSettings.sampleRate
         private set
+    var realSamples = false
+        private set
 
     private var gain = PreferencesWrapper.Gain(preferences)
 
@@ -219,9 +221,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     fun setInputInfo(name: String, details: String, minimumFrequency: Long, maximumFrequency: Long) {
-        info.setInputInfo(name, details)
         minFrequency = minimumFrequency
         maxFrequency = maximumFrequency
+        info.setInputInfo(name, details)
     }
 
     private fun resetFrequencyScale() {
@@ -238,6 +240,12 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun updateSampleRate(sampleRate: Int) {
         this.sampleRate = sampleRate
         info.setBandwidth(sampleRate)
+        resetFrequencyScale()
+        updateFFT()
+    }
+
+    fun updateRealSamples(realSamples: Boolean) {
+        this.realSamples = realSamples
         resetFrequencyScale()
         updateFFT()
     }
@@ -263,7 +271,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateFFT() {
-        val minViewBandwidth = sampleRate / (preferences.fftSize / 128.0)
+        val sampleRate = if (realSamples) sampleRate / 2.0 else sampleRate.toDouble()
+        val frequency = if (realSamples) sampleRate / 2.0 else frequency.toDouble()
+
+        val minViewBandwidth = sampleRate / (fft.fftSize / 128.0)
         val maxViewBandwidth = sampleRate / 1.0
 
         viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
@@ -296,6 +307,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private fun updateInfoBar() {
         info.setFrequency(frequency)
+        info.setFrequencyLock(isFrequencyLocked)
         info.setBandwidth(sampleRate)
         info.setGain(gain.value)
         info.setFFTSize(fft.fftSize)

@@ -114,6 +114,7 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
         }
 
         quadrature.demodulate(buffer.samples, buffer.samples, buffer.sampleCount)
+        buffer.realSamples = true
 
         lowPassFIR3.filter(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleCount /= 2

@@ -88,9 +88,11 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         if (view.frequency != buffer.frequency) {
             view.updateFrequency(buffer.frequency)
         }
-
         if (view.sampleRate != buffer.sampleRate) {
             view.updateSampleRate(buffer.sampleRate)
+        }
+        if (view.realSamples != buffer.realSamples) {
+            view.updateRealSamples(buffer.realSamples)
         }
 
         var input = buffer.samples
@@ -101,10 +103,10 @@ class Analyzer(context: Context, private val preferences: Preferences) {
             }
             input = fftInput
         }
-        analyze(input, buffer.sampleCount)
+        analyze(input, buffer.sampleCount, buffer.realSamples)
     }
 
-    private fun analyze(samples: Complex32Array, sampleCount: Int) {
+    private fun analyze(samples: Complex32Array, sampleCount: Int, realSamples: Boolean) {
         val fftSize = min(sampleCount, preferences.fftSize)
 
         val index = log2(fftSize.toDouble()).toInt() - 4
@@ -118,7 +120,7 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         Window.apply(window, samples)
 
         fft.fft(samples)
-        fft.magnitudes(samples, fftOutput)
+        fft.magnitudes(samples, fftOutput, realSamples)
 
         view.updateFFT(fftOutput, fft.size)
     }

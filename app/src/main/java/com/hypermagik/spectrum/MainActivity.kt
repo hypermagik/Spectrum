@@ -641,6 +641,7 @@ class MainActivity : AppCompatActivity() {
                         // TODO: should probably come from source
                         buffer.frequency = preferences.sourceSettings.frequency
                         buffer.sampleRate = preferences.sourceSettings.sampleRate
+                        buffer.realSamples = false
                         sampleFifo.push()
                         buffer = null
                     }

@@ -75,12 +75,20 @@ class FFT(val size: Int = 256) {
         compute(data)
     }
 
-    fun magnitudes(data: Complex32Array, output: FloatArray) {
+    fun magnitudes(data: Complex32Array, output: FloatArray, realSamples: Boolean = false) {
         val half = size / 2
         val scale = 1.0f / size
 
-        for (i in 0 until size) {
-            output[(i + half) % size] = data[i].mag(scale)
+        if (realSamples) {
+            for (i in 0 until half) {
+                val mag = data[i].mag(scale)
+                output[2 * i + 0] = mag
+                output[2 * i + 1] = mag
+            }
+       } else {
+            for (i in 0 until size) {
+                output[(i + half) % size] = data[i].mag(scale)
+            }
         }
     }
 }
