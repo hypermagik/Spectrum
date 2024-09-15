@@ -120,8 +120,8 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         Window.apply(window, samples)
 
         fft.fft(samples)
-        fft.magnitudes(samples, fftOutput, realSamples)
+        fft.magnitudes(samples, fftOutput, preferences.fftSize, realSamples)
 
-        view.updateFFT(fftOutput, fft.size)
+        view.updateFFT(fftOutput, preferences.fftSize, fft.size)
     }
 }

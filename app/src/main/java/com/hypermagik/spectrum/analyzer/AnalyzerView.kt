@@ -250,21 +250,21 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         updateFFT()
     }
 
-    fun updateFFT(magnitudes: FloatArray, size: Int) {
+    fun updateFFT(magnitudes: FloatArray, count: Int, fftSize: Int) {
         if (!isReady) {
             Log.d(TAG, "Dropping FFT update, surface not ready")
             return
         }
 
         synchronized(fft) {
-            fft.update(magnitudes, size)
+            fft.update(magnitudes, count)
         }
 
         synchronized(waterfall) {
-            waterfall.update(magnitudes, size)
+            waterfall.update(magnitudes, count)
         }
 
-        info.setFFTSize(fft.fftSize)
+        info.setFFTSize(fftSize)
         info.updateFPS()
 
         requestRender()
