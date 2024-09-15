@@ -15,8 +15,14 @@
                         android:id="@+id/menu_sr_1M"
                         android:title="@string/menu_sr_1M" />
                     <item
+                        android:id="@+id/menu_sr_1_024M"
+                        android:title="@string/menu_sr_1_024M" />
+                    <item
                         android:id="@+id/menu_sr_2M"
                         android:title="@string/menu_sr_2M" />
+                    <item
+                        android:id="@+id/menu_sr_2_048M"
+                        android:title="@string/menu_sr_2_048M" />
                     <item
                         android:id="@+id/menu_sr_5M"
                         android:title="@string/menu_sr_5M" />
