@@ -10,12 +10,15 @@ class AudioSink(sampleRate: Int) {
     private val audioBuffer = ShortArray(sampleRate)
 
     private val audioFormat = AudioFormat.Builder()
-        .setSampleRate(31250)
+        .setSampleRate(sampleRate)
         .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
         .build()
 
-    private val audioBufferSize = AudioTrack.getMinBufferSize(sampleRate, AudioFormat.CHANNEL_OUT_MONO, AudioFormat.ENCODING_PCM_16BIT)
+    private val audioBufferSize = AudioTrack.getMinBufferSize(
+        sampleRate,
+        AudioFormat.CHANNEL_OUT_MONO,
+        AudioFormat.ENCODING_PCM_16BIT)
 
     private val audioAttributes = AudioAttributes.Builder()
         .setContentType(AudioAttributes.CONTENT_TYPE_MUSIC)
