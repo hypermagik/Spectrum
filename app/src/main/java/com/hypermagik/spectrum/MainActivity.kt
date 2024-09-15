@@ -18,12 +18,11 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.slider.Slider
-import com.hypermagik.spectrum.analyzer.AnalyzerView
+import com.hypermagik.spectrum.analyzer.Analyzer
 import com.hypermagik.spectrum.databinding.ActivityMainBinding
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleFIFO
-import com.hypermagik.spectrum.lib.dsp.FFT
 import com.hypermagik.spectrum.source.BladeRF
 import com.hypermagik.spectrum.source.IQFile
 import com.hypermagik.spectrum.source.RTLSDR
@@ -31,7 +30,6 @@ import com.hypermagik.spectrum.source.Source
 import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.source.ToneGenerator
 import com.hypermagik.spectrum.utils.TAG
-import com.hypermagik.spectrum.utils.Throttle
 import java.text.DecimalFormat
 import kotlin.concurrent.thread
 
@@ -44,18 +42,14 @@ class MainActivity : AppCompatActivity() {
     private var preferences = Preferences(this)
 
     private lateinit var source: Source
-    private var sourceThread: Thread? = null
-
-    private lateinit var fft: FFT
 
     private val sampleFifoSize = 32
     private lateinit var sampleFifo: SampleFIFO
 
-    private var analyzerThread: Thread? = null
-    private val analyzerThrottle = Throttle()
-    private lateinit var analyzerMagnitudes: FloatArray
+    private lateinit var analyzer: Analyzer
 
-    private lateinit var analyzerView: AnalyzerView
+    private var sourceThread: Thread? = null
+    private var workerThread: Thread? = null
 
     enum class State { Stopped, Stopping, Restarting, Running }
 
@@ -92,18 +86,14 @@ class MainActivity : AppCompatActivity() {
 
         createSource(true)
 
-        fft = FFT(preferences.fftSize, preferences.fftWindowType)
         sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
 
-        analyzerThrottle.setFPS(preferences.fpsLimit)
-        analyzerMagnitudes = FloatArray(preferences.fftSize) { 0.0f }
-
-        analyzerView = AnalyzerView(this, preferences)
-        analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
+        analyzer = Analyzer(this, preferences)
+        analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
 
         analyzerFrame = binding.appBarMain.analyzerFrame
         analyzerFrame.setBackgroundColor(resources.getColor(R.color.black, null))
-        analyzerFrame.addView(analyzerView)
+        analyzerFrame.addView(analyzer.view)
 
         if (savedInstanceState != null) {
             startOnResume = savedInstanceState.getBoolean("startOnResume", false)
@@ -128,7 +118,7 @@ class MainActivity : AppCompatActivity() {
         updateGainSlider()
 
         if (!force) {
-            analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
+            analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
         }
     }
 
@@ -162,13 +152,13 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("startOnResume", startOnResume)
-        analyzerView.saveInstanceState(outState)
+        analyzer.saveInstanceState(outState)
         preferences.saveNow()
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
-        analyzerView.restoreInstanceState(savedInstanceState)
+        analyzer.restoreInstanceState(savedInstanceState)
     }
 
     private fun toast(message: String) {
@@ -255,10 +245,10 @@ class MainActivity : AppCompatActivity() {
         Constants.frequencyStepToMenuItem[preferences.frequencyStep]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.fftSizeToMenuItem[fft.size]?.also {
+        Constants.fftSizeToMenuItem[analyzer.fft.size]?.also {
             menu.findItem(it)?.setChecked(true)
         }
-        Constants.fftWindowToMenuItem[fft.windowType]?.also {
+        Constants.fftWindowToMenuItem[analyzer.fft.windowType]?.also {
             menu.findItem(it)?.setChecked(true)
         }
 
@@ -295,7 +285,7 @@ class MainActivity : AppCompatActivity() {
             invalidateOptionsMenu()
             createSource()
         } else if (item.itemId == R.id.menu_set_frequency) {
-            analyzerView.showSetFrequencyDialog()
+            analyzer.showSetFrequencyDialog()
         } else if (item.groupId == R.id.menu_sample_rate_group) {
             val sampleRate = Constants.sampleRateToMenuItem.filterValues { it == item.itemId }.keys.first()
             restartIfRunning {
@@ -330,7 +320,7 @@ class MainActivity : AppCompatActivity() {
             item.setChecked(true)
         } else if (item.groupId == R.id.menu_fft_size_group) {
             val fftSize = Constants.fftSizeToMenuItem.filterValues { it == item.itemId }.keys.first()
-            if (fftSize != fft.size) {
+            if (fftSize != analyzer.fft.size) {
                 restartIfRunning {
                     preferences.fftSize = fftSize
                     preferences.saveNow()
@@ -339,7 +329,7 @@ class MainActivity : AppCompatActivity() {
             item.setChecked(true)
         } else if (item.groupId == R.id.menu_fft_window_group) {
             val fftWindow = Constants.fftWindowToMenuItem.filterValues { it == item.itemId }.keys.first()
-            if (fftWindow != fft.windowType) {
+            if (fftWindow != analyzer.fft.windowType) {
                 restartIfRunning {
                     preferences.fftWindowType = fftWindow
                     preferences.saveNow()
@@ -350,7 +340,7 @@ class MainActivity : AppCompatActivity() {
             preferences.peakHoldEnabled = !preferences.peakHoldEnabled
             preferences.saveNow()
             item.setChecked(preferences.peakHoldEnabled)
-            analyzerView.requestRender()
+            analyzer.view.requestRender()
         } else if (item.groupId == R.id.menu_peak_hold_decay_group) {
             val peakHoldDecay = Constants.peakHoldDecayToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.peakHoldDecay = peakHoldDecay
@@ -360,7 +350,7 @@ class MainActivity : AppCompatActivity() {
             preferences.peakIndicatorEnabled = !preferences.peakIndicatorEnabled
             preferences.saveNow()
             item.setChecked(preferences.peakIndicatorEnabled)
-            analyzerView.requestRender()
+            analyzer.view.requestRender()
         } else if (item.groupId == R.id.menu_wf_speed_group) {
             val wfSpeed = Constants.wfSpedToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.wfSpeed = wfSpeed
@@ -371,7 +361,7 @@ class MainActivity : AppCompatActivity() {
             preferences.wfColorMap = colorMap
             preferences.saveNow()
             item.setChecked(true)
-            analyzerView.requestRender()
+            analyzer.view.requestRender()
         }
         return super.onOptionsItemSelected(item)
     }
@@ -548,24 +538,13 @@ class MainActivity : AppCompatActivity() {
 
         updateActionBarSubtitle()
 
-        if (fft.size != preferences.fftSize || fft.windowType != preferences.fftWindowType) {
-            fft = FFT(preferences.fftSize, preferences.fftWindowType)
-        }
-
         if (sampleFifo.bufferSize != preferences.getSampleFifoBufferSize()) {
             sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
         }
 
-        if (fft.size != analyzerMagnitudes.size) {
-            Log.d(TAG, "Resizing magnitude buffer")
-            analyzerMagnitudes = FloatArray(fft.size) { 0.0f }
-        }
-
-        analyzerThrottle.setFPS(preferences.fpsLimit)
-
         setState(State.Running)
 
-        analyzerThread = thread { analyzerThreadFn(source) }
+        workerThread = thread { workerThreadFn(source) }
         sourceThread = thread { sourceThreadFn() }
     }
 
@@ -580,8 +559,9 @@ class MainActivity : AppCompatActivity() {
         sourceThread?.interrupt()
         sourceThread?.join()
 
-        analyzerThread?.interrupt()
-        analyzerThread?.join()
+        workerThread?.interrupt()
+        workerThread?.join()
+
 
         sampleFifo.clear()
 
@@ -665,13 +645,11 @@ class MainActivity : AppCompatActivity() {
         Log.d(TAG, "Stopping source thread")
     }
 
-    private fun analyzerThreadFn(source: Source) {
-        Log.d(TAG, "Starting analyzer thread")
+    private fun workerThreadFn(source: Source) {
+        Log.d(TAG, "Starting worker thread")
 
-        analyzerView.start()
-        analyzerView.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
-
-        var previousFPSLimit = preferences.fpsLimit
+        analyzer.start()
+        analyzer.setFrequencyRange(source.getMinimumFrequency(), source.getMaximumFrequency())
 
         while (state == State.Running) {
             var samples: Complex32Array?
@@ -692,35 +670,20 @@ class MainActivity : AppCompatActivity() {
 
             if (samples != null) {
                 try {
-                    analyze(samples)
+                    val analyzerNeedsSamples = analyzer.needsSamples()
+                    if (analyzerNeedsSamples) {
+                        analyzer.analyze(samples, false)
+                    }
                 } catch (_: InterruptedException) {
                     break
                 }
 
                 sampleFifo.pop()
             }
-
-            val newFPSLimit = preferences.fpsLimit
-            if (previousFPSLimit != newFPSLimit) {
-                previousFPSLimit = newFPSLimit
-                analyzerThrottle.setFPS(newFPSLimit)
-            }
         }
 
-        analyzerView.stop(state == State.Restarting)
+        analyzer.stop(state == State.Restarting)
 
         Log.d(TAG, "Stopping analyzer thread")
-    }
-
-    private fun analyze(samples: Complex32Array) {
-        if (!analyzerThrottle.isSynced()) {
-            return
-        }
-
-        fft.applyWindow(samples)
-        fft.fft(samples)
-        fft.magnitudes(samples, analyzerMagnitudes)
-
-        analyzerView.updateFFT(analyzerMagnitudes)
     }
 }

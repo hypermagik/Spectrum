@@ -52,4 +52,18 @@ class PreferencesWrapper {
             return false
         }
     }
+
+    class FPSLimit(private val preferences: Preferences) {
+        var value = preferences.fpsLimit
+
+
+        fun update(): Boolean {
+            val newValue = preferences.fpsLimit
+            if (value != newValue) {
+                value = newValue
+                return true
+            }
+            return false
+        }
+    }
 }
