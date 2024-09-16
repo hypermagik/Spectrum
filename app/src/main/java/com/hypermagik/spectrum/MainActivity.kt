@@ -688,11 +688,9 @@ class MainActivity : AppCompatActivity() {
     private fun workerThreadFn(source: Source) {
         Log.d(TAG, "Starting worker thread")
 
-        var analyzerInput = analyzerInput
+        var analyzerInput = -1
 
         analyzer.start()
-        analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
-
         demodulator?.start()
 
         while (state == State.Running) {
