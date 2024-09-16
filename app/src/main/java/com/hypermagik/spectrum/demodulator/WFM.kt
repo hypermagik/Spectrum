@@ -2,6 +2,7 @@ package com.hypermagik.spectrum.demodulator
 
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.demod.Quadrature
+import com.hypermagik.spectrum.lib.dsp.Deemphasis
 import com.hypermagik.spectrum.lib.dsp.LowPassFIR
 import com.hypermagik.spectrum.lib.dsp.Shifter
 
@@ -39,7 +40,12 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
 
     private var quadrature = Quadrature(quadratureRates[sampleRate]!!, quadratureDeviation)
 
-    private var audioFIR = LowPassFIR(39, 4, 1 / 10f)
+    // Typical time constant values:
+    // USA: tau = 75 us
+    // EU:  tau = 50 us
+    private var deemphasis = Deemphasis(22e-6f)
+
+    private var audioFIR = LowPassFIR(39, 4, 1 / 10.0f)
     private var audioSink: AudioSink? = null
 
     private val outputs = mapOf(
@@ -127,6 +133,8 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
         audioFIR.filter(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleCount /= 4
         buffer.sampleRate /= 4
+
+        deemphasis.filter(buffer)
 
         audioSink?.play(buffer.samples, buffer.sampleCount)
 
