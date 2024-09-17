@@ -1,10 +1,13 @@
 package com.hypermagik.spectrum.demodulator
 
+import android.util.Log
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.demod.Quadrature
 import com.hypermagik.spectrum.lib.dsp.Deemphasis
-import com.hypermagik.spectrum.lib.dsp.LowPassFIR
+import com.hypermagik.spectrum.lib.dsp.FIR
 import com.hypermagik.spectrum.lib.dsp.Shifter
+import com.hypermagik.spectrum.lib.dsp.Taps
+import com.hypermagik.spectrum.utils.TAG
 
 class WFM(private val demodulatorAudio: Boolean) : Demodulator {
     private var sampleRate = 1000000
@@ -32,20 +35,22 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
         2048000 to 32000,
     )
 
-    private var shifter = Shifter(sampleRate, -frequencyOffset)
+    private val halfBandTaps = Taps.lowPass(1.0f, 1.0f / 4, 1.0f / 4, 60)
+    private val quarterBandTaps = Taps.lowPass(1.0f, 1.0f / 8, 1.0f / 8, 60)
+    private val audioTaps = Taps.lowPass(1.0f, 0.1f, 0.1f)
 
-    private var lowPassFIR1 = LowPassFIR(9, 2)
-    private var lowPassFIR2 = LowPassFIR(9, 4)
-    private var lowPassFIR3 = LowPassFIR(9, 2)
-
-    private var quadrature = Quadrature(quadratureRates[sampleRate]!!, quadratureDeviation)
+    private lateinit var shifter: Shifter
+    private lateinit var lowPassFIR1: FIR
+    private lateinit var lowPassFIR2: FIR
+    private lateinit var lowPassFIR3: FIR
+    private lateinit var quadrature: Quadrature
 
     // Typical time constant values:
     // USA: tau = 75 us
     // EU:  tau = 50 us
     private var deemphasis = Deemphasis(22e-6f)
 
-    private var audioFIR = LowPassFIR(39, 4, 1 / 10.0f)
+    private lateinit var audioFIR: FIR
     private var audioSink: AudioSink? = null
 
     private val outputs = mapOf(
@@ -63,6 +68,12 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
         if (demodulatorAudio) {
             audioSink = AudioSink(audioSampleRates[sampleRate]!!)
         }
+
+        setSampleRate(supportedSampleRates[0])
+
+        Log.d(TAG, "Half-band taps (${halfBandTaps.size}): ${halfBandTaps.joinToString(", ")}")
+        Log.d(TAG, "Quarter-band taps (${quarterBandTaps.size}): ${quarterBandTaps.joinToString(", ")}")
+        Log.d(TAG, "Audio taps (${audioTaps.size}): ${audioTaps.joinToString(", ")}")
     }
 
     override fun start() {
@@ -79,7 +90,15 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
         }
 
         shifter = Shifter(sampleRate, -frequencyOffset)
+
+        lowPassFIR1 = FIR(halfBandTaps, 2, true)
+        lowPassFIR2 = FIR(quarterBandTaps, 4)
+        lowPassFIR3 = FIR(halfBandTaps, 2, true)
+
         quadrature = Quadrature(quadratureRates[sampleRate]!!, quadratureDeviation)
+
+
+        audioFIR = FIR(audioTaps, 4)
 
         if (demodulatorAudio) {
             audioSink?.stop()

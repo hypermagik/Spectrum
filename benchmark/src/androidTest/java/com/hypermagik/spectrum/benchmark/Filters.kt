@@ -5,7 +5,7 @@ import androidx.benchmark.junit4.measureRepeated
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
-import com.hypermagik.spectrum.lib.dsp.LowPassFIR
+import com.hypermagik.spectrum.lib.dsp.FIR
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -28,7 +28,8 @@ class Filters {
 
     @Test
     fun lowPassFIR9() {
-        val uut = LowPassFIR(9, 2, 0.2f)
+        val taps = FloatArray(9) { random.nextDouble().toFloat() }
+        val uut = FIR(taps, 2)
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
@@ -37,7 +38,8 @@ class Filters {
 
     @Test
     fun lowPassFIR9HB() {
-        val uut = LowPassFIR(9)
+        val taps = FloatArray(9) { random.nextDouble().toFloat() }
+        val uut = FIR(taps, 2, true)
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
@@ -46,7 +48,8 @@ class Filters {
 
     @Test
     fun lowPassFIR19() {
-        val uut = LowPassFIR(19, 2, 0.2f)
+        val taps = FloatArray(19) { random.nextDouble().toFloat() }
+        val uut = FIR(taps, 2)
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
@@ -55,7 +58,8 @@ class Filters {
 
     @Test
     fun lowPassFIR19HB() {
-        val uut = LowPassFIR(19)
+        val taps = FloatArray(19) { random.nextDouble().toFloat() }
+        val uut = FIR(taps, 2, true)
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
@@ -64,7 +68,8 @@ class Filters {
 
     @Test
     fun lowPassFIR39() {
-        val uut = LowPassFIR(39, 2, 0.2f)
+        val taps = FloatArray(39) { random.nextDouble().toFloat() }
+        val uut = FIR(taps, 2)
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
@@ -73,7 +78,8 @@ class Filters {
 
     @Test
     fun lowPassFIR39HB() {
-        val uut = LowPassFIR(39)
+        val taps = FloatArray(39) { random.nextDouble().toFloat() }
+        val uut = FIR(taps, 2, true)
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
