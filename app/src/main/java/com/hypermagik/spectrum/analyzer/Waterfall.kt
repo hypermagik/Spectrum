@@ -208,6 +208,7 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textures[1])
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MIN_FILTER, GL10.GL_NEAREST)
         GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_MAG_FILTER, GL10.GL_NEAREST)
+        GLES20.glTexParameteri(GL10.GL_TEXTURE_2D, GL10.GL_TEXTURE_WRAP_S, GL10.GL_CLAMP_TO_EDGE)
 
         // Color map changes are checked here as they are applied even when stopped.
         if (colorMap != preferences.wfColorMap) {
