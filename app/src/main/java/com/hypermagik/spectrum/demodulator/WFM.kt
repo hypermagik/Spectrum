@@ -25,6 +25,8 @@ class WFM(demodulatorAudio: Boolean) : Demodulator {
     private lateinit var quadrature: Quadrature
     private lateinit var lowPassFIR: FIR
 
+    private val rdsDemodulator = RDS(quadratureRate)
+
     // Typical time constant values:
     // USA: tau = 75 us
     // EU:  tau = 50 us
@@ -42,7 +44,7 @@ class WFM(demodulatorAudio: Boolean) : Demodulator {
     override fun getOutputCount(): Int = outputs.size
     override fun getOutputName(output: Int): String = outputs[output]!!
 
-    override fun getText(): String? = null
+    override fun getText(): String? = rdsDemodulator.getText()
 
     init {
         if (demodulatorAudio) {
@@ -99,6 +101,8 @@ class WFM(demodulatorAudio: Boolean) : Demodulator {
 
         quadrature.demodulate(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.realSamples = true
+
+        rdsDemodulator.demodulate(buffer)
 
         lowPassFIR.filter(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleCount /= 2
