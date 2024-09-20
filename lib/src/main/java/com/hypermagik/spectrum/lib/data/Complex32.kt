@@ -1,5 +1,6 @@
 package com.hypermagik.spectrum.lib.data
 
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.step
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
@@ -55,6 +56,11 @@ data class Complex32(var re: Float, var im: Float) {
         this.im = mim
     }
 
+    fun setmul(c: Complex32, constant: Float) {
+        this.re = c.re * constant
+        this.im = c.im * constant
+    }
+
     fun setmul(c: Complex32, re: Float, im: Float) {
         val mre = c.re * re - c.im * im
         val mim = c.re * im + c.im * re
@@ -67,6 +73,11 @@ data class Complex32(var re: Float, var im: Float) {
         val mim = c1.im * c2.re - c1.re * c2.im
         this.re = mre
         this.im = mim
+    }
+
+    fun setstep(c: Complex32) {
+        this.re = step(c.re)
+        this.im = step(c.im)
     }
 
     fun addmul(c1: Complex32, constant: Float) {
@@ -83,7 +94,7 @@ data class Complex32(var re: Float, var im: Float) {
         this.im = im
     }
 
-    fun mag(scale: Float): Float {
+    fun mag(scale: Float = 1.0f): Float {
         val re = this.re * scale
         val im = this.im * scale
         return sqrt(re * re + im * im)

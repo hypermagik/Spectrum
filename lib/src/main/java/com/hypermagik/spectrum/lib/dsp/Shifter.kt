@@ -5,15 +5,11 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Shifter(sampleRate: Int, frequency: Long) {
+class Shifter(sampleRate: Int, val frequency: Long) {
     private var omega = (2 * PI * frequency / sampleRate).toFloat()
     private var phi = 0.0f
 
     fun shift(input: Complex32Array, output: Complex32Array, length: Int = input.size) {
-        if (input.size != output.size) {
-            throw RuntimeException("Input and output arrays must have the same size")
-        }
-
         for (i in 0 until length) {
             output[i].setmul(input[i], cos(phi), sin(phi))
 

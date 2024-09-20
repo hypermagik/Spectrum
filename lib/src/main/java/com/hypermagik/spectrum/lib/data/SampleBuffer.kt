@@ -1,7 +1,7 @@
 package com.hypermagik.spectrum.lib.data
 
 class SampleBuffer(size: Int) {
-    val samples = Array(size) { Complex32() }
+    var samples = Array(size) { Complex32() }
     var sampleCount = 0
 
     var realSamples = false

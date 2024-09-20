@@ -5,7 +5,9 @@ import androidx.benchmark.junit4.measureRepeated
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.dsp.Decimator
 import com.hypermagik.spectrum.lib.dsp.FIR
+import com.hypermagik.spectrum.lib.dsp.Resampler
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -83,6 +85,33 @@ class Filters {
 
         benchmarkRule.measureRepeated {
             uut.filter(samples, samples)
+        }
+    }
+
+    @Test
+    fun decimator8192() {
+        val uut = Decimator(8192)
+
+        benchmarkRule.measureRepeated {
+            uut.decimate(samples, samples)
+        }
+    }
+
+    @Test
+    fun resampler9taps1024to1000() {
+        val uut = Resampler(1024000, 1000000, 9)
+
+        benchmarkRule.measureRepeated {
+            uut.resample(samples, samples)
+        }
+    }
+
+    @Test
+    fun resampler25taps1024to1000() {
+        val uut = Resampler(1024000, 1000000, 25)
+
+        benchmarkRule.measureRepeated {
+            uut.resample(samples, samples)
         }
     }
 }

@@ -12,5 +12,20 @@ class Utils {
         fun sinc(x: Float): Float {
             return if (x == 0.0f) 1.0f else sin(x) / x
         }
+
+        fun gcd(a: Int, b: Int): Int {
+            var x = a
+            var y = b
+            while (y != 0) {
+                val t = y
+                y = x % y
+                x = t
+            }
+            return x
+        }
+
+        fun step(value: Float): Float {
+            return if (value > 0.0f) 1.0f else -1.0f
+        }
     }
 }
