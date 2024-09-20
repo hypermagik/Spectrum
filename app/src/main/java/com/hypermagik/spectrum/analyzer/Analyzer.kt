@@ -124,4 +124,8 @@ class Analyzer(context: Context, private val preferences: Preferences) {
 
         view.updateFFT(fftOutput, preferences.fftSize, fft.size)
     }
+
+    fun setDemodulatorText(text: String?) {
+        view.setDemodulatorText(text)
+    }
 }

@@ -2,6 +2,7 @@ package com.hypermagik.spectrum.analyzer
 
 import android.content.Context
 import android.graphics.Canvas
+import android.graphics.Color
 import android.graphics.Paint
 import android.os.Bundle
 import com.hypermagik.spectrum.R
@@ -28,9 +29,13 @@ class Info(context: Context) {
     private val textY2 = height - 6.0f * context.resources.displayMetrics.density
     private var textY = textY1
 
+    private val demodulatorTextSize = 11.0f * context.resources.displayMetrics.density
+    private val demodulatorTextY = height + demodulatorTextSize + (6.0f * context.resources.displayMetrics.density)
+
     private val decimalSymbols = DecimalFormatSymbols(Locale.ITALY)
 
     private var paint = Paint()
+    private var demodulatorTextPaint = Paint()
 
     private lateinit var texture: Texture
 
@@ -41,6 +46,7 @@ class Info(context: Context) {
     private var sampleRate = 0
     private var inputName = "Source"
     private var inputDetails = ""
+    private var demodulatorText = ""
 
     private var referenceTime = System.nanoTime()
     private var frameCounter = 0
@@ -51,6 +57,11 @@ class Info(context: Context) {
 
     init {
         paint.typeface = context.resources.getFont(R.font.cursed)
+
+        demodulatorTextPaint.color = Color.WHITE
+        demodulatorTextPaint.textSize = demodulatorTextSize
+        demodulatorTextPaint.textAlign = Paint.Align.RIGHT
+        demodulatorTextPaint.setShadowLayer(3.0f, 0.0f, 0.0f, backgroundColor)
     }
 
     fun onSurfaceCreated(program: Int) {
@@ -173,12 +184,19 @@ class Info(context: Context) {
         textX = texture.width.toFloat() - spacer
         putText(canvas, inputDetails, textX, textSize, textColor, Paint.Align.RIGHT)
 
+        if (demodulatorText.isNotBlank()) {
+            textX = texture.width.toFloat() - spacer
+            textY = demodulatorTextY
+            canvas.drawText(demodulatorText.trim(), textX, textY, demodulatorTextPaint)
+        }
+
         texture.update()
     }
 
     fun start() {
         frameCounter = 0
         referenceTime = System.nanoTime()
+        demodulatorText = ""
         isRunning = true
         isDirty = true
     }
@@ -241,6 +259,13 @@ class Info(context: Context) {
         if (inputName != name || inputDetails != details) {
             inputName = name
             inputDetails = details
+            isDirty = true
+        }
+    }
+
+    fun setDemodulatorText(text: String?) {
+        if (text != null) {
+            this.demodulatorText = text
             isDirty = true
         }
     }

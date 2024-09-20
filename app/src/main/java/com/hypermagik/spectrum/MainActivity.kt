@@ -733,6 +733,7 @@ class MainActivity : AppCompatActivity() {
                                 analyzer.analyze(buffer, preserveSamples)
                             }
                         }
+                        analyzer.setDemodulatorText(demodulator!!.getText())
                     }
                 } catch (_: InterruptedException) {
                     break

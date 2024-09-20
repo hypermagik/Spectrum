@@ -10,4 +10,5 @@ interface Demodulator {
     fun stop()
 
     fun demodulate(buffer: SampleBuffer, output: Int, observe: (samples: SampleBuffer, preserveSamples: Boolean) -> Unit)
+    fun getText(): String?
 }

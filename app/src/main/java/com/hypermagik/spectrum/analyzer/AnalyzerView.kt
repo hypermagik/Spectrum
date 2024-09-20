@@ -250,6 +250,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         updateFFT()
     }
 
+    fun setDemodulatorText(text: String?) {
+        info.setDemodulatorText(text)
+    }
+
     fun updateFFT(magnitudes: FloatArray, count: Int, fftSize: Int) {
         if (!isReady) {
             Log.d(TAG, "Dropping FFT update, surface not ready")

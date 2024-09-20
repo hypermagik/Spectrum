@@ -57,6 +57,8 @@ class WFM(private val demodulatorAudio: Boolean) : Demodulator {
     override fun getOutputCount(): Int = outputs.size
     override fun getOutputName(output: Int): String = outputs[output]!!
 
+    override fun getText(): String? = null
+
     init {
         if (demodulatorAudio) {
             audioSink = AudioSink(audioSampleRates[sampleRate]!!)
