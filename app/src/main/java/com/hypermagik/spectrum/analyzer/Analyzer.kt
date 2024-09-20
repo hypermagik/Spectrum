@@ -110,7 +110,7 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         val fftSize = min(sampleCount, preferences.fftSize)
 
         val index = log2(fftSize.toDouble()).toInt() - 4
-        if (index < 0) {
+        if (index < 0 || index >= ffts.size) {
             return
         }
 
