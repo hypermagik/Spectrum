@@ -17,11 +17,6 @@ class WindowedSinc {
                 taps[n + m] = (sinc(n * omega) * omega / PI * window(n + m)).toFloat()
             }
 
-            val sum = taps.sum()
-            for (i in 0 until count) {
-                taps[i] /= sum
-            }
-
             return taps
         }
 
