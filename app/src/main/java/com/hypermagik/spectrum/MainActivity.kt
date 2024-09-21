@@ -103,6 +103,11 @@ class MainActivity : AppCompatActivity() {
         if (savedInstanceState != null) {
             startOnResume = savedInstanceState.getBoolean("startOnResume", false)
         }
+
+        if (intent.action == Intent.ACTION_VIEW) {
+            onIQFileSelected(intent.data)
+            startOnResume = true
+        }
     }
 
     private fun createSource(force: Boolean = false) {
@@ -410,7 +415,11 @@ class MainActivity : AppCompatActivity() {
             return
         }
 
-        contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        try {
+            contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION)
+        } catch (_: SecurityException) {
+            Log.w(TAG, "Could not take persistable URI permission for $uri")
+        }
 
         restartIfRunning {
             preferences.iqFile = uri.toString()

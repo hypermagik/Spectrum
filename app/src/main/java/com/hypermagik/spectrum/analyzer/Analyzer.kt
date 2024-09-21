@@ -85,6 +85,10 @@ class Analyzer(context: Context, private val preferences: Preferences) {
     }
 
     fun analyze(buffer: SampleBuffer, preserveSamples: Boolean) {
+        if (!view.isReady) {
+            return
+        }
+
         if (view.frequency != buffer.frequency) {
             view.updateFrequency(buffer.frequency)
         }

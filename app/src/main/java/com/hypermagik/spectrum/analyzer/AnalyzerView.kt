@@ -61,7 +61,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var viewDBCenter = preferences.dbCenter
     private var viewDBRange = preferences.dbRange
 
-    private var isReady = false
+    var isReady = false
+        private set
+
     private var isRunning = false
 
     private var scaleGestureDetector: ScaleGestureDetector
