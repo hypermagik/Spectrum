@@ -30,7 +30,7 @@ class WFM(audio: Boolean, rds: Boolean) : Demodulator {
     // Typical time constant values:
     // USA: tau = 75 us
     // EU:  tau = 50 us
-    private var deemphasis = Deemphasis(22e-6f)
+    private var deemphasis = Deemphasis(50e-6f)
 
     private lateinit var audioFIR: FIR
     private var audioSink: AudioSink? = null
