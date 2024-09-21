@@ -1,7 +1,7 @@
 package com.hypermagik.spectrum.lib.dsp
 
 import com.hypermagik.spectrum.lib.data.Complex32Array
-import kotlin.math.PI
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 import kotlin.math.cos
 import kotlin.math.min
 
@@ -26,7 +26,7 @@ class Window {
             for (i in window.indices) {
                 var sign = 1.0f
                 for (j in coefficients.indices) {
-                    window[i] += sign * coefficients[j] * cos(j * 2 * PI * i / (size -1)).toFloat()
+                    window[i] += sign * coefficients[j] * cos((1.0f * j * i / (size - 1)).toRadians())
                     sign = -sign
                 }
             }

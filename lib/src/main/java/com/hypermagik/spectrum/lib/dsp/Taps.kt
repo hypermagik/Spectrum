@@ -2,7 +2,7 @@ package com.hypermagik.spectrum.lib.dsp
 
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
-import kotlin.math.PI
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 import kotlin.math.cos
 import kotlin.math.sin
 
@@ -66,7 +66,7 @@ class Taps {
         ): FloatArray {
             val tapCount = estimateTapCount(transitionWidth, sampleRate, attenuation)
             val window = Window.make(windowType, tapCount)
-            val offsetOmega = 2 * PI.toFloat() * (bandStart + bandStop) / 2 / sampleRate
+            val offsetOmega = ((bandStart + bandStop) / 2.0f / sampleRate).toRadians()
             return WindowedSinc.make(tapCount, (bandStop - bandStart) / 2, sampleRate) {
                 2 * cos(offsetOmega * it) * window[it]
             }
@@ -82,7 +82,7 @@ class Taps {
         ): Complex32Array {
             val tapCount = estimateTapCount(transitionWidth, sampleRate, attenuation)
             val window = Window.make(windowType, tapCount)
-            val offsetOmega = 2 * PI.toFloat() * (bandStart + bandStop) / 2 / sampleRate
+            val offsetOmega = ((bandStart + bandStop) / 2.0f / sampleRate).toRadians()
             return WindowedSinc.makeComplex(tapCount, (bandStop - bandStart) / 2, sampleRate) {
                 Complex32(cos(-offsetOmega * it) * window[it], sin(-offsetOmega * it) * window[it])
             }

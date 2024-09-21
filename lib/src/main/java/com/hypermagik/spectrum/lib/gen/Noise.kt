@@ -1,8 +1,8 @@
 package com.hypermagik.spectrum.lib.gen
 
 import com.hypermagik.spectrum.lib.data.Complex32
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 import java.util.SplittableRandom
-import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.ln
 import kotlin.math.sin
@@ -16,7 +16,7 @@ class Noise {
         val u2 = random.nextDouble()
 
         val sq = sqrt(-ln(u1)) * scale
-        val ph = 2 * PI * u2
+        val ph = u2.toRadians()
 
         sample.set(sq * cos(ph), sq * sin(ph))
     }

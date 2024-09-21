@@ -6,6 +6,10 @@ import kotlin.math.sin
 
 class Utils {
     companion object {
+        fun Double.toRadians(): Double {
+            return 2 * PI * this
+        }
+
         fun Float.toRadians(): Float {
             return (2 * PI * this).toFloat()
         }

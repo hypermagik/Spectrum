@@ -2,7 +2,7 @@ package com.hypermagik.spectrum.lib.dsp
 
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
-import kotlin.math.PI
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 import kotlin.math.floor
 
 class MM(baud: Float, sampleRate: Float) {
@@ -24,7 +24,7 @@ class MM(baud: Float, sampleRate: Float) {
 
     init {
         val bandwidth = 0.5f / phaseCount
-        val taps = WindowedSinc.make(phaseCount * tapsPerPhase, (2 * PI * bandwidth).toFloat())
+        val taps = WindowedSinc.make(phaseCount * tapsPerPhase, bandwidth.toRadians())
 
         for (i in taps.indices) {
             taps[i] = taps[i] * phaseCount

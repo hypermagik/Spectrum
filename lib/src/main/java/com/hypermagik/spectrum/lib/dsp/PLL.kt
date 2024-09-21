@@ -17,9 +17,9 @@ class PLL(bandwidth: Float, frequency: Float = 0.0f, minFrequency: Float = -1.0f
             output[i].set(cos(pcl.phase), sin(pcl.phase))
 
             if (phase > PI) {
-                phase -= (2 * PI).toFloat()
+                phase -= 2 * PI.toFloat()
             } else if (phase < -PI) {
-                phase += (2 * PI).toFloat()
+                phase += 2 * PI.toFloat()
             }
 
             pcl.advance(phase)
