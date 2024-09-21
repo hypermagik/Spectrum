@@ -21,7 +21,7 @@
 
     <string name="frequency">Frequency</string>
     <string name="set_frequency">Set frequency</string>
-    <string name="menu_set_frequency">Set frequency...</string>
+    <string name="menu_set_frequency">Set frequency…</string>
     <string name="frequency_out_of_range">Frequency out of range.\nValid range is %d Hz to %d Hz.</string>
 
     <string name="menu_sample_rate">Sample rate</string>
