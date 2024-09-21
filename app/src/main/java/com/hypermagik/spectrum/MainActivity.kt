@@ -102,6 +102,7 @@ class MainActivity : AppCompatActivity() {
 
         if (savedInstanceState != null) {
             startOnResume = savedInstanceState.getBoolean("startOnResume", false)
+            analyzerInput = savedInstanceState.getInt("analyzerInput", analyzerInput)
         }
 
         if (intent.action == Intent.ACTION_VIEW) {
@@ -165,6 +166,7 @@ class MainActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putBoolean("startOnResume", startOnResume)
+        outState.putInt("analyzerInput", analyzerInput)
         analyzer.saveInstanceState(outState)
         preferences.saveNow()
     }

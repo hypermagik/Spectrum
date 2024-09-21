@@ -212,11 +212,13 @@ class Info(context: Context) {
     fun saveInstanceState(bundle: Bundle) {
         bundle.putString("inputName", inputName)
         bundle.putString("inputDetails", inputDetails)
+        bundle.putString("demodulatorText", demodulatorText)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
         inputName = bundle.getString("inputName", inputName)
         inputDetails = bundle.getString("inputDetails", inputDetails)
+        demodulatorText = bundle.getString("demodulatorText", demodulatorText)
         isDirty = true
     }
 
