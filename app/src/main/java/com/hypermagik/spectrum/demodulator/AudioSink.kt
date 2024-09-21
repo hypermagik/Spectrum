@@ -40,9 +40,9 @@ class AudioSink(sampleRate: Int) {
         audioTrack.stop()
     }
 
-    fun play(samples: Complex32Array, sampleCount: Int) {
+    fun play(samples: Complex32Array, sampleCount: Int, gain: Float = 1.0f) {
         for (i in 0 until sampleCount) {
-            audioBuffer[i] = (samples[i].re * 32767).toInt().toShort()
+            audioBuffer[i] = (samples[i].re * 32767 * gain).toInt().toShort()
         }
 
         audioTrack.write(audioBuffer, 0, sampleCount)

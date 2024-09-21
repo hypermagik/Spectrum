@@ -124,7 +124,7 @@ class WFM(audio: Boolean, rds: Boolean) : Demodulator {
 
         deemphasis.filter(buffer)
 
-        audioSink?.play(buffer.samples, buffer.sampleCount)
+        audioSink?.play(buffer.samples, buffer.sampleCount, 0.5f)
 
         if (output == 3) {
             observe(buffer, false)
