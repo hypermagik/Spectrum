@@ -21,33 +21,52 @@
         app:showAsAction="always" />
     <item
         android:id="@+id/menu_toggle_analyzer_input"
-        android:icon="@android:drawable/ic_menu_info_details"
+        android:icon="@android:drawable/ic_menu_zoom"
         android:orderInCategory="4"
         android:title="@string/action_toggle_analyzer_input"
         app:showAsAction="always" />
-    <item
-        android:orderInCategory="5"
-        android:title="@string/source"
-        app:showAsAction="never">
-        <menu>
-            <group
-                android:id="@+id/menu_source_type_group"
-                android:checkableBehavior="single">
-                <item
-                    android:id="@+id/menu_source_tone_generator"
-                    android:title="@string/menu_source_tone_generator" />
-                <item
-                    android:id="@+id/menu_source_iq_file"
-                    android:title="@string/menu_source_iq_file" />
-                <item
-                    android:id="@+id/menu_source_bladerf"
-                    android:title="@string/menu_source_bladerf" />
-                <item
-                    android:id="@+id/menu_source_rtlsdr"
-                    android:title="@string/menu_source_rtlsdr" />
-            </group>
-        </menu>
-    </item>
+    <group
+        android:id="@+id/source_group"
+        android:orderInCategory="11">
+        <item android:title="@string/source">
+            <menu>
+                <group
+                    android:id="@+id/menu_source_type_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_source_tone_generator"
+                        android:title="@string/menu_source_tone_generator" />
+                    <item
+                        android:id="@+id/menu_source_iq_file"
+                        android:title="@string/menu_source_iq_file" />
+                    <item
+                        android:id="@+id/menu_source_bladerf"
+                        android:title="@string/menu_source_bladerf" />
+                    <item
+                        android:id="@+id/menu_source_rtlsdr"
+                        android:title="@string/menu_source_rtlsdr" />
+                </group>
+            </menu>
+        </item>
+    </group>
+    <group
+        android:id="@+id/demodulator_group"
+        android:orderInCategory="21">
+        <item android:title="@string/menu_demodulator">
+            <menu>
+                <group
+                    android:id="@+id/menu_demodulator_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_demodulator_none"
+                        android:title="@string/menu_demodulator_none" />
+                    <item
+                        android:id="@+id/menu_demodulator_wfm"
+                        android:title="@string/menu_demodulator_wfm" />
+                </group>
+            </menu>
+        </item>
+    </group>
     <item
         android:orderInCategory="91"
         android:title="@string/frequency_step"

@@ -55,6 +55,11 @@ class Constants {
             DemodulatorType.WFM to R.id.menu_demodulator_wfm,
         )
 
+        val demodulatorTypeToMenu = mapOf(
+            DemodulatorType.None to R.menu.demodulator_none,
+            DemodulatorType.WFM to R.menu.demodulator_wfm,
+        )
+
         val fftSizeToMenuItem = mapOf(
             256 to R.id.menu_fft_256,
             512 to R.id.menu_fft_512,

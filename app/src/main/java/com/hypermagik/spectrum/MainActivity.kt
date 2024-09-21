@@ -131,7 +131,7 @@ class MainActivity : AppCompatActivity() {
     private fun createDemodulator() {
         demodulator = when (preferences.demodulatorType) {
             DemodulatorType.None -> null
-            DemodulatorType.WFM -> WFM(preferences.demodulatorAudio)
+            DemodulatorType.WFM -> WFM(preferences.demodulatorAudio, preferences.demodulatorRDS)
         }
     }
 
@@ -199,10 +199,10 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.setGroupDividerEnabled(true)
         menuInflater.inflate(R.menu.main, menu)
-        menuInflater.inflate(R.menu.demodulator, menu)
+        Constants.sourceTypeToMenu[source.getType()]?.also { menuInflater.inflate(it, menu) }
+        Constants.demodulatorTypeToMenu[preferences.demodulatorType]?.also { menuInflater.inflate(it, menu) }
         menuInflater.inflate(R.menu.fft, menu)
         menuInflater.inflate(R.menu.waterfall, menu)
-        Constants.sourceTypeToMenu[source.getType()]?.also { menuInflater.inflate(it, menu) }
         updateOptionsMenu()
         return true
     }
@@ -259,7 +259,7 @@ class MainActivity : AppCompatActivity() {
             menu.findItem(it)?.setChecked(true)
         }
 
-        menu.findItem(R.id.menu_demodulator_toggle_audio_output)?.setChecked(preferences.demodulatorAudio)
+        menu.findItem(R.id.menu_demodulator_audio_output)?.setChecked(preferences.demodulatorAudio)
 
         Constants.fftSizeToMenuItem[preferences.fftSize]?.also {
             menu.findItem(it)?.setChecked(true)
@@ -347,7 +347,7 @@ class MainActivity : AppCompatActivity() {
             }
             item.setChecked(true)
             invalidateOptionsMenu()
-        } else if (item.itemId == R.id.menu_demodulator_toggle_audio_output) {
+        } else if (item.itemId == R.id.menu_demodulator_audio_output) {
             preferences.demodulatorAudio = !preferences.demodulatorAudio
             preferences.saveNow()
             item.setChecked(preferences.demodulatorAudio)
