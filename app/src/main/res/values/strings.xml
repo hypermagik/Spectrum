@@ -57,6 +57,7 @@
     <string name="menu_demodulator_none">None</string>
     <string name="menu_demodulator_wfm">Wideband FM</string>
     <string name="menu_demodulator_audio_output">Audio output</string>
+    <string name="menu_demodulator_rds">RDS</string>
 
     <string name="menu_fft_size">FFT size</string>
     <string name="menu_fft_window">FFT window</string>

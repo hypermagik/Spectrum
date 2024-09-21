@@ -260,6 +260,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         menu.findItem(R.id.menu_demodulator_audio_output)?.setChecked(preferences.demodulatorAudio)
+        menu.findItem(R.id.menu_demodulator_rds)?.setChecked(preferences.demodulatorRDS)
 
         Constants.fftSizeToMenuItem[preferences.fftSize]?.also {
             menu.findItem(it)?.setChecked(true)
@@ -348,12 +349,20 @@ class MainActivity : AppCompatActivity() {
             item.setChecked(true)
             invalidateOptionsMenu()
         } else if (item.itemId == R.id.menu_demodulator_audio_output) {
-            preferences.demodulatorAudio = !preferences.demodulatorAudio
-            preferences.saveNow()
+            restartIfRunning {
+                preferences.demodulatorAudio = !preferences.demodulatorAudio
+                preferences.saveNow()
+            }
             item.setChecked(preferences.demodulatorAudio)
             if (preferences.demodulatorType != DemodulatorType.None) {
                 restartIfRunning { }
             }
+        } else if (item.itemId == R.id.menu_demodulator_rds) {
+            restartIfRunning {
+                preferences.demodulatorRDS = !preferences.demodulatorRDS
+                preferences.saveNow()
+            }
+            item.setChecked(preferences.demodulatorRDS)
         } else if (item.groupId == R.id.menu_fft_size_group) {
             val fftSize = Constants.fftSizeToMenuItem.filterValues { it == item.itemId }.keys.first()
             preferences.fftSize = fftSize

@@ -10,7 +10,7 @@ import com.hypermagik.spectrum.lib.dsp.Shifter
 import com.hypermagik.spectrum.lib.dsp.Taps
 import com.hypermagik.spectrum.utils.TAG
 
-class WFM(demodulatorAudio: Boolean) : Demodulator {
+class WFM(audio: Boolean, rds: Boolean) : Demodulator {
     private var sampleRate = 1000000
     private val frequencyOffset = 200000L
 
@@ -25,7 +25,7 @@ class WFM(demodulatorAudio: Boolean) : Demodulator {
     private lateinit var quadrature: Quadrature
     private lateinit var lowPassFIR: FIR
 
-    private val rdsDemodulator = RDS(quadratureRate)
+    private var rdsDemodulator: RDS? = null
 
     // Typical time constant values:
     // USA: tau = 75 us
@@ -44,11 +44,15 @@ class WFM(demodulatorAudio: Boolean) : Demodulator {
     override fun getOutputCount(): Int = outputs.size
     override fun getOutputName(output: Int): String = outputs[output]!!
 
-    override fun getText(): String? = rdsDemodulator.getText()
+    override fun getText(): String? = rdsDemodulator?.getText()
 
     init {
-        if (demodulatorAudio) {
+        if (audio) {
             audioSink = AudioSink(31250)
+        }
+
+        if (rds) {
+            rdsDemodulator = RDS(quadratureRate)
         }
 
         setSampleRate(1000000)
@@ -102,7 +106,7 @@ class WFM(demodulatorAudio: Boolean) : Demodulator {
         quadrature.demodulate(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.realSamples = true
 
-        rdsDemodulator.demodulate(buffer)
+        rdsDemodulator?.demodulate(buffer)
 
         lowPassFIR.filter(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleCount /= 2

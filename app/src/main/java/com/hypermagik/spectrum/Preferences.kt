@@ -39,7 +39,9 @@ class Preferences(private val activity: Activity?) {
     var isRecording = false
 
     var demodulatorType = DemodulatorType.None
+
     var demodulatorAudio = false
+    var demodulatorRDS = false
 
     var fftSize = 256
     var fftWindowType = Window.Type.FLAT_TOP
@@ -84,6 +86,7 @@ class Preferences(private val activity: Activity?) {
             recordLimit = getLong("recordLimit", recordLimit)
             demodulatorType = DemodulatorType.entries.toTypedArray()[getInt("demodulatorType", demodulatorType.ordinal)]
             demodulatorAudio = getBoolean("demodulatorAudio", demodulatorAudio)
+            demodulatorRDS = getBoolean("demodulatorRDS", demodulatorRDS)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = Window.Type.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             dbCenter = getFloat("dbCenter", dbCenter)
@@ -122,6 +125,7 @@ class Preferences(private val activity: Activity?) {
             putLong("recordLimit", recordLimit)
             putInt("demodulatorType", demodulatorType.ordinal)
             putBoolean("demodulatorAudio", demodulatorAudio)
+            putBoolean("demodulatorRDS", demodulatorRDS)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
             putFloat("dbCenter", dbCenter)
