@@ -1,7 +1,10 @@
 package com.hypermagik.spectrum.lib.dsp
 
+import com.hypermagik.spectrum.lib.data.Complex32
+import com.hypermagik.spectrum.lib.data.Complex32Array
 import kotlin.math.PI
 import kotlin.math.cos
+import kotlin.math.sin
 
 class Taps {
     companion object {
@@ -64,7 +67,25 @@ class Taps {
             val tapCount = estimateTapCount(transitionWidth, sampleRate, attenuation)
             val window = Window.make(windowType, tapCount)
             val offsetOmega = 2 * PI.toFloat() * (bandStart + bandStop) / 2 / sampleRate
-            return WindowedSinc.make(tapCount, (bandStop - bandStart) / 2, sampleRate) { window[it] * 2 * cos(offsetOmega * it) }
+            return WindowedSinc.make(tapCount, (bandStop - bandStart) / 2, sampleRate) {
+                2 * cos(offsetOmega * it) * window[it]
+            }
+        }
+
+        fun bandPassC(
+            sampleRate: Float,
+            bandStart: Float,
+            bandStop: Float,
+            transitionWidth: Float,
+            attenuation: Int = 90,
+            windowType: Window.Type = Window.Type.BLACKMAN_NUTALL
+        ): Complex32Array {
+            val tapCount = estimateTapCount(transitionWidth, sampleRate, attenuation)
+            val window = Window.make(windowType, tapCount)
+            val offsetOmega = 2 * PI.toFloat() * (bandStart + bandStop) / 2 / sampleRate
+            return WindowedSinc.makeComplex(tapCount, (bandStop - bandStart) / 2, sampleRate) {
+                Complex32(cos(-offsetOmega * it) * window[it], sin(-offsetOmega * it) * window[it])
+            }
         }
     }
 }

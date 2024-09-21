@@ -39,6 +39,13 @@ data class Complex32(var re: Float, var im: Float) {
         this.im += im
     }
 
+    fun mul(c: Complex32) {
+        val mre = this.re * c.re - this.im * c.im
+        val mim = this.re * c.im + this.im * c.re
+        this.re = mre
+        this.im = mim
+    }
+
     fun mul(constant: Float) {
         this.re *= constant
         this.im *= constant
@@ -78,6 +85,13 @@ data class Complex32(var re: Float, var im: Float) {
     fun setstep(c: Complex32) {
         this.re = step(c.re)
         this.im = step(c.im)
+    }
+
+    fun addmul(c1: Complex32, c2: Complex32) {
+        val mre = c1.re * c2.re - c1.im * c2.im
+        val mim = c1.re * c2.im + c1.im * c2.re
+        this.re += mre
+        this.im += mim
     }
 
     fun addmul(c1: Complex32, constant: Float) {
