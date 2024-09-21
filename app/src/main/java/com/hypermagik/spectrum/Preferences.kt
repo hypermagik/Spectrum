@@ -41,6 +41,7 @@ class Preferences(private val activity: Activity?) {
     var demodulatorType = DemodulatorType.None
 
     var demodulatorAudio = false
+    var demodulatorStereo = false
     var demodulatorRDS = false
 
     var fftSize = 256
@@ -86,6 +87,7 @@ class Preferences(private val activity: Activity?) {
             recordLimit = getLong("recordLimit", recordLimit)
             demodulatorType = DemodulatorType.entries.toTypedArray()[getInt("demodulatorType", demodulatorType.ordinal)]
             demodulatorAudio = getBoolean("demodulatorAudio", demodulatorAudio)
+            demodulatorStereo = getBoolean("demodulatorStereo", demodulatorStereo)
             demodulatorRDS = getBoolean("demodulatorRDS", demodulatorRDS)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = Window.Type.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
@@ -125,6 +127,7 @@ class Preferences(private val activity: Activity?) {
             putLong("recordLimit", recordLimit)
             putInt("demodulatorType", demodulatorType.ordinal)
             putBoolean("demodulatorAudio", demodulatorAudio)
+            putBoolean("demodulatorStereo", demodulatorStereo)
             putBoolean("demodulatorRDS", demodulatorRDS)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)

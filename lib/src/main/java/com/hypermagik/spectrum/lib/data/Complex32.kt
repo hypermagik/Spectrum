@@ -51,6 +51,11 @@ data class Complex32(var re: Float, var im: Float) {
         this.im *= constant
     }
 
+    fun setsum(c1: Complex32, c2: Complex32) {
+        this.re = c1.re + c2.re
+        this.im = c1.im + c2.im
+    }
+
     fun setdif(c1: Complex32, c2: Complex32) {
         this.re = c1.re - c2.re
         this.im = c1.im - c2.im

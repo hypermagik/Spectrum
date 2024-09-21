@@ -7,17 +7,17 @@ import android.media.AudioTrack
 import com.hypermagik.spectrum.lib.data.Complex32Array
 
 class AudioSink(sampleRate: Int) {
-    private val audioBuffer = ShortArray(sampleRate)
+    private val audioBuffer = ShortArray(2 * sampleRate / 10)
 
     private val audioFormat = AudioFormat.Builder()
         .setSampleRate(sampleRate)
-        .setChannelMask(AudioFormat.CHANNEL_OUT_MONO)
+        .setChannelMask(AudioFormat.CHANNEL_OUT_STEREO)
         .setEncoding(AudioFormat.ENCODING_PCM_16BIT)
         .build()
 
     private val audioBufferSize = AudioTrack.getMinBufferSize(
         sampleRate,
-        AudioFormat.CHANNEL_OUT_MONO,
+        AudioFormat.CHANNEL_OUT_STEREO,
         AudioFormat.ENCODING_PCM_16BIT)
 
     private val audioAttributes = AudioAttributes.Builder()
@@ -42,9 +42,19 @@ class AudioSink(sampleRate: Int) {
 
     fun play(samples: Complex32Array, sampleCount: Int, gain: Float = 1.0f) {
         for (i in 0 until sampleCount) {
-            audioBuffer[i] = (samples[i].re * 32767 * gain).toInt().toShort()
+            audioBuffer[2 * i + 0] = (samples[i].re * 32767 * gain).toInt().toShort()
+            audioBuffer[2 * i + 1] = (samples[i].re * 32767 * gain).toInt().toShort()
         }
 
-        audioTrack.write(audioBuffer, 0, sampleCount)
+        audioTrack.write(audioBuffer, 0, sampleCount * 2)
+    }
+
+    fun play(left: Complex32Array, right: Complex32Array, sampleCount: Int, gain: Float = 1.0f) {
+        for (i in 0 until sampleCount) {
+            audioBuffer[2 * i + 0] = (left[i].re * 32767 * gain).toInt().toShort()
+            audioBuffer[2 * i + 1] = (right[i].re * 32767 * gain).toInt().toShort()
+        }
+
+        audioTrack.write(audioBuffer, 0, sampleCount * 2)
     }
 }

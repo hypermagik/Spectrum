@@ -8,6 +8,10 @@
             android:checkable="true"
             android:title="@string/menu_demodulator_audio_output" />
         <item
+            android:id="@+id/menu_demodulator_stereo"
+            android:checkable="true"
+            android:title="@string/menu_demodulator_stereo" />
+        <item
             android:id="@+id/menu_demodulator_rds"
             android:checkable="true"
             android:title="@string/menu_demodulator_rds" />

@@ -45,6 +45,9 @@ class PCL {
 
     fun advance(error: Float) {
         frequency += beta * error
+
+        limitFrequency()
+
         phase += frequency + alpha * error
     }
 
@@ -53,9 +56,10 @@ class PCL {
     }
 
     fun wrapPhase() {
-        if (phase < minPhase) {
+        while (phase < minPhase) {
             phase += maxPhase - minPhase
-        } else if (phase > maxPhase) {
+        }
+        while (phase > maxPhase) {
             phase -= maxPhase - minPhase
         }
     }

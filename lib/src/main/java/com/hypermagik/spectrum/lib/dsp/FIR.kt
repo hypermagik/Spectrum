@@ -3,7 +3,7 @@ package com.hypermagik.spectrum.lib.dsp
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 
-class FIR(private val taps: FloatArray, private val decimation: Int = 1, private val half: Boolean = false) {
+class FIR(private val taps: FloatArray, val decimation: Int = 1, private val half: Boolean = false) {
     private var buffer = Complex32Array(0) { Complex32() }
     private var decimationCounter = 1
 

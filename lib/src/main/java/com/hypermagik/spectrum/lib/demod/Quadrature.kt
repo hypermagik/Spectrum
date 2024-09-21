@@ -14,13 +14,7 @@ class Quadrature(sampleRate: Int, deviation: Int) {
 
     fun demodulate(input: Complex32Array, output: Complex32Array, length: Int = input.size) {
         // Sample holds the phase difference between the current sample and the previous sample.
-        sample.setmulconj(input[0], previousSample)
-        previousSample.set(input[0])
-
-        output[0].re = gain * sample.phase()
-        output[0].im = 0.0f
-
-        for (i in 1 until length) {
+        for (i in 0 until length) {
             sample.setmulconj(input[i], previousSample)
             previousSample.set(input[i])
 

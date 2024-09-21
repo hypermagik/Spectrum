@@ -132,7 +132,7 @@ class MainActivity : AppCompatActivity() {
     private fun createDemodulator() {
         demodulator = when (preferences.demodulatorType) {
             DemodulatorType.None -> null
-            DemodulatorType.WFM -> WFM(preferences.demodulatorAudio, preferences.demodulatorRDS)
+            DemodulatorType.WFM -> WFM(preferences.demodulatorAudio, preferences.demodulatorStereo, preferences.demodulatorRDS)
         }
     }
 
@@ -262,6 +262,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         menu.findItem(R.id.menu_demodulator_audio_output)?.setChecked(preferences.demodulatorAudio)
+        menu.findItem(R.id.menu_demodulator_stereo)?.setChecked(preferences.demodulatorStereo)
         menu.findItem(R.id.menu_demodulator_rds)?.setChecked(preferences.demodulatorRDS)
 
         Constants.fftSizeToMenuItem[preferences.fftSize]?.also {
@@ -356,9 +357,12 @@ class MainActivity : AppCompatActivity() {
                 preferences.saveNow()
             }
             item.setChecked(preferences.demodulatorAudio)
-            if (preferences.demodulatorType != DemodulatorType.None) {
-                restartIfRunning { }
+        } else if (item.itemId == R.id.menu_demodulator_stereo) {
+            restartIfRunning {
+                preferences.demodulatorStereo = !preferences.demodulatorStereo
+                preferences.saveNow()
             }
+            item.setChecked(preferences.demodulatorStereo)
         } else if (item.itemId == R.id.menu_demodulator_rds) {
             restartIfRunning {
                 preferences.demodulatorRDS = !preferences.demodulatorRDS
