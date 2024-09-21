@@ -41,6 +41,8 @@ class WFM(audio: Boolean, rds: Boolean) : Demodulator {
         3 to "Audio"
     )
 
+    override fun getName(): String = "WFM"
+
     override fun getOutputCount(): Int = outputs.size
     override fun getOutputName(output: Int): String = outputs[output]!!
 

@@ -58,8 +58,8 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         view.setInputInfo("Source", name, minFrequency, maxFrequency)
     }
 
-    fun setDemodulatorInput(name: String) {
-        view.setInputInfo("Demodulator", name, 0, 0)
+    fun setDemodulatorInput(name: String, details: String) {
+        view.setInputInfo(name, details, 0, 0)
     }
 
     fun showSetFrequencyDialog() {

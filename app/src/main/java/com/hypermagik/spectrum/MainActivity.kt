@@ -734,7 +734,7 @@ class MainActivity : AppCompatActivity() {
                     if (analyzerInput == 0) {
                         analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
                     } else {
-                        analyzer.setDemodulatorInput(demodulator!!.getOutputName(analyzerInput))
+                        analyzer.setDemodulatorInput(demodulator!!.getName(), demodulator!!.getOutputName(analyzerInput))
                     }
                 }
 

@@ -3,6 +3,8 @@ package com.hypermagik.spectrum.demodulator
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 
 interface Demodulator {
+    fun getName(): String
+
     fun getOutputCount(): Int
     fun getOutputName(output: Int): String
 
