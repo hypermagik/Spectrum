@@ -11,21 +11,30 @@ class Shifter(private var sampleRate: Int, var frequency: Float) {
     private var phi = 0.0f
 
     fun shift(input: Complex32Array, output: Complex32Array, length: Int = input.size) {
-        for (i in 0 until length) {
-            output[i].setmul(input[i], cos(phi), sin(phi))
+        if (frequency == 0.0f) {
+            if (input !== output) {
+                for (i in 0 until length) {
+                    output[i].set(input[i])
+                }
+            }
+        } else {
+            for (i in 0 until length) {
+                output[i].setmul(input[i], cos(phi), sin(phi))
 
-            phi += omega
+                phi += omega
 
-            if (phi >= 2 * PI) {
-                phi -= 2 * PI.toFloat()
-            } else if (phi < 0) {
-                phi += 2 * PI.toFloat()
+                if (phi >= 2 * PI) {
+                    phi -= 2 * PI.toFloat()
+                } else if (phi < 0) {
+                    phi += 2 * PI.toFloat()
+                }
             }
         }
     }
 
     fun update(frequency: Float) {
         this.frequency = frequency
+
         omega = (1.0f * frequency / sampleRate).toRadians()
         phi = 0.0f
     }
