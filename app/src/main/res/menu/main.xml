@@ -90,6 +90,9 @@
                 <item
                     android:id="@+id/menu_fstep_10000"
                     android:title="@string/menu_fstep_10000" />
+                <item
+                    android:id="@+id/menu_fstep_100000"
+                    android:title="@string/menu_fstep_100000" />
             </group>
         </menu>
     </item>

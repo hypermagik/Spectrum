@@ -115,6 +115,7 @@ class Constants {
             100 to R.id.menu_fstep_100,
             1000 to R.id.menu_fstep_1000,
             10000 to R.id.menu_fstep_10000,
+            100000 to R.id.menu_fstep_100000,
         )
 
         val fpsLimitToMenuItem = mapOf(

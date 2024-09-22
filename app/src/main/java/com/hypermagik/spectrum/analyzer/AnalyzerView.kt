@@ -24,6 +24,7 @@ import com.hypermagik.spectrum.analyzer.fft.FFT
 import com.hypermagik.spectrum.utils.TAG
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.round
 
 class AnalyzerView(context: Context, private val preferences: Preferences) :
     GLSurfaceView(context), GLSurfaceView.Renderer {
@@ -290,13 +291,24 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val viewFrequency0 = frequency0 + viewBandwidth / 2.0
         val viewFrequency1 = frequency1 - viewBandwidth / 2.0
 
-        viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
+        viewFrequency = if (viewFrequency0 != viewFrequency1) {
+            viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
+        } else {
+            viewFrequency.coerceIn(minFrequency.toDouble(), maxFrequency.toDouble())
+        }
+
+        var steppedViewFrequency = if (viewFrequency0 != viewFrequency1) {
+            viewFrequency
+        } else {
+            round(viewFrequency / preferences.frequencyStep) * preferences.frequencyStep
+        }
+        steppedViewFrequency = steppedViewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
         val scale = sampleRate / viewBandwidth
-        val translate = (viewFrequency - viewBandwidth / 2.0 - frequency0) / sampleRate * scale
+        val translate = (steppedViewFrequency - viewBandwidth / 2.0 - frequency0) / sampleRate * scale
 
-        val frequencyStart = viewFrequency - viewBandwidth / 2
-        val frequencyEnd = viewFrequency + viewBandwidth / 2
+        val frequencyStart = steppedViewFrequency - viewBandwidth / 2
+        val frequencyEnd = steppedViewFrequency + viewBandwidth / 2
 
         viewDBRange = viewDBRange.coerceIn(minDBRange, maxDBRange)
         viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
@@ -368,7 +380,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
             if (isRunning && !isFrequencyLocked && !preferences.isRecording && maxFrequency > 0) {
                 // If locked or recording, can't change frequency.
-                var newFrequency = viewFrequency.toLong() / preferences.frequencyStep * preferences.frequencyStep
+                var newFrequency = round(viewFrequency / preferences.frequencyStep).toLong() * preferences.frequencyStep
                 newFrequency = newFrequency.coerceIn(minFrequency, maxFrequency)
 
                 preferences.sourceSettings.frequency = newFrequency

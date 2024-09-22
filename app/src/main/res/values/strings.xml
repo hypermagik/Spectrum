@@ -106,6 +106,7 @@
     <string name="menu_fstep_100">100 Hz</string>
     <string name="menu_fstep_1000">1 kHz</string>
     <string name="menu_fstep_10000">10 kHz</string>
+    <string name="menu_fstep_100000">100 kHz</string>
 
     <string name="fps_limit">FPS limit</string>
     <string name="menu_fps_10">10 FPS</string>
