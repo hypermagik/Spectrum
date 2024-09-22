@@ -10,6 +10,7 @@ import com.hypermagik.spectrum.lib.dsp.DifferentialDecoder
 import com.hypermagik.spectrum.lib.dsp.MM
 import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.Shifter
+import java.util.Locale
 
 class RDS(sampleRate: Int) {
     private var frequency = 0L
@@ -28,7 +29,7 @@ class RDS(sampleRate: Int) {
     fun demodulate(buffer: SampleBuffer) {
         if (frequency != buffer.frequency) {
             frequency = buffer.frequency
-            clearRadioText()
+            reset()
         }
 
         if (samples.size < buffer.sampleCount) {
@@ -86,6 +87,11 @@ class RDS(sampleRate: Int) {
     private var blocks = IntArray(BlockType.entries.size)
     private var blockAvailable = BooleanArray(BlockType.entries.size)
 
+    private var numBlocks = 0
+    private var badBlocks = 0
+    private var blerTimestamp = System.nanoTime()
+    private var bler = 0.0
+
     private var groupType = 0
     private var groupLength = 0
     private var groupVersion = 0
@@ -103,9 +109,24 @@ class RDS(sampleRate: Int) {
                 continue
             }
 
-            val syndrome = getSyndrome(shiftRegister)
+            numBlocks++
 
-            knownSyndromes = (if (syndromes.containsKey(syndrome)) knownSyndromes + 1 else knownSyndromes - 1).coerceIn(0, 4)
+            val syndrome = getSyndrome(shiftRegister)
+            if (!syndromes.containsKey(syndrome)) {
+                badBlocks++
+            }
+
+            val now = System.nanoTime()
+            if (now - blerTimestamp > 1000000000) {
+                bler = badBlocks * 100.0 / numBlocks
+                blerTimestamp = now
+                numBlocks = 0
+                badBlocks = 0
+                textChanged = true
+            }
+
+            knownSyndromes += if (syndromes.containsKey(syndrome)) 1 else -1
+            knownSyndromes = knownSyndromes.coerceIn(0, 4)
 
             if (knownSyndromes == 0) {
                 continue
@@ -114,6 +135,10 @@ class RDS(sampleRate: Int) {
             val blockType = syndromes[syndrome] ?: BlockType.entries[(lastBlockType.ordinal + 1) % BlockType.entries.size]
 
             blocks[blockType.ordinal] = correctErrors(blockType)
+
+            if (syndromes.containsKey(syndrome) && !blockAvailable[blockType.ordinal]) {
+                badBlocks++
+            }
 
             if (blockType == BlockType.A) {
                 decodeBlockA()
@@ -280,10 +305,18 @@ class RDS(sampleRate: Int) {
         // Log.d("RDS", "Radio text: ${getRadioText()}")
     }
 
-    private fun clearRadioText() {
+    private fun reset() {
+        symbolsPending = BLOCK_LENGTH
+        knownSyndromes = 0
+        blockAvailable.fill(false)
+        groupLength = 0
         programServiceName.fill(' ')
         radioText.fill(' ')
         radioTextAB = 0
+        numBlocks = 0
+        badBlocks = 0
+        bler = 0.0
+        blerTimestamp = System.nanoTime()
         textChanged = true
     }
 
@@ -291,15 +324,20 @@ class RDS(sampleRate: Int) {
         val hasProgramServiceName = programServiceName.any { it != ' ' }
         val hasRadioText = radioText.any { it != ' ' }
 
-        if (hasProgramServiceName && hasRadioText) {
-            return String(programServiceName).trim() + " - " + String(radioText).trim()
-        } else if (hasProgramServiceName) {
-            return String(programServiceName).trim()
-        } else if (hasRadioText) {
-            return String(radioText).trim()
-        }
+        var result: String =
+            if (hasProgramServiceName && hasRadioText) {
+                String(programServiceName).trim() + " - " + String(radioText).trim()
+            } else if (hasProgramServiceName) {
+                String(programServiceName).trim()
+            } else if (hasRadioText) {
+                String(radioText).trim()
+            } else {
+                ""
+            }
 
-        return null
+        result += String.format(Locale.getDefault(), " (BLER: %.2f%%)", bler)
+
+        return result
     }
 
     fun getText(): String? {
