@@ -16,8 +16,8 @@ class RDS(sampleRate: Int) {
 
     private val shifter = Shifter(sampleRate, -(57000 + 2375 / 2.0f))
     private val resampler = Resampler(sampleRate, 2375)
-    private val agc = AGC()
-    private val costas = Costas(0.01f)
+    private val agc = AGC(0.5f)
+    private val costas = Costas(0.1f)
     private val mm = MM(1187.5f, 2375.0f)
     private val differentialDecoder = DifferentialDecoder()
 
