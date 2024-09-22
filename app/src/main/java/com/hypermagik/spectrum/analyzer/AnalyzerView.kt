@@ -38,6 +38,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var info = Info(context)
     private var fft = FFT(context, preferences)
     private var waterfall = Waterfall(context, preferences)
+    private val channel = Channel(context)
 
     private var minFrequency: Long = 0
     private var maxFrequency: Long = 1000000
@@ -61,6 +62,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var viewBandwidth = sampleRate.toDouble()
     private var viewDBCenter = preferences.dbCenter
     private var viewDBRange = preferences.dbRange
+
+    private var channelFrequency = 0.0
+    private var channelBandwidth = 0
+
+    enum class ScrollTarget { None, X, Y, Channel }
+
+    private var scrollTarget = ScrollTarget.None
 
     var isReady = false
         private set
@@ -122,6 +130,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         info.onSurfaceCreated(program)
         fft.onSurfaceCreated(program)
         waterfall.onSurfaceCreated(program)
+        channel.onSurfaceCreated(program)
     }
 
     private fun loadShader(type: Int, resource: Int): Int {
@@ -145,6 +154,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         fft.onSurfaceChanged(width, height, fftTop, fftBottom)
 
         waterfall.onSurfaceChanged(height, fftBottom)
+        channel.onSurfaceChanged(width)
 
         updateFFT()
 
@@ -162,6 +172,12 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.draw()
         }
 
+        if (channelBandwidth > 0) {
+            synchronized(channel) {
+                channel.draw()
+            }
+        }
+
         info.draw()
 
         synchronized(waterfall) {
@@ -177,6 +193,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
         bundle.putDouble("viewFrequency", viewFrequency)
         bundle.putDouble("viewBandwidth", viewBandwidth)
+        bundle.putDouble("channelFrequency", channelFrequency)
+        bundle.putInt("channelBandwidth", channelBandwidth)
 
         fft.saveInstanceState(bundle)
         info.saveInstanceState(bundle)
@@ -190,15 +208,21 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
         viewFrequency = bundle.getDouble("viewFrequency")
         viewBandwidth = bundle.getDouble("viewBandwidth")
+        channelFrequency = bundle.getDouble("channelFrequency")
+        channelBandwidth = bundle.getInt("channelBandwidth")
 
         fft.restoreInstanceState(bundle)
         info.restoreInstanceState(bundle)
 
+        updateChannel()
         updateInfoBar()
     }
 
-    fun start() {
+    fun start(channelBandwidth: Int) {
         Log.d(TAG, "Starting")
+
+        this.channelFrequency = 0.0
+        this.channelBandwidth = channelBandwidth
 
         isRunning = true
 
@@ -208,6 +232,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             updateFFT()
         }
 
+        updateChannel()
         updateInfoBar()
     }
 
@@ -227,6 +252,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         minFrequency = minimumFrequency
         maxFrequency = maximumFrequency
         info.setInputInfo(name, details)
+        updateFFT()
     }
 
     private fun resetFrequencyScale() {
@@ -320,7 +346,22 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
         }
 
+        updateChannel()
         requestRender()
+    }
+
+    private fun updateChannel() {
+        if (channelBandwidth == 0) {
+            return
+        }
+
+        val steppedChannelFrequency = round((frequency + channelFrequency) / preferences.frequencyStep) * preferences.frequencyStep
+        preferences.channelFrequency = (steppedChannelFrequency - frequency).toLong()
+
+        synchronized(channel) {
+            channel.setFrequency(steppedChannelFrequency, channelBandwidth)
+            channel.setFrequencyRange(viewFrequency - viewBandwidth / 2, viewFrequency + viewBandwidth / 2)
+        }
     }
 
     private fun updateInfoBar() {
@@ -332,9 +373,11 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updatePreferencesDB() {
-        preferences.dbCenter = viewDBCenter
-        preferences.dbRange = viewDBRange
-        preferences.save()
+        if (preferences.dbCenter != viewDBCenter || preferences.dbRange != viewDBRange) {
+            preferences.dbCenter = viewDBCenter
+            preferences.dbRange = viewDBRange
+            preferences.save()
+        }
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
@@ -367,36 +410,84 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         updateFFT()
     }
 
-    fun onScroll(x: Float, y: Float, deltaX: Float, deltaY: Float) {
+    fun onDown(x: Float, y: Float) {
+        val infoBarheight = Info.HEIGHT * resources.displayMetrics.density * 1.5f
         val fftHeight = if (isLandscape) height else height / 2
 
-        if (x < fft.grid.leftScaleSize * 1.5f && y < fftHeight) {
-            // Scroll the Y axis.
-            viewDBCenter -= viewDBRange * deltaY / fftHeight
-            viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
+        val viewOffset = (frequency - viewFrequency) / viewBandwidth
+        val channelCenter = 0.5 + channelFrequency / viewBandwidth + viewOffset
+        var channelStart = width * (channelCenter - channelBandwidth / 2 / viewBandwidth)
+        var channelEnd = width * (channelCenter + channelBandwidth / 2 / viewBandwidth)
+
+        val minChannelWidth = 32 * resources.displayMetrics.density
+        if (channelEnd - channelStart < minChannelWidth) {
+            channelStart = width * channelCenter - minChannelWidth / 2
+            channelEnd = width * channelCenter + minChannelWidth / 2
+        }
+
+        scrollTarget = if (y < infoBarheight) {
+            ScrollTarget.None
+        } else if (y < fftHeight && x < fft.grid.leftScaleSize * 1.5f) {
+            ScrollTarget.Y
+        } else if (y < fftHeight && x >= channelStart && x <= channelEnd) {
+            ScrollTarget.Channel
         } else {
-            // Scroll the X axis.
-            viewFrequency += viewBandwidth * deltaX / width
+            ScrollTarget.X
+        }
+    }
 
-            if (isRunning && !isFrequencyLocked && !preferences.isRecording && maxFrequency > 0) {
-                // If locked or recording, can't change frequency.
-                var newFrequency = round(viewFrequency / preferences.frequencyStep).toLong() * preferences.frequencyStep
-                newFrequency = newFrequency.coerceIn(minFrequency, maxFrequency)
-
-                preferences.sourceSettings.frequency = newFrequency
-                preferences.save()
-
-                frequency = newFrequency
-                info.setFrequency(frequency)
-            }
+    fun onScroll(x: Float, y: Float, deltaX: Float, deltaY: Float) {
+        when (scrollTarget) {
+            ScrollTarget.X -> onFrequencyScroll(deltaX)
+            ScrollTarget.Y -> onDBScroll(deltaY)
+            ScrollTarget.Channel -> onChannelScroll(deltaX)
+            ScrollTarget.None -> return
         }
 
         updateFFT()
     }
 
+    private fun onFrequencyScroll(deltaX: Float) {
+        viewFrequency += viewBandwidth * deltaX / width
+
+        if (!isRunning || isFrequencyLocked || preferences.isRecording || maxFrequency == 0L) {
+            // If locked or recording, can't change frequency.
+            return
+        }
+
+        var newFrequency = round(viewFrequency / preferences.frequencyStep).toLong() * preferences.frequencyStep
+        newFrequency = newFrequency.coerceIn(minFrequency, maxFrequency)
+
+        if (preferences.sourceSettings.frequency != newFrequency) {
+            preferences.sourceSettings.frequency = newFrequency
+            preferences.save()
+
+            frequency = newFrequency
+            info.setFrequency(frequency)
+        }
+    }
+
+    private fun onDBScroll(deltaY: Float) {
+        viewDBCenter -= viewDBRange * deltaY / if (isLandscape) height else height / 2
+        viewDBCenter = viewDBCenter.coerceIn(minDB + viewDBRange / 2, maxDB - viewDBRange / 2)
+    }
+
+    private fun onChannelScroll(deltaX: Float) {
+        if (!isRunning || channelBandwidth == 0) {
+            return
+        }
+
+        channelFrequency -= viewBandwidth * deltaX / width
+        channelFrequency = channelFrequency.coerceIn(-sampleRate / 2.0 + channelBandwidth / 2, sampleRate / 2.0 - channelBandwidth / 2)
+
+        updateChannel()
+    }
+
     fun onSingleTap(x: Float, y: Float) {
-        val infoArea = Info.HEIGHT * resources.displayMetrics.density * 1.5f
-        if (y < infoArea) {
+        val infoBarheight = Info.HEIGHT * resources.displayMetrics.density * 1.5f
+        val fftHeight = if (isLandscape) height else height / 2
+
+        if (y < infoBarheight) {
             // Info bar tapped, lock/unlock frequency.
             isFrequencyLocked = !isFrequencyLocked
             info.setFrequencyLock(isFrequencyLocked)
@@ -407,12 +498,18 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             } else {
                 requestRender()
             }
+        } else if (y < fftHeight && x > fft.grid.leftScaleSize * 1.5f) {
+            if (isRunning && channelBandwidth > 0) {
+                channelFrequency = viewFrequency + (x / width - 0.5) * viewBandwidth - frequency
+                updateChannel()
+            }
         }
     }
 
     fun onDoubleTap(x: Float, y: Float) {
-        val infoArea = Info.HEIGHT * resources.displayMetrics.density * 1.5f
-        if (y < infoArea) {
+        val infoBarheight = Info.HEIGHT * resources.displayMetrics.density * 1.5f
+
+        if (y < infoBarheight) {
             // Info bar double-tapped, open frequency popup.
             showSetFrequencyDialog()
         } else if (x < fft.grid.leftScaleSize * 1.5f && y < height / 2) {

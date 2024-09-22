@@ -8,6 +8,9 @@ interface Demodulator {
     fun getOutputCount(): Int
     fun getOutputName(output: Int): String
 
+    fun getChannelBandwidth(): Int
+    fun setFrequency(frequency: Long)
+
     fun start()
     fun stop()
 

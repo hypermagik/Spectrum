@@ -20,6 +20,7 @@ class GestureHandler(private val view: AnalyzerView) :
     override fun onScaleEnd(p0: ScaleGestureDetector) {}
 
     override fun onDown(p0: MotionEvent): Boolean {
+        view.onDown(p0.x, p0.y)
         return true
     }
 

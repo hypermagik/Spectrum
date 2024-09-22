@@ -179,20 +179,22 @@ class Grid(val context: Context, private val fft: FFT) {
             val labelWidth = paint.measureText(String.format(Locale.getDefault(), "   %.3fM   ", end / 1000000.0)).toInt()
             val numLabels = (end - start).toInt() / step
             val maxLabels = min(numLabels, width.toInt() / labelWidth)
-            val labelStep = (numLabels + maxLabels - 1) / maxLabels
+            if (maxLabels > 0) {
+                val labelStep = (numLabels + maxLabels - 1) / maxLabels
 
-            var i = if (start < 0) (start / step).toLong() * step.toDouble() else ((start + step - 1) / step).toLong() * step.toDouble()
-            while (i < end) {
-                val x = (i - start) * pixelsPerUnit
-                xCoord[xCount] = x.toFloat()
-                // Hide some labels if they are overlapping.
-                if (round(i / step).toLong() % labelStep == 0L) {
-                    xText[xCount] = getFrequencyLabel(i)
-                } else {
-                    xText[xCount] = ""
+                var i = if (start < 0) (start / step).toLong() * step.toDouble() else ((start + step - 1) / step).toLong() * step.toDouble()
+                while (i < end) {
+                    val x = (i - start) * pixelsPerUnit
+                    xCoord[xCount] = x.toFloat()
+                    // Hide some labels if they are overlapping.
+                    if (round(i / step).toLong() % labelStep == 0L) {
+                        xText[xCount] = getFrequencyLabel(i)
+                    } else {
+                        xText[xCount] = ""
+                    }
+                    xCount += 1
+                    i += step
                 }
-                xCount += 1
-                i += step
             }
         }
 
@@ -214,23 +216,25 @@ class Grid(val context: Context, private val fft: FFT) {
         val labelHeight = textVerticalCenterOffset * 5
         val numLabels = range.toInt() / step
         val maxLabels = min(numLabels, (usableHeight / labelHeight).toInt())
-        val labelStep = (numLabels + maxLabels - 1) / maxLabels
+        if (maxLabels > 0) {
+            val labelStep = (numLabels + maxLabels - 1) / maxLabels
 
-        var i = fft.maxDB - (fft.maxDB - (step - 1) + step * if (fft.maxDB > 0) 1 else 0).toInt() / step * step.toFloat()
-        while (i < range) {
-            // Don't draw over the other axis' labels.
-            val y = top + i * pixelsPerUnit
-            if (y > bottom - bottomScaleSize - 3 * padding) {
-                break
+            var i = fft.maxDB - (fft.maxDB - (step - 1) + step * if (fft.maxDB > 0) 1 else 0).toInt() / step * step.toFloat()
+            while (i < range) {
+                // Don't draw over the other axis' labels.
+                val y = top + i * pixelsPerUnit
+                if (y > bottom - bottomScaleSize - 3 * padding) {
+                    break
+                }
+                yCoord[yCount] = y
+                if (round((fft.maxDB - i) / step).toLong() % labelStep == 0L) {
+                    yText[yCount] = String.format(Locale.getDefault(), "%.0f", fft.maxDB - i)
+                } else {
+                    yText[yCount] = ""
+                }
+                yCount += 1
+                i += step
             }
-            yCoord[yCount] = y
-            if (round((fft.maxDB - i) / step).toLong() % labelStep == 0L) {
-                yText[yCount] = String.format(Locale.getDefault(), "%.0f", fft.maxDB - i)
-            } else {
-                yText[yCount] = ""
-            }
-            yCount += 1
-            i += step
         }
 
         isDirty = true

@@ -6,7 +6,7 @@ import kotlin.math.PI
 import kotlin.math.cos
 import kotlin.math.sin
 
-class Shifter(sampleRate: Int, val frequency: Float) {
+class Shifter(private var sampleRate: Int, var frequency: Float) {
     private var omega = (1.0f * frequency / sampleRate).toRadians()
     private var phi = 0.0f
 
@@ -22,5 +22,11 @@ class Shifter(sampleRate: Int, val frequency: Float) {
                 phi += 2 * PI.toFloat()
             }
         }
+    }
+
+    fun update(frequency: Float) {
+        this.frequency = frequency
+        omega = (1.0f * frequency / sampleRate).toRadians()
+        phi = 0.0f
     }
 }

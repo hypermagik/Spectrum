@@ -714,8 +714,12 @@ class MainActivity : AppCompatActivity() {
 
         var analyzerInput = -1
 
-        analyzer.start()
         demodulator?.start()
+
+        val channelBandwidth = demodulator?.getChannelBandwidth() ?: 0
+        var channelFrequency = preferences.channelFrequency
+
+        analyzer.start(channelBandwidth)
 
         while (state == State.Running) {
             var samples: SampleBuffer?
@@ -742,6 +746,11 @@ class MainActivity : AppCompatActivity() {
                     } else {
                         analyzer.setDemodulatorInput(demodulator!!.getName(), demodulator!!.getOutputName(analyzerInput))
                     }
+                }
+
+                if (channelFrequency != preferences.channelFrequency) {
+                    channelFrequency = preferences.channelFrequency
+                    demodulator?.setFrequency(channelFrequency)
                 }
 
                 try {

@@ -66,11 +66,11 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         view.showSetFrequencyDialog()
     }
 
-    fun start() {
+    fun start(channelBandwidth: Int) {
         fpsLimit.update()
         throttle.setFPS(fpsLimit.value)
 
-        view.start()
+        view.start(channelBandwidth)
     }
 
     fun stop(restart: Boolean) {

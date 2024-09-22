@@ -16,12 +16,11 @@ import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 
 class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulator {
     private var sampleRate = 1000000
-    private val frequencyOffset = 200000L
 
     private val quadratureRate = 250000
     private val quadratureDeviation = 75000
 
-    private var shifter = Shifter(sampleRate, -frequencyOffset.toFloat())
+    private var shifter = Shifter(sampleRate, 0.0f)
     private var resampler = Resampler(sampleRate, quadratureRate)
     private var quadrature = Quadrature(quadratureRate, quadratureDeviation)
     private var lowPassFIR = FIR(Taps.halfBand(), 2, true)
@@ -54,8 +53,6 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
     override fun getOutputCount(): Int = outputs.size
     override fun getOutputName(output: Int): String = outputs[output]!!
 
-    override fun getText(): String? = rdsDemodulator?.getText()
-
     init {
         if (audio) {
             audioSink = AudioSink(31250)
@@ -64,6 +61,12 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
         if (rds) {
             rdsDemodulator = RDS(quadratureRate)
         }
+    }
+
+    override fun getChannelBandwidth(): Int = quadratureRate
+
+    override fun setFrequency(frequency: Long) {
+        shifter.update(-frequency.toFloat())
     }
 
     override fun start() {
@@ -81,12 +84,12 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
 
         if (sampleRate != buffer.sampleRate) {
             sampleRate = buffer.sampleRate
-            shifter = Shifter(sampleRate, -frequencyOffset.toFloat())
+            shifter = Shifter(sampleRate, shifter.frequency)
             resampler = Resampler(sampleRate, quadratureRate)
         }
 
         shifter.shift(buffer.samples, buffer.samples)
-        buffer.frequency += frequencyOffset
+        buffer.frequency += -shifter.frequency.toLong()
 
         buffer.sampleCount = resampler.resample(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleRate = resampler.outputSampleRate
@@ -155,4 +158,6 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
             observe(buffer, false)
         }
     }
+
+    override fun getText(): String? = rdsDemodulator?.getText()
 }

@@ -37,6 +37,7 @@ class Preferences(private val activity: Activity?) {
 
     // Internal use only, not serialized.
     var isRecording = false
+    var channelFrequency = 0L
 
     var demodulatorType = DemodulatorType.None
 
