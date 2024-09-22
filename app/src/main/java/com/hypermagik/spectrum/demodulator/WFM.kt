@@ -21,7 +21,7 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
     private val quadratureRate = 250000
     private val quadratureDeviation = 75000
 
-    private var shifter = Shifter(sampleRate, -frequencyOffset)
+    private var shifter = Shifter(sampleRate, -frequencyOffset.toFloat())
     private var resampler = Resampler(sampleRate, quadratureRate)
     private var quadrature = Quadrature(quadratureRate, quadratureDeviation)
     private var lowPassFIR = FIR(Taps.halfBand(), 2, true)
@@ -81,7 +81,7 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
 
         if (sampleRate != buffer.sampleRate) {
             sampleRate = buffer.sampleRate
-            shifter = Shifter(sampleRate, -frequencyOffset)
+            shifter = Shifter(sampleRate, -frequencyOffset.toFloat())
             resampler = Resampler(sampleRate, quadratureRate)
         }
 

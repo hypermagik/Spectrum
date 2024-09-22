@@ -14,7 +14,7 @@ import com.hypermagik.spectrum.lib.dsp.Shifter
 class RDS(sampleRate: Int) {
     private var frequency = 0L
 
-    private val shifter = Shifter(sampleRate, -(57000 + 2375 / 2 - 1))
+    private val shifter = Shifter(sampleRate, -(57000 + 2375 / 2.0f))
     private val resampler = Resampler(sampleRate, 2375)
     private val agc = AGC()
     private val costas = Costas(0.01f)
