@@ -262,9 +262,16 @@ class RDS(sampleRate: Int) {
         val psOffset = offset * 2
 
         if (blockAvailable[BlockType.D.ordinal]) {
-            programServiceName[psOffset + 0] = (blockD shr 18 and 0xff).toChar()
-            programServiceName[psOffset + 1] = (blockD shr 10 and 0xff).toChar()
-            textChanged = true
+            val c1 = (blockD shr 18 and 0xff).toChar()
+            val c2 = (blockD shr 10 and 0xff).toChar()
+            if (c1 != programServiceName[psOffset + 0]) {
+                programServiceName[psOffset + 0] = c1
+                textChanged = true
+            }
+            if (c2 != programServiceName[psOffset + 1]) {
+                programServiceName[psOffset + 1] = c2
+                textChanged = true
+            }
         }
     }
 
@@ -284,21 +291,42 @@ class RDS(sampleRate: Int) {
         if (groupVersion == 0) {
             val textOffset = offset * 4
             if (blockAvailable[BlockType.C.ordinal]) {
-                radioText[textOffset + 0] = (blockC shr 18 and 0xff).toChar()
-                radioText[textOffset + 1] = (blockC shr 10 and 0xff).toChar()
-                textChanged = true
+                val c1 = (blockC shr 18 and 0xff).toChar()
+                val c2 = (blockC shr 10 and 0xff).toChar()
+                if (c1 != radioText[textOffset + 0]) {
+                    radioText[textOffset + 0] = c1
+                    textChanged = true
+                }
+                if (c2 != radioText[textOffset + 1]) {
+                    radioText[textOffset + 1] = c2
+                    textChanged = true
+                }
             }
             if (blockAvailable[BlockType.D.ordinal]) {
-                radioText[textOffset + 2] = (blockD shr 18 and 0xff).toChar()
-                radioText[textOffset + 3] = (blockD shr 10 and 0xff).toChar()
-                textChanged = true
+                val c1 = (blockD shr 18 and 0xff).toChar()
+                val c2 = (blockD shr 10 and 0xff).toChar()
+                if (c1 != radioText[textOffset + 2]) {
+                    radioText[textOffset + 2] = c1
+                    textChanged = true
+                }
+                if (c2 != radioText[textOffset + 3]) {
+                    radioText[textOffset + 3] = c2
+                    textChanged = true
+                }
             }
         } else {
             val textOffset = offset * 2
             if (blockAvailable[BlockType.D.ordinal]) {
-                radioText[textOffset + 0] = (blockD shr 18 and 0xff).toChar()
-                radioText[textOffset + 1] = (blockD shr 10 and 0xff).toChar()
-                textChanged = true
+                val c1 = (blockD shr 18 and 0xff).toChar()
+                val c2 = (blockD shr 10 and 0xff).toChar()
+                if (c1 != radioText[textOffset + 0]) {
+                    radioText[textOffset + 0] = c1
+                    textChanged = true
+                }
+                if (c2 != radioText[textOffset + 1]) {
+                    radioText[textOffset + 1] = c2
+                    textChanged = true
+                }
             }
         }
 
