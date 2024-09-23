@@ -57,7 +57,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
 
     init {
         if (audio) {
-            audioSink = AudioSink(31250)
+            audioSink = AudioSink(31250, 0.5f)
         }
 
         if (rds) {
@@ -147,14 +147,14 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
             deemphasis[0].filter(buffer.samples, buffer.sampleRate, buffer.sampleCount)
             deemphasis[1].filter(buffers[2], buffer.sampleRate, buffer.sampleCount)
 
-            audioSink?.play(buffer.samples, buffers[2], buffer.sampleCount, 0.5f)
+            audioSink?.play(buffer.samples, buffers[2], buffer.sampleCount)
         } else {
             buffer.sampleCount = audioFIRs[0].filter(buffer.samples, buffer.samples, buffer.sampleCount)
             buffer.sampleRate /= audioFIRs[0].decimation
 
             deemphasis[0].filter(buffer)
 
-            audioSink?.play(buffer.samples, buffer.sampleCount, 0.5f)
+            audioSink?.play(buffer.samples, buffer.samples, buffer.sampleCount)
         }
 
         if (output == 3) {
