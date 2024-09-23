@@ -105,8 +105,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
 
         rdsDemodulator?.demodulate(buffer)
 
-        lowPassFIR.filter(buffer.samples, buffer.samples, buffer.sampleCount)
-        buffer.sampleCount /= lowPassFIR.decimation
+        buffer.sampleCount = lowPassFIR.filter(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleRate /= lowPassFIR.decimation
 
         if (output == 2) {
@@ -142,8 +141,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
             }
 
             audioFIRs[0].filter(buffers[1], buffer.samples, buffer.sampleCount)
-            audioFIRs[1].filter(buffers[2], buffers[2], buffer.sampleCount)
-            buffer.sampleCount /= audioFIRs[0].decimation
+            buffer.sampleCount = audioFIRs[1].filter(buffers[2], buffers[2], buffer.sampleCount)
             buffer.sampleRate /= audioFIRs[0].decimation
 
             deemphasis[0].filter(buffer.samples, buffer.sampleRate, buffer.sampleCount)
@@ -151,8 +149,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
 
             audioSink?.play(buffer.samples, buffers[2], buffer.sampleCount, 0.5f)
         } else {
-            audioFIRs[0].filter(buffer.samples, buffer.samples, buffer.sampleCount)
-            buffer.sampleCount /= audioFIRs[0].decimation
+            buffer.sampleCount = audioFIRs[0].filter(buffer.samples, buffer.samples, buffer.sampleCount)
             buffer.sampleRate /= audioFIRs[0].decimation
 
             deemphasis[0].filter(buffer)

@@ -62,12 +62,10 @@ class WFM {
 
             quadrature.demodulate(samples, samples, sampleCount)
 
-            lowPassFIR.filter(samples, samples, sampleCount)
-            sampleCount /= lowPassFIR.decimation
+            sampleCount = lowPassFIR.filter(samples, samples, sampleCount)
             sampleRate /= lowPassFIR.decimation
 
-            audioFIR.filter(samples, samples, sampleCount)
-            sampleCount /= audioFIR.decimation
+            sampleCount = audioFIR.filter(samples, samples, sampleCount)
             sampleRate /= audioFIR.decimation
 
             deemphasis[0].filter(samples, sampleRate, sampleCount)
@@ -118,12 +116,10 @@ class WFM {
             BinarySlicer.slice(rdsSamples, rdsSoftBits, symbolCount)
             rdsDifferentialDecoder.decode(rdsSoftBits, rdsHardBits, symbolCount)
 
-            lowPassFIR.filter(samples, samples, sampleCount)
-            sampleCount /= lowPassFIR.decimation
+            sampleCount = lowPassFIR.filter(samples, samples, sampleCount)
             sampleRate /= lowPassFIR.decimation
 
-            audioFIR.filter(samples, samples, sampleCount)
-            sampleCount /= audioFIR.decimation
+            sampleCount = audioFIR.filter(samples, samples, sampleCount)
             sampleRate /= audioFIR.decimation
 
             deemphasis[0].filter(samples, sampleRate, sampleCount)
@@ -152,8 +148,7 @@ class WFM {
 
             quadrature.demodulate(samples, samples, sampleCount)
 
-            lowPassFIR.filter(samples, samples, sampleCount)
-            sampleCount /= lowPassFIR.decimation
+            sampleCount = lowPassFIR.filter(samples, samples, sampleCount)
             sampleRate /= lowPassFIR.decimation
 
             if (buffers[0].size < sampleCount) {
@@ -180,8 +175,7 @@ class WFM {
             }
 
             audioFIRs[0].filter(buffers[1], buffers[1], sampleCount)
-            audioFIRs[1].filter(buffers[2], buffers[2], sampleCount)
-            sampleCount /= audioFIRs[0].decimation
+            sampleCount = audioFIRs[1].filter(buffers[2], buffers[2], sampleCount)
             sampleRate /= audioFIRs[0].decimation
 
             deemphasis[0].filter(buffers[1], sampleRate, sampleCount)
@@ -213,8 +207,7 @@ class WFM {
 
                 quadrature.demodulate(samples, samples, sampleCount)
 
-                lowPassFIR.filter(samples, samples, sampleCount)
-                sampleCount /= lowPassFIR.decimation
+                sampleCount = lowPassFIR.filter(samples, samples, sampleCount)
                 sampleRate /= lowPassFIR.decimation
 
                 if (buffers[0].size < sampleCount) {
@@ -241,8 +234,7 @@ class WFM {
                 }
 
                 audioFIRs[0].filter(buffers[1], buffers[1], sampleCount)
-                audioFIRs[1].filter(buffers[2], buffers[2], sampleCount)
-                sampleCount /= audioFIRs[0].decimation
+                sampleCount = audioFIRs[1].filter(buffers[2], buffers[2], sampleCount)
                 sampleRate /= audioFIRs[0].decimation
 
                 deemphasis[0].filter(buffers[1], sampleRate, sampleCount)
@@ -271,8 +263,7 @@ class WFM {
 
             quadrature.demodulate(samples, samples, sampleCount)
 
-            lowPassFIR.filter(samples, samples, sampleCount)
-            sampleCount /= lowPassFIR.decimation
+            sampleCount = lowPassFIR.filter(samples, samples, sampleCount)
             sampleRate /= lowPassFIR.decimation
 
             if (buffers[0].size < sampleCount) {
@@ -291,8 +282,7 @@ class WFM {
             }
 
             audioFIRs[0].filter(buffers[1], buffers[1], sampleCount)
-            audioFIRs[1].filter(buffers[2], buffers[2], sampleCount)
-            sampleCount /= audioFIRs[0].decimation
+            sampleCount = audioFIRs[1].filter(buffers[2], buffers[2], sampleCount)
             sampleRate /= audioFIRs[0].decimation
 
             deemphasis[0].filter(buffers[1], sampleRate, sampleCount)
