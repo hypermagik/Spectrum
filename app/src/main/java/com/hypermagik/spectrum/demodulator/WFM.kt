@@ -14,7 +14,7 @@ import com.hypermagik.spectrum.lib.dsp.Shifter
 import com.hypermagik.spectrum.lib.dsp.Taps
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 
-class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulator {
+class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulator {
     private var sampleRate = 1000000
 
     private val quadratureRate = 250000
@@ -111,7 +111,7 @@ class WFM(audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulat
             observe(buffer, true)
         }
 
-        if (stereo) {
+        if (audio && stereo) {
             if (buffers[0].size < buffer.sampleCount) {
                 buffers = arrayOf(
                     Complex32Array(buffer.sampleCount) { Complex32() },
