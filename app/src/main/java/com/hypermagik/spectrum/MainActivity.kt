@@ -600,6 +600,8 @@ class MainActivity : AppCompatActivity() {
 
         createDemodulator()
 
+        Runtime.getRuntime().gc()
+
         setState(State.Running)
 
         workerThread = thread { workerThreadFn(source) }
