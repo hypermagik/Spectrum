@@ -27,6 +27,8 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
 
     private var rdsDemodulator: RDS? = null
 
+    private var stereoShift = true
+    private var stereoShifter = Shifter(125000, -38000.0f)
     private var pilotFIR = FIRC(Taps.bandPassC(125000.0f, 18750.0f, 19250.0f, 4000.0f))
     private var pilotPLL = PLL(0.1f, (19000 / 125000.0f).toRadians(), (18750 / 125000.0f).toRadians(), (19250 / 125000.0f).toRadians())
     private val delay = Delay((pilotFIR.taps.size - 1) / 2 + 1)
@@ -120,14 +122,18 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
                 )
             }
 
-            pilotFIR.filter(buffer.samples, buffers[0], buffer.sampleCount)
-            pilotPLL.process(buffers[0], buffers[0], buffer.sampleCount)
+            if (stereoShift) {
+                stereoShifter.shift(buffer.samples, buffers[1], buffer.sampleCount)
+            } else {
+                pilotFIR.filter(buffer.samples, buffers[0], buffer.sampleCount)
+                pilotPLL.process(buffers[0], buffers[0], buffer.sampleCount)
 
-            delay.process(buffer.samples, buffer.samples, buffer.sampleCount)
+                delay.process(buffer.samples, buffer.samples, buffer.sampleCount)
 
-            for (i in 0 until buffer.sampleCount) {
-                buffers[1][i].setmulconj(buffer.samples[i], buffers[0][i])
-                buffers[1][i].setmulconj(buffers[1][i], buffers[0][i])
+                for (i in 0 until buffer.sampleCount) {
+                    buffers[1][i].setmulconj(buffer.samples[i], buffers[0][i])
+                    buffers[1][i].setmulconj(buffers[1][i], buffers[0][i])
+                }
             }
 
             for (i in 0 until buffer.sampleCount) {
