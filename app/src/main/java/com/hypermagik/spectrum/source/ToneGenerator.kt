@@ -22,9 +22,9 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
     private var noiseGain: Float = 2 * Utils.db2mag(-90.0f)
     private val noise = Noise()
 
-    private val initialSignalFrequencies = longArrayOf(-300000, -100000, 100000, 300000)
-    private val initialSignalGains = floatArrayOf(-60.0f, -80.0f, -70.0f, -90.0f)
-    private val modulatedFrequencies = longArrayOf(100, 200, 400, 800)
+    private val initialSignalFrequencies = longArrayOf(-300000, 0, 300000)
+    private val initialSignalGains = floatArrayOf(-50.0f, -40.0f, -60.0f)
+    private val modulatedFrequencies = longArrayOf(523, 587, 659)
 
     private lateinit var signals: Array<CW>
     private lateinit var signalFrequencies: LongArray

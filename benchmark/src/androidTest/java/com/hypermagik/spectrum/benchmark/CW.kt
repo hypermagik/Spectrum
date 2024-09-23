@@ -16,12 +16,26 @@ class CW {
     val benchmarkRule = BenchmarkRule()
 
     @Test
-    fun signalSample() {
-        val signal = CW(1000, 1000)
+    fun signalSampleSinCos() {
+        val signal = CW(500000, 1000000, CW.Mode.SinCos)
         val sample = Complex32()
 
         benchmarkRule.measureRepeated {
-            signal.addSignal(sample, 1.0f)
+            for (i in 0 until 1000000) {
+                signal.addSignal(sample, 1.0f)
+            }
+        }
+    }
+
+    @Test
+    fun signalSampleMinimax() {
+        val signal = CW(500000, 1000000, CW.Mode.Minimax)
+        val sample = Complex32()
+
+        benchmarkRule.measureRepeated {
+            for (i in 0 until 1000000) {
+                signal.addSignal(sample, 1.0f)
+            }
         }
     }
 }

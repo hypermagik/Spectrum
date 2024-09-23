@@ -1,6 +1,8 @@
 package com.hypermagik.spectrum.lib.gen
 
 import com.hypermagik.spectrum.lib.data.Complex32
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.minimaxCos
+import com.hypermagik.spectrum.lib.dsp.Utils.Companion.minimaxSin
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 import java.util.SplittableRandom
 import kotlin.math.cos
@@ -8,7 +10,9 @@ import kotlin.math.ln
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-class Noise {
+class Noise(private val mode: Mode = Mode.Minimax) {
+    enum class Mode { SinCos, Minimax }
+
     private val random = SplittableRandom()
 
     fun getNoise(sample: Complex32, scale: Float) {
@@ -16,8 +20,12 @@ class Noise {
         val u2 = random.nextDouble()
 
         val sq = sqrt(-ln(u1)) * scale
-        val ph = u2.toRadians()
+        val phi = u2.toRadians()
 
-        sample.set(sq * cos(ph), sq * sin(ph))
+        if (mode == Mode.Minimax) {
+            sample.set(sq * minimaxCos(phi.toFloat()), sq * minimaxSin(phi.toFloat()))
+        } else {
+            sample.set(sq * cos(phi), sq * sin(phi))
+        }
     }
 }
