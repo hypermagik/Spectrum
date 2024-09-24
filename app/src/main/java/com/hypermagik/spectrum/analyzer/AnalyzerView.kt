@@ -43,6 +43,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var minFrequency: Long = 0
     private var maxFrequency: Long = 1000000
     private var isFrequencyLocked = false
+    private var isSourceInput = true
 
     private var minDB = -135.0f
     private var maxDB = 15.0f
@@ -65,6 +66,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private var channelFrequency = 0.0
     private var channelBandwidth = 0
+    private val hasChannel: Boolean get() = isSourceInput && channelBandwidth > 0
 
     enum class ScrollTarget { None, X, Y, Channel }
 
@@ -172,7 +174,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.draw()
         }
 
-        if (channelBandwidth > 0) {
+        if (hasChannel) {
             synchronized(channel) {
                 channel.draw()
             }
@@ -191,6 +193,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putLong("maxFrequency", maxFrequency)
         bundle.putInt("sampleRate", sampleRate)
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
+        bundle.putBoolean("isSourceInput", isSourceInput)
         bundle.putDouble("viewFrequency", viewFrequency)
         bundle.putDouble("viewBandwidth", viewBandwidth)
         bundle.putDouble("channelFrequency", channelFrequency)
@@ -206,6 +209,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         maxFrequency = bundle.getLong("maxFrequency")
         sampleRate = bundle.getInt("sampleRate")
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
+        isSourceInput = bundle.getBoolean("isSourceInput")
         viewFrequency = bundle.getDouble("viewFrequency")
         viewBandwidth = bundle.getDouble("viewBandwidth")
         channelFrequency = bundle.getDouble("channelFrequency")
@@ -248,9 +252,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
     }
 
-    fun setInputInfo(name: String, details: String, minimumFrequency: Long, maximumFrequency: Long) {
+    fun setInputInfo(name: String, details: String, minimumFrequency: Long, maximumFrequency: Long, isSourceInput: Boolean) {
         minFrequency = minimumFrequency
         maxFrequency = maximumFrequency
+        this.isSourceInput = isSourceInput
         info.setInputInfo(name, details)
         updateFFT()
     }
@@ -351,7 +356,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateChannel() {
-        if (channelBandwidth == 0) {
+        if (!hasChannel) {
             return
         }
 
@@ -473,7 +478,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun onChannelScroll(deltaX: Float) {
-        if (!isRunning || channelBandwidth == 0) {
+        if (!isRunning || !hasChannel) {
             return
         }
 
@@ -499,7 +504,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 requestRender()
             }
         } else if (y < fftHeight && x > fft.grid.leftScaleSize * 1.5f) {
-            if (isRunning && channelBandwidth > 0) {
+            if (isRunning && hasChannel) {
                 channelFrequency = viewFrequency + (x / width - 0.5) * viewBandwidth - frequency
                 updateChannel()
             }
