@@ -11,7 +11,7 @@ import java.util.Locale
 import kotlin.math.min
 import kotlin.math.round
 
-class Grid(val context: Context, private val fft: FFT) {
+class Grid(private val context: Context, private val fft: FFT) {
     private val lineColor: Int = context.resources.getColor(R.color.fft_grid_line, null)
     private var textColor: Int = context.resources.getColor(R.color.fft_grid_text, null)
     private var backgroundColor: Int = context.resources.getColor(R.color.fft_grid_background, null)
@@ -133,58 +133,41 @@ class Grid(val context: Context, private val fft: FFT) {
 
     @Synchronized
     fun setFrequencyRange(start: Double, end: Double) {
-        var step = 1000
+        val multipliers = floatArrayOf(1.0f, 2.0f, 2.5f, 5.0f)
+        var multiplierIndex = 0
+
+        var base = 10
+        var step = base
         val range = end - start
         while (range / step > xMaxLines - 1) {
-            step *= 2
+            step = (base * multipliers[multiplierIndex]).toInt()
+            multiplierIndex = (multiplierIndex + 1) % multipliers.size
+            if (multiplierIndex == 0) {
+                base *= 10
+            }
         }
 
         xCount = 0
         val pixelsPerUnit = width / (end - start)
 
-        if (step == 1000) {
-            val center = start + range / 2
+        val labelWidth = paint.measureText(String.format(Locale.getDefault(), "   %.3fM   ", end / 1000000.0)).toInt()
+        val numLabels = (end - start).toInt() / step
+        val maxLabels = min(numLabels, width.toInt() / labelWidth)
+        if (maxLabels > 0) {
+            val labelStep = (numLabels + maxLabels - 1) / maxLabels
 
-            xCoord[xCount] = ((center - start) * pixelsPerUnit).toFloat()
-            xText[xCount] = getFrequencyLabel(center)
-            xCount += 1
-
-            var i = center + step
+            var i = if (start < 0) (start / step).toLong() * step.toDouble() else ((start + step - 1) / step).toLong() * step.toDouble()
             while (i < end) {
                 val x = (i - start) * pixelsPerUnit
                 xCoord[xCount] = x.toFloat()
-                xText[xCount] = String.format(Locale.getDefault(), "+%.0fK", (i - center) / 1000.0)
+                // Hide some labels if they are overlapping.
+                if (round(i / step).toLong() % labelStep == 0L) {
+                    xText[xCount] = getFrequencyLabel(i)
+                } else {
+                    xText[xCount] = ""
+                }
                 xCount += 1
                 i += step
-            }
-            i = center - step
-            while (i > start) {
-                val x = (i - start) * pixelsPerUnit
-                xCoord[xCount] = x.toFloat()
-                xText[xCount] = String.format(Locale.getDefault(), "-%.0fK", (center - i) / 1000.0)
-                xCount += 1
-                i -= step
-            }
-        } else {
-            val labelWidth = paint.measureText(String.format(Locale.getDefault(), "   %.3fM   ", end / 1000000.0)).toInt()
-            val numLabels = (end - start).toInt() / step
-            val maxLabels = min(numLabels, width.toInt() / labelWidth)
-            if (maxLabels > 0) {
-                val labelStep = (numLabels + maxLabels - 1) / maxLabels
-
-                var i = if (start < 0) (start / step).toLong() * step.toDouble() else ((start + step - 1) / step).toLong() * step.toDouble()
-                while (i < end) {
-                    val x = (i - start) * pixelsPerUnit
-                    xCoord[xCount] = x.toFloat()
-                    // Hide some labels if they are overlapping.
-                    if (round(i / step).toLong() % labelStep == 0L) {
-                        xText[xCount] = getFrequencyLabel(i)
-                    } else {
-                        xText[xCount] = ""
-                    }
-                    xCount += 1
-                    i += step
-                }
             }
         }
 
