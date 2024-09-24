@@ -719,7 +719,17 @@ class MainActivity : AppCompatActivity() {
         demodulator?.start()
 
         val channelBandwidth = demodulator?.getChannelBandwidth() ?: 0
+
+        if (preferences.channelFrequency < -preferences.sourceSettings.sampleRate + channelBandwidth) {
+            preferences.channelFrequency = 0
+        }
+        if (preferences.channelFrequency > preferences.sourceSettings.sampleRate - channelBandwidth) {
+            preferences.channelFrequency = 0
+        }
+
         var channelFrequency = preferences.channelFrequency
+
+        demodulator?.setFrequency(channelFrequency)
 
         analyzer.start(channelBandwidth)
 

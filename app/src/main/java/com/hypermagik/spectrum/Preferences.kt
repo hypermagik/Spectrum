@@ -37,13 +37,14 @@ class Preferences(private val activity: Activity?) {
 
     // Internal use only, not serialized.
     var isRecording = false
-    var channelFrequency = 0L
 
     var demodulatorType = DemodulatorType.None
 
     var demodulatorAudio = false
     var demodulatorStereo = false
     var demodulatorRDS = false
+
+    var channelFrequency = 0L
 
     var fftSize = 256
     var fftWindowType = Window.Type.FLAT_TOP
@@ -90,6 +91,7 @@ class Preferences(private val activity: Activity?) {
             demodulatorAudio = getBoolean("demodulatorAudio", demodulatorAudio)
             demodulatorStereo = getBoolean("demodulatorStereo", demodulatorStereo)
             demodulatorRDS = getBoolean("demodulatorRDS", demodulatorRDS)
+            channelFrequency = getLong("channelFrequency", channelFrequency)
             fftSize = getInt("fftSize", fftSize)
             fftWindowType = Window.Type.entries.toTypedArray()[getInt("fftWindowType", fftWindowType.ordinal)]
             dbCenter = getFloat("dbCenter", dbCenter)
@@ -130,6 +132,7 @@ class Preferences(private val activity: Activity?) {
             putBoolean("demodulatorAudio", demodulatorAudio)
             putBoolean("demodulatorStereo", demodulatorStereo)
             putBoolean("demodulatorRDS", demodulatorRDS)
+            putLong("channelFrequency", channelFrequency)
             putInt("fftSize", fftSize)
             putInt("fftWindowType", fftWindowType.ordinal)
             putFloat("dbCenter", dbCenter)

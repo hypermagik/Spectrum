@@ -225,7 +225,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun start(channelBandwidth: Int) {
         Log.d(TAG, "Starting")
 
-        this.channelFrequency = 0.0
+        this.channelFrequency = preferences.channelFrequency.toDouble()
         this.channelBandwidth = channelBandwidth
 
         isRunning = true
