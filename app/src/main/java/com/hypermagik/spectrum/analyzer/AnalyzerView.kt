@@ -220,7 +220,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         info.restoreInstanceState(bundle)
 
         updateChannel()
-        updateInfoBar()
     }
 
     fun start(channelBandwidth: Int) {

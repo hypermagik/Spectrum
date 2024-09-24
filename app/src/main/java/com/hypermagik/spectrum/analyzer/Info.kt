@@ -210,12 +210,22 @@ class Info(context: Context) {
     }
 
     fun saveInstanceState(bundle: Bundle) {
+        bundle.putLong("frequency", frequency)
+        bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
+        bundle.putInt("gain", gain)
+        bundle.putInt("fftSize", fftSize)
+        bundle.putInt("sampleRate", sampleRate)
         bundle.putString("inputName", inputName)
         bundle.putString("inputDetails", inputDetails)
         bundle.putString("demodulatorText", demodulatorText)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
+        frequency = bundle.getLong("frequency")
+        isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
+        gain = bundle.getInt("gain")
+        fftSize = bundle.getInt("fftSize")
+        sampleRate = bundle.getInt("sampleRate")
         inputName = bundle.getString("inputName", inputName)
         inputDetails = bundle.getString("inputDetails", inputDetails)
         demodulatorText = bundle.getString("demodulatorText", demodulatorText)
