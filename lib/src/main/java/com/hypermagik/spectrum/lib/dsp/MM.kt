@@ -7,8 +7,8 @@ import kotlin.math.floor
 
 class MM(baud: Float, sampleRate: Float) {
     private var pcl = PCL()
-        .setAlphaBeta(0.1f, 1e-6f)
-        .setFrequency(sampleRate / baud, sampleRate / baud * 0.9f, sampleRate / baud * 1.1f)
+        .setAlphaBeta(0.01f, 1e-6f)
+        .setFrequency(sampleRate / baud, sampleRate / baud * 0.99f, sampleRate / baud * 1.01f)
         .setPhase(0.0f, 0.0f, 1.0f)
 
     private val phaseCount = 128
