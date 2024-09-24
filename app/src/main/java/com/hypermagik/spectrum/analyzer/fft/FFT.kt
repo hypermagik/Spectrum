@@ -35,7 +35,6 @@ class FFT(context: Context, private val preferences: Preferences) {
     private var peakHoldColor: FloatArray
     private lateinit var vertexBuffer: ByteBuffer
     private lateinit var peakHoldVertexBuffer: ByteBuffer
-    private lateinit var drawOrderBuffer: ByteBuffer
     private lateinit var fillDrawOrderBuffer: ByteBuffer
 
     var fftSize = preferences.fftSize
@@ -99,18 +98,7 @@ class FFT(context: Context, private val preferences: Preferences) {
 
         peakHoldVertexBuffer.rewind()
 
-        var vdoCapacity = (fftSize - 1) * 2 /* vertices */ * Int.SIZE_BYTES
-        drawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
-
-        // Line segments.
-        for (i in 0 until fftSize - 1) {
-            drawOrderBuffer.putInt(i)
-            drawOrderBuffer.putInt(i + 1)
-        }
-
-        drawOrderBuffer.rewind()
-
-        vdoCapacity = (fftSize - 1) * 6 /* vertices */ * Int.SIZE_BYTES
+        val vdoCapacity = (fftSize - 1) * 6 /* vertices */ * Int.SIZE_BYTES
         fillDrawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
 
         // Fill triangles.
@@ -265,7 +253,7 @@ class FFT(context: Context, private val preferences: Preferences) {
 
         // Draw the FFT lines.
         GLES20.glUniform4fv(vColor, 1, color, 0)
-        GLES20.glDrawElements(GLES20.GL_LINES, (fftSize - 1) * 2, GLES20.GL_UNSIGNED_INT, drawOrderBuffer)
+        GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, fftSize)
 
         // Draw the FFT hold peaks.
         if (preferences.peakHoldEnabled) {
@@ -275,7 +263,7 @@ class FFT(context: Context, private val preferences: Preferences) {
             )
 
             GLES20.glUniform4fv(vColor, 1, peakHoldColor, 0)
-            GLES20.glDrawElements(GLES20.GL_LINES, (fftSize - 1) * 2, GLES20.GL_UNSIGNED_INT, drawOrderBuffer)
+            GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, fftSize)
         }
 
         GLES20.glDisableVertexAttribArray(vPosition)
