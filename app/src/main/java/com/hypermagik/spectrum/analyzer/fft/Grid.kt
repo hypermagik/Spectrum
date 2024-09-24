@@ -6,8 +6,8 @@ import android.graphics.Paint
 import android.graphics.Rect
 import com.hypermagik.spectrum.R
 import com.hypermagik.spectrum.analyzer.Texture
+import com.hypermagik.spectrum.utils.getFrequencyLabel
 import java.util.Locale
-import kotlin.math.abs
 import kotlin.math.min
 import kotlin.math.round
 
@@ -129,16 +129,6 @@ class Grid(val context: Context, private val fft: FFT) {
 
     fun drawLabels() {
         labels.draw()
-    }
-
-    private fun getFrequencyLabel(value: Double): String {
-        return if (abs(value) < 1000) {
-            String.format(Locale.getDefault(), "%.0fHz", value)
-        } else if (abs(value) < 1000000) {
-            String.format(Locale.getDefault(), "%.3fK", value / 1000.0)
-        } else {
-            String.format(Locale.getDefault(), "%.3fM", value / 1000000.0)
-        }
     }
 
     @Synchronized

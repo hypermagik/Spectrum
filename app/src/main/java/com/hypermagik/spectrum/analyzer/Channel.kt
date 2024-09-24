@@ -1,12 +1,15 @@
 package com.hypermagik.spectrum.analyzer
 
 import android.content.Context
+import android.graphics.Color
+import android.graphics.Paint
 import android.opengl.GLES20
 import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hypermagik.spectrum.R
+import com.hypermagik.spectrum.utils.getFrequencyLabel
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -31,6 +34,8 @@ class Channel(context: Context) {
     private var edgeDrawOrderBuffer: ByteBuffer
     private var centerDrawOrderBuffer: ByteBuffer
 
+    private lateinit var texture: Texture
+
     private var fillColor: FloatArray
     private var edgeColor: FloatArray
     private var centerColor: FloatArray
@@ -43,12 +48,19 @@ class Channel(context: Context) {
     private var edgeColorHighlight: FloatArray
     private var centerColorHighlight: FloatArray
 
+    private val textPaint = Paint()
+
     private var viewWidth = 0
+    private var viewHeight = 0
+    private val textY = 20.0f * context.resources.displayMetrics.density
+
     private var viewMinFrequency = 0.0
     private var viewMaxFrequency = 0.0
 
     private var frequency = 0.0
     private var bandwidth = 0
+
+    private var isDirty = true
 
     init {
         var color = context.resources.getColor(R.color.fft_channel_fill, null)
@@ -68,6 +80,11 @@ class Channel(context: Context) {
         edgeColor = edgeColorNormal
         centerColor = centerColorNormal
 
+        textPaint.color = color
+        textPaint.textAlign = Paint.Align.CENTER
+        textPaint.textSize = 11.0f * context.resources.displayMetrics.density
+        textPaint.setShadowLayer(3.0f, 0.0f, 0.0f, Color.BLACK)
+
         vertexBuffer = ByteBuffer.allocateDirect(vertices.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
         vertexBuffer.asFloatBuffer().put(vertices)
 
@@ -84,10 +101,15 @@ class Channel(context: Context) {
     fun onSurfaceCreated(program: Int) {
         vPosition = GLES20.glGetAttribLocation(program, "vPosition")
         vColor = GLES20.glGetUniformLocation(program, "vColor")
+
+        texture = Texture(program)
     }
 
-    fun onSurfaceChanged(width: Int) {
+    fun onSurfaceChanged(width: Int, height: Int) {
         viewWidth = width
+        viewHeight = height
+
+        texture.setDimensions(width, height)
     }
 
     fun setFrequency(frequency: Double, bandwidth: Int) {
@@ -108,6 +130,16 @@ class Channel(context: Context) {
         vertexBuffer.putFloat(6 * Float.SIZE_BYTES, (center + width / 2).toFloat())
         vertexBuffer.putFloat(8 * Float.SIZE_BYTES, center.toFloat())
         vertexBuffer.putFloat(10 * Float.SIZE_BYTES, center.toFloat())
+
+        val canvas = texture.getCanvas()
+        canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR)
+
+        val text = getFrequencyLabel(frequency)
+        if (textPaint.measureText(text) * 1.2f < width * viewWidth) {
+            canvas.drawText(text, (center * viewWidth).toFloat(), viewHeight / 2.0f - textY, textPaint)
+        }
+
+        isDirty = true
     }
 
     fun setFrequencyRange(viewMinFrequency: Double, viewMaxFrequency: Double) {
@@ -133,6 +165,13 @@ class Channel(context: Context) {
         GLES20.glDrawElements(GLES20.GL_LINES, centerDrawOrder.size, GLES20.GL_UNSIGNED_SHORT, centerDrawOrderBuffer)
 
         GLES20.glDisableVertexAttribArray(vPosition)
+
+        if (isDirty) {
+            isDirty = false
+            texture.update()
+        }
+
+        texture.draw()
     }
 
     fun highlight(highlight: Boolean) {
