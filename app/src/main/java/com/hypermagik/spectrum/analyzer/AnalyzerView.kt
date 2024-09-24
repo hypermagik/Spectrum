@@ -362,6 +362,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         val steppedChannelFrequency = round((frequency + channelFrequency) / preferences.frequencyStep) * preferences.frequencyStep
         preferences.channelFrequency = (steppedChannelFrequency - frequency).toLong()
+        preferences.save()
 
         synchronized(channel) {
             channel.setFrequency(steppedChannelFrequency, channelBandwidth)
