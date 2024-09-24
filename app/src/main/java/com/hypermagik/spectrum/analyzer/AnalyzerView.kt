@@ -24,6 +24,7 @@ import com.hypermagik.spectrum.analyzer.fft.FFT
 import com.hypermagik.spectrum.utils.TAG
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
+import kotlin.math.min
 import kotlin.math.round
 
 class AnalyzerView(context: Context, private val preferences: Preferences) :
@@ -312,8 +313,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val sampleRate = if (realSamples) sampleRate / 2.0 else sampleRate.toDouble()
         val frequency = if (realSamples) sampleRate / 2.0 else frequency.toDouble()
 
-        val minViewBandwidth = sampleRate / (fft.fftSize / 128.0)
-        val maxViewBandwidth = sampleRate / 1.0
+        val minViewBandwidth = min(sampleRate, 5000.0)
+        val maxViewBandwidth = sampleRate
 
         viewBandwidth = viewBandwidth.coerceIn(minViewBandwidth, maxViewBandwidth)
 
