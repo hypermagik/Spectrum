@@ -69,7 +69,7 @@ class Info(context: Context) {
     }
 
     fun onSurfaceChanged(width: Int, height: Int) {
-        texture.setDimensions(width, height)
+        texture.setDimensions(width, (this.height + demodulatorTextY).toInt(), 0, 0, width, height)
 
         updateText()
     }

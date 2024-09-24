@@ -57,7 +57,21 @@ class Texture(program: Int) {
         GLES20.glGenTextures(1, textures, 0)
     }
 
-    fun setDimensions(width: Int, height: Int) {
+    fun setDimensions(width: Int, height: Int, top: Int, left: Int, viewWidth: Int, viewHeight: Int) {
+        val l = left.toFloat() / viewWidth
+        val r = (left + width).toFloat() / viewWidth
+        val t = 1.0f - top.toFloat() / viewHeight
+        val b = 1.0f - (top + height).toFloat() / viewHeight
+
+        vertexBuffer.putFloat(0 * Float.SIZE_BYTES, l)
+        vertexBuffer.putFloat(1 * Float.SIZE_BYTES, t)
+        vertexBuffer.putFloat(2 * Float.SIZE_BYTES, l)
+        vertexBuffer.putFloat(3 * Float.SIZE_BYTES, b)
+        vertexBuffer.putFloat(4 * Float.SIZE_BYTES, r)
+        vertexBuffer.putFloat(5 * Float.SIZE_BYTES, b)
+        vertexBuffer.putFloat(6 * Float.SIZE_BYTES, r)
+        vertexBuffer.putFloat(7 * Float.SIZE_BYTES, t)
+
         bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
         canvas.setBitmap(bitmap)
     }

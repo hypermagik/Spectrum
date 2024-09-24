@@ -19,9 +19,8 @@ class Grid(val context: Context, private val fft: FFT) {
 
     private var paint: Paint = Paint()
 
-    private var top = 0.0f
-    private var bottom = 0.0f
     private var width = 0.0f
+    private var height = 0.0f
     private var padding = 0.0f
     private var textVerticalCenterOffset = 0.0f
     private var bottomScaleSize = 0.0f
@@ -53,12 +52,13 @@ class Grid(val context: Context, private val fft: FFT) {
     }
 
     fun onSurfaceChanged(width: Int, height: Int, top: Float, bottom: Float) {
-        background.setDimensions(width, height)
-        labels.setDimensions(width, height)
-
-        this.top = height * (1.0f - top)
         this.width = width.toFloat()
-        this.bottom = height * (1.0f - bottom)
+        this.height = (top - bottom) * height
+        val topPixel = (1.0f - top) * height
+
+        background.setDimensions(width, this.height.toInt(), topPixel.toInt(), 0, width, height)
+        labels.setDimensions(width, this.height.toInt(), topPixel.toInt(), 0, width, height)
+
         this.padding = 4.0f * context.resources.displayMetrics.density
 
         paint.textSize = 11.0f * context.resources.displayMetrics.density
@@ -78,12 +78,12 @@ class Grid(val context: Context, private val fft: FFT) {
         var canvas = background.getCanvas()
 
         paint.color = backgroundColor
-        canvas.drawRect(0.0f, top, width, bottom, paint)
+        canvas.drawRect(0.0f, 0.0f, width, height, paint)
 
         paint.color = lineColor
         paint.pathEffect = DashPathEffect(floatArrayOf(20.0f, 10.0f), 0.0f)
         for (i in 0 until xCount) {
-            canvas.drawLine(xCoord[i], top, xCoord[i], bottom, paint)
+            canvas.drawLine(xCoord[i], 0.0f, xCoord[i], height, paint)
         }
         for (i in 0 until yCount) {
             canvas.drawLine(0.0f, yCoord[i], width, yCoord[i], paint)
@@ -91,8 +91,8 @@ class Grid(val context: Context, private val fft: FFT) {
         paint.pathEffect = null
 
         paint.color = borderColor
-        canvas.drawLine(0.0f, top + 1, width, top + 1, paint)
-        canvas.drawLine(0.0f, bottom - 1, width, bottom - 1, paint)
+        canvas.drawLine(0.0f, 0.0f, width, 0.0f, paint)
+        canvas.drawLine(0.0f, height - 1, width, height - 1, paint)
 
         background.update()
 
@@ -104,7 +104,7 @@ class Grid(val context: Context, private val fft: FFT) {
 
         paint.textAlign = Paint.Align.CENTER
         for (i in 0 until xCount) {
-            canvas.drawText(xText[i], xCoord[i], bottom - padding, paint)
+            canvas.drawText(xText[i], xCoord[i], height - padding, paint)
         }
         paint.textAlign = Paint.Align.LEFT
         for (i in 0 until yCount) {
@@ -200,20 +200,19 @@ class Grid(val context: Context, private val fft: FFT) {
         }
 
         yCount = 0
-        val usableHeight = bottom - top
-        val pixelsPerUnit = usableHeight / (fft.maxDB - fft.minDB)
+        val pixelsPerUnit = height / (fft.maxDB - fft.minDB)
 
         val labelHeight = textVerticalCenterOffset * 5
         val numLabels = range.toInt() / step
-        val maxLabels = min(numLabels, (usableHeight / labelHeight).toInt())
+        val maxLabels = min(numLabels, (height / labelHeight).toInt())
         if (maxLabels > 0) {
             val labelStep = (numLabels + maxLabels - 1) / maxLabels
 
             var i = fft.maxDB - (fft.maxDB - (step - 1) + step * if (fft.maxDB > 0) 1 else 0).toInt() / step * step.toFloat()
             while (i < range) {
                 // Don't draw over the other axis' labels.
-                val y = top + i * pixelsPerUnit
-                if (y > bottom - bottomScaleSize - 3 * padding) {
+                val y = i * pixelsPerUnit
+                if (y > height - bottomScaleSize - 3 * padding) {
                     break
                 }
                 yCoord[yCount] = y

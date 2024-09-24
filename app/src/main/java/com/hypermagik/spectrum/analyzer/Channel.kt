@@ -52,7 +52,7 @@ class Channel(context: Context) {
 
     private var viewWidth = 0
     private var viewHeight = 0
-    private val textY = 20.0f * context.resources.displayMetrics.density
+    private val height = 20.0f * context.resources.displayMetrics.density
 
     private var viewMinFrequency = 0.0
     private var viewMaxFrequency = 0.0
@@ -109,7 +109,7 @@ class Channel(context: Context) {
         viewWidth = width
         viewHeight = height
 
-        texture.setDimensions(width, height)
+        texture.setDimensions(viewWidth, this.height.toInt(), height / 2 - this.height.toInt() * 2, 0, viewWidth, viewHeight)
     }
 
     fun setFrequency(frequency: Double, bandwidth: Int) {
@@ -136,7 +136,7 @@ class Channel(context: Context) {
 
         val text = getFrequencyLabel(frequency)
         if (textPaint.measureText(text) * 1.2f < width * viewWidth) {
-            canvas.drawText(text, (center * viewWidth).toFloat(), viewHeight / 2.0f - textY, textPaint)
+            canvas.drawText(text, (center * viewWidth).toFloat(), height, textPaint)
         }
 
         isDirty = true
