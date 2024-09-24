@@ -157,7 +157,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         fft.onSurfaceChanged(width, height, fftTop, fftBottom)
 
         waterfall.onSurfaceChanged(height, fftBottom)
-        channel.onSurfaceChanged(width, height)
+        channel.onSurfaceChanged(width, height, fftBottom)
 
         updateFFT()
 

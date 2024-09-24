@@ -34,7 +34,7 @@ class Channel(context: Context) {
     private var edgeDrawOrderBuffer: ByteBuffer
     private var centerDrawOrderBuffer: ByteBuffer
 
-    private lateinit var texture: Texture
+    private var texture: Texture? = null
 
     private var fillColor: FloatArray
     private var edgeColor: FloatArray
@@ -105,11 +105,14 @@ class Channel(context: Context) {
         texture = Texture(program)
     }
 
-    fun onSurfaceChanged(width: Int, height: Int) {
+    fun onSurfaceChanged(width: Int, height: Int, bottom: Float) {
         viewWidth = width
         viewHeight = height
 
-        texture.setDimensions(viewWidth, this.height.toInt(), height / 2 - this.height.toInt() * 2, 0, viewWidth, viewHeight)
+        val top = height * (1.0f - bottom) - this.height.toInt() * 2
+        texture!!.setDimensions(viewWidth, this.height.toInt(), top.toInt(), 0, viewWidth, viewHeight)
+
+        setFrequency(frequency, bandwidth)
     }
 
     fun setFrequency(frequency: Double, bandwidth: Int) {
@@ -131,15 +134,17 @@ class Channel(context: Context) {
         vertexBuffer.putFloat(8 * Float.SIZE_BYTES, center.toFloat())
         vertexBuffer.putFloat(10 * Float.SIZE_BYTES, center.toFloat())
 
-        val canvas = texture.getCanvas()
-        canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR)
+        texture?.apply {
+            val canvas = getCanvas()
+            canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR)
 
-        val text = getFrequencyLabel(frequency)
-        if (textPaint.measureText(text) * 1.2f < width * viewWidth) {
-            canvas.drawText(text, (center * viewWidth).toFloat(), height, textPaint)
+            val text = getFrequencyLabel(frequency)
+            if (textPaint.measureText(text) * 1.2f < width * viewWidth) {
+                canvas.drawText(text, (center * viewWidth).toFloat(), height, textPaint)
+            }
+
+            isDirty = true
         }
-
-        isDirty = true
     }
 
     fun setFrequencyRange(viewMinFrequency: Double, viewMaxFrequency: Double) {
@@ -168,10 +173,10 @@ class Channel(context: Context) {
 
         if (isDirty) {
             isDirty = false
-            texture.update()
+            texture!!.update()
         }
 
-        texture.draw()
+        texture!!.draw()
     }
 
     fun highlight(highlight: Boolean) {
