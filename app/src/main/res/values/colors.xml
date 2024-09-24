@@ -22,8 +22,11 @@
     <color name="fft_info_text">#FF00D578</color>
     <color name="fft_info_shadow">#4000D578</color>
     <color name="fft_info_background">#FF060D0C</color>
-    <color name="fft_channel_fill">#2000D578</color>
-    <color name="fft_channel_edge">#9088EE00</color>
-    <color name="fft_channel_center">#FFFFD578</color>
+    <color name="fft_channel_fill">#2000A8AE</color>
+    <color name="fft_channel_edge">#9978D500</color>
+    <color name="fft_channel_center">#AAFFFF00</color>
+    <color name="fft_channel_fill_highlight">#2700A8AE</color>
+    <color name="fft_channel_edge_highlight">#C078D500</color>
+    <color name="fft_channel_center_highlight">#EEDDFF00</color>
     <color name="waterfall_background">#FF000000</color>
 </resources>

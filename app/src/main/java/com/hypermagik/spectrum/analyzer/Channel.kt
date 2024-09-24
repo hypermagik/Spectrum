@@ -2,13 +2,11 @@ package com.hypermagik.spectrum.analyzer
 
 import android.content.Context
 import android.opengl.GLES20
-import android.util.Log
 import androidx.core.graphics.alpha
 import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hypermagik.spectrum.R
-import com.hypermagik.spectrum.utils.TAG
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -37,6 +35,14 @@ class Channel(context: Context) {
     private var edgeColor: FloatArray
     private var centerColor: FloatArray
 
+    private var fillColorNormal: FloatArray
+    private var edgeColorNormal: FloatArray
+    private var centerColorNormal: FloatArray
+
+    private var fillColorHighlight: FloatArray
+    private var edgeColorHighlight: FloatArray
+    private var centerColorHighlight: FloatArray
+
     private var viewWidth = 0
     private var viewMinFrequency = 0.0
     private var viewMaxFrequency = 0.0
@@ -46,13 +52,21 @@ class Channel(context: Context) {
 
     init {
         var color = context.resources.getColor(R.color.fft_channel_fill, null)
-        fillColor = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
-
+        fillColorNormal = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
         color = context.resources.getColor(R.color.fft_channel_edge, null)
-        edgeColor = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
-
+        edgeColorNormal = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
         color = context.resources.getColor(R.color.fft_channel_center, null)
-        centerColor = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+        centerColorNormal = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+        color = context.resources.getColor(R.color.fft_channel_fill_highlight, null)
+        fillColorHighlight = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+        color = context.resources.getColor(R.color.fft_channel_edge_highlight, null)
+        edgeColorHighlight = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+        color = context.resources.getColor(R.color.fft_channel_center_highlight, null)
+        centerColorHighlight = floatArrayOf(color.red / 255f, color.green / 255f, color.blue / 255f, color.alpha / 255f)
+
+        fillColor = fillColorNormal
+        edgeColor = edgeColorNormal
+        centerColor = centerColorNormal
 
         vertexBuffer = ByteBuffer.allocateDirect(vertices.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
         vertexBuffer.asFloatBuffer().put(vertices)
@@ -119,5 +133,17 @@ class Channel(context: Context) {
         GLES20.glDrawElements(GLES20.GL_LINES, centerDrawOrder.size, GLES20.GL_UNSIGNED_SHORT, centerDrawOrderBuffer)
 
         GLES20.glDisableVertexAttribArray(vPosition)
+    }
+
+    fun highlight(highlight: Boolean) {
+        if (highlight) {
+            fillColor = fillColorHighlight
+            edgeColor = edgeColorHighlight
+            centerColor = centerColorHighlight
+        } else {
+            fillColor = fillColorNormal
+            edgeColor = edgeColorNormal
+            centerColor = centerColorNormal
+        }
     }
 }

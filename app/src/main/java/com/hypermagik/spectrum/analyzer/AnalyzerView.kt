@@ -369,6 +369,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
     }
 
+    private fun highlightChannel(highlight: Boolean) {
+        synchronized(channel) {
+            channel.highlight(highlight)
+        }
+
+        if (!isRunning) {
+            requestRender()
+        }
+    }
+
     private fun updateInfoBar() {
         info.setFrequency(frequency)
         info.setFrequencyLock(isFrequencyLocked)
@@ -386,8 +396,13 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     override fun onTouchEvent(event: MotionEvent?): Boolean {
+        if (event?.action == MotionEvent.ACTION_UP) {
+            highlightChannel(false)
+        }
+
         val scaleGestureResult = event?.let { scaleGestureDetector.onTouchEvent(it) }
         val gestureResult = event?.let { gestureDetector.onTouchEvent(it) }
+
         return scaleGestureResult == true || gestureResult == true
     }
 
@@ -435,6 +450,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         } else if (y < fftHeight && x < fft.grid.leftScaleSize * 1.5f) {
             ScrollTarget.Y
         } else if (y < fftHeight && x >= channelStart && x <= channelEnd) {
+            highlightChannel(true)
             ScrollTarget.Channel
         } else {
             ScrollTarget.X
