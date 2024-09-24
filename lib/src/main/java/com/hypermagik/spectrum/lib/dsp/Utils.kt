@@ -1,20 +1,24 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package com.hypermagik.spectrum.lib.dsp
 
 import kotlin.math.PI
 import kotlin.math.pow
 import kotlin.math.sin
 
-@Suppress("NOTHING_TO_INLINE")
 class Utils {
     companion object {
+        @kotlin.internal.InlineOnly
         inline fun Double.toRadians(): Double {
             return 2 * PI * this
         }
 
+        @kotlin.internal.InlineOnly
         inline fun Float.toRadians(): Float {
             return (2 * PI * this).toFloat()
         }
 
+        @kotlin.internal.InlineOnly
         inline fun db2mag(db: Float): Float {
             return 10.0.pow(db / 20.0).toFloat()
         }
@@ -26,6 +30,7 @@ class Utils {
         const val S5 = 2.752397107463265E-6
         const val S6 = -2.3868346521031026E-8
 
+        @kotlin.internal.InlineOnly
         inline fun minimaxSin(x: Float): Float {
             val x2 = x * x
             return (x * (S1 + x2 * (S2 + x2 * (S3 + x2 * (S4 + x2 * (S5 + x2 * S6)))))).toFloat()
@@ -39,11 +44,13 @@ class Utils {
         const val C6 = -2.751356111645714E-7
         const val C7 = 1.9764418299584176E-9
 
+        @kotlin.internal.InlineOnly
         inline fun minimaxCos(x: Float): Float {
             val x2 = x * x
             return (C1 + x2 * (C2 + x2 * (C3 + x2 * (C4 + x2 * (C5 + x2 * (C6 + x2 * C7)))))).toFloat()
         }
 
+        @kotlin.internal.InlineOnly
         inline fun sinc(x: Float): Float {
             return if (x == 0.0f) 1.0f else sin(x) / x
         }
@@ -59,6 +66,7 @@ class Utils {
             return x
         }
 
+        @kotlin.internal.InlineOnly
         inline fun step(value: Float): Float {
             return if (value > 0.0f) 1.0f else -1.0f
         }

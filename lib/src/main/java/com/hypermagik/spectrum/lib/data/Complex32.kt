@@ -1,110 +1,130 @@
+@file:Suppress("INVISIBLE_REFERENCE", "INVISIBLE_MEMBER")
+
 package com.hypermagik.spectrum.lib.data
 
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.step
 import kotlin.math.atan2
 import kotlin.math.sqrt
 
-data class Complex32(var re: Float, var im: Float) {
+data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
     constructor() : this(0.0f, 0.0f)
     constructor(c: Complex32) : this(c.re, c.im)
     constructor(re: Double, im: Double) : this(re.toFloat(), im.toFloat())
 
-    fun zero() {
+    @kotlin.internal.InlineOnly
+    inline fun zero() {
         this.re = 0.0f
         this.im = 0.0f
     }
 
-    fun set(c: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun set(c: Complex32) {
         this.re = c.re
         this.im = c.im
     }
 
-    fun set(re: Float, im: Float) {
+    @kotlin.internal.InlineOnly
+    inline fun set(re: Float, im: Float) {
         this.re = re
         this.im = im
     }
 
-    fun set(re: Double, im: Double) {
+    @kotlin.internal.InlineOnly
+    inline fun set(re: Double, im: Double) {
         this.re = re.toFloat()
         this.im = im.toFloat()
     }
 
-    fun add(c: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun add(c: Complex32) {
         this.re += c.re
         this.im += c.im
     }
 
-    fun add(re: Float, im: Float) {
+    @kotlin.internal.InlineOnly
+    inline fun add(re: Float, im: Float) {
         this.re += re
         this.im += im
     }
 
-    fun mul(c: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun mul(c: Complex32) {
         val mre = this.re * c.re - this.im * c.im
         val mim = this.re * c.im + this.im * c.re
         this.re = mre
         this.im = mim
     }
 
-    fun mul(constant: Float) {
+    @kotlin.internal.InlineOnly
+    inline fun mul(constant: Float) {
         this.re *= constant
         this.im *= constant
     }
 
-    fun setsum(c1: Complex32, c2: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun setsum(c1: Complex32, c2: Complex32) {
         this.re = c1.re + c2.re
         this.im = c1.im + c2.im
     }
 
-    fun setdif(c1: Complex32, c2: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun setdif(c1: Complex32, c2: Complex32) {
         this.re = c1.re - c2.re
         this.im = c1.im - c2.im
     }
 
-    fun setmul(c1: Complex32, c2: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun setmul(c1: Complex32, c2: Complex32) {
         val mre = c1.re * c2.re - c1.im * c2.im
         val mim = c1.re * c2.im + c1.im * c2.re
         this.re = mre
         this.im = mim
     }
 
-    fun setmul(c: Complex32, constant: Float) {
+    @kotlin.internal.InlineOnly
+    inline fun setmul(c: Complex32, constant: Float) {
         this.re = c.re * constant
         this.im = c.im * constant
     }
 
-    fun setmul(c: Complex32, re: Float, im: Float) {
+    @kotlin.internal.InlineOnly
+    inline fun setmul(c: Complex32, re: Float, im: Float) {
         val mre = c.re * re - c.im * im
         val mim = c.re * im + c.im * re
         this.re = mre
         this.im = mim
     }
 
-    fun setmulconj(c1: Complex32, c2: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun setmulconj(c1: Complex32, c2: Complex32) {
         val mre = c1.re * c2.re + c1.im * c2.im
         val mim = c1.im * c2.re - c1.re * c2.im
         this.re = mre
         this.im = mim
     }
 
-    fun setstep(c: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun setstep(c: Complex32) {
         this.re = step(c.re)
         this.im = step(c.im)
     }
 
-    fun addmul(c1: Complex32, c2: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun addmul(c1: Complex32, c2: Complex32) {
         val mre = c1.re * c2.re - c1.im * c2.im
         val mim = c1.re * c2.im + c1.im * c2.re
         this.re += mre
         this.im += mim
     }
 
-    fun addmul(c1: Complex32, constant: Float) {
+    @kotlin.internal.InlineOnly
+    inline fun addmul(c1: Complex32, constant: Float) {
         this.re += c1.re * constant
         this.im += c1.im * constant
     }
 
-    fun swap(c: Complex32) {
+    @kotlin.internal.InlineOnly
+    inline fun swap(c: Complex32) {
         val re = c.re
         val im = c.im
         c.re = this.re
@@ -113,13 +133,15 @@ data class Complex32(var re: Float, var im: Float) {
         this.im = im
     }
 
-    fun mag(scale: Float = 1.0f): Float {
+    @kotlin.internal.InlineOnly
+    inline fun mag(scale: Float = 1.0f): Float {
         val re = this.re * scale
         val im = this.im * scale
         return sqrt(re * re + im * im)
     }
 
-    fun phase(): Float {
+    @kotlin.internal.InlineOnly
+    inline fun phase(): Float {
         return atan2(im, re)
     }
 }
