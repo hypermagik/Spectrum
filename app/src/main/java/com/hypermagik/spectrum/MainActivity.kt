@@ -22,6 +22,7 @@ import com.hypermagik.spectrum.analyzer.Analyzer
 import com.hypermagik.spectrum.databinding.ActivityMainBinding
 import com.hypermagik.spectrum.demodulator.Demodulator
 import com.hypermagik.spectrum.demodulator.DemodulatorType
+import com.hypermagik.spectrum.demodulator.Tetra
 import com.hypermagik.spectrum.demodulator.WFM
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.data.SampleFIFO
@@ -68,6 +69,10 @@ class MainActivity : AppCompatActivity() {
 
     private val getIQFileContent = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? -> onIQFileSelected(uri) }
     private val getRecordLocationContent = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? -> onRecordLocationSelected(uri) }
+
+    init {
+        System.loadLibrary("spectrum")
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -133,6 +138,7 @@ class MainActivity : AppCompatActivity() {
         demodulator = when (preferences.demodulatorType) {
             DemodulatorType.None -> null
             DemodulatorType.WFM -> WFM(preferences.demodulatorAudio, preferences.demodulatorStereo, preferences.demodulatorRDS)
+            DemodulatorType.Tetra -> Tetra()
         }
     }
 

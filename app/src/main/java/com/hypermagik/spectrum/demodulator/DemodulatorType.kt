@@ -1,3 +1,3 @@
 package com.hypermagik.spectrum.demodulator
 
-enum class DemodulatorType { None, WFM }
+enum class DemodulatorType { None, WFM, Tetra }

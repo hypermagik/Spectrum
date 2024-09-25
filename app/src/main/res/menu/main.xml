@@ -63,6 +63,9 @@
                     <item
                         android:id="@+id/menu_demodulator_wfm"
                         android:title="@string/menu_demodulator_wfm" />
+                    <item
+                        android:id="@+id/menu_demodulator_tetra"
+                        android:title="@string/menu_demodulator_tetra" />
                 </group>
             </menu>
         </item>
