@@ -67,7 +67,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private var channelFrequency = 0.0
     private var channelBandwidth = 0
-    private val hasChannel: Boolean get() = isSourceInput && channelBandwidth > 0
+    private val hasChannel: Boolean get() = channelBandwidth > 0
 
     enum class ScrollTarget { None, X, Y, Channel }
 
@@ -175,7 +175,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.draw()
         }
 
-        if (hasChannel) {
+        if (isSourceInput && hasChannel) {
             synchronized(channel) {
                 channel.draw()
             }
@@ -356,10 +356,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateChannel() {
-        if (!hasChannel) {
-            return
-        }
-
         val steppedChannelFrequency = round((frequency + channelFrequency) / preferences.frequencyStep) * preferences.frequencyStep
         preferences.channelFrequency = (steppedChannelFrequency - frequency).toLong()
         preferences.save()
@@ -450,7 +446,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             ScrollTarget.None
         } else if (y < fftHeight && x < fft.grid.leftScaleSize * 1.5f) {
             ScrollTarget.Y
-        } else if (y < fftHeight && x >= channelStart && x <= channelEnd) {
+        } else if (isSourceInput && hasChannel && y < fftHeight && x >= channelStart && x <= channelEnd) {
             highlightChannel(true)
             ScrollTarget.Channel
         } else {
@@ -472,8 +468,21 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private fun onFrequencyScroll(deltaX: Float) {
         viewFrequency += viewBandwidth * deltaX / width
 
-        if (!isRunning || isFrequencyLocked || preferences.isRecording || maxFrequency == 0L) {
+        if (!isRunning || isFrequencyLocked || preferences.isRecording) {
             // If locked or recording, can't change frequency.
+            return
+        }
+
+        if (!isSourceInput) {
+            if (hasChannel) {
+                channelFrequency += 100000 * deltaX / width
+                channelFrequency = channelFrequency.coerceIn(
+                    -preferences.sourceSettings.sampleRate / 2.0 + channelBandwidth / 2,
+                    preferences.sourceSettings.sampleRate / 2.0 - channelBandwidth / 2
+                )
+
+                updateChannel()
+            }
             return
         }
 
@@ -495,7 +504,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun onChannelScroll(deltaX: Float) {
-        if (!isRunning || !hasChannel) {
+        if (!isRunning) {
             return
         }
 
@@ -521,7 +530,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
                 requestRender()
             }
         } else if (y < fftHeight && x > fft.grid.leftScaleSize * 1.5f) {
-            if (isRunning && hasChannel) {
+            if (isRunning && isSourceInput && hasChannel) {
                 channelFrequency = viewFrequency + (x / width - 0.5) * viewBandwidth - frequency
                 updateChannel()
             }
