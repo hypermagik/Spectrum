@@ -600,6 +600,8 @@ class MainActivity : AppCompatActivity() {
 
         createDemodulator()
 
+        analyzerInput = 0
+
         Runtime.getRuntime().gc()
 
         setState(State.Running)

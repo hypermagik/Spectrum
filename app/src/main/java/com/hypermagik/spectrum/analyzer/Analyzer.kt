@@ -89,15 +89,7 @@ class Analyzer(context: Context, private val preferences: Preferences) {
             return
         }
 
-        if (view.frequency != buffer.frequency) {
-            view.updateFrequency(buffer.frequency)
-        }
-        if (view.sampleRate != buffer.sampleRate) {
-            view.updateSampleRate(buffer.sampleRate)
-        }
-        if (view.realSamples != buffer.realSamples) {
-            view.updateRealSamples(buffer.realSamples)
-        }
+        view.update(buffer.frequency, buffer.sampleRate, buffer.realSamples)
 
         var input = buffer.samples
         if (preserveSamples) {
@@ -107,6 +99,7 @@ class Analyzer(context: Context, private val preferences: Preferences) {
             }
             input = fftInput
         }
+
         analyze(input, buffer.sampleCount, buffer.realSamples)
     }
 

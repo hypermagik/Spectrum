@@ -65,7 +65,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var viewDBCenter = preferences.dbCenter
     private var viewDBRange = preferences.dbRange
 
-    private var channelFrequency = 0.0
+    private var sourceViewFrequency = Double.NaN
+    private var sourceViewBandwidth = Double.NaN
+
+    private var channelFrequency = Double.NaN
     private var channelBandwidth = 0
     private val hasChannel: Boolean get() = channelBandwidth > 0
 
@@ -228,6 +231,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         this.channelFrequency = preferences.channelFrequency.toDouble()
         this.channelBandwidth = channelBandwidth
 
+        sourceViewFrequency = Double.NaN
+        sourceViewBandwidth = Double.NaN
+
+        isSourceInput = false
         isRunning = true
 
         info.start()
@@ -255,9 +262,17 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     fun setInputInfo(name: String, details: String, minimumFrequency: Long, maximumFrequency: Long, isSourceInput: Boolean) {
         minFrequency = minimumFrequency
         maxFrequency = maximumFrequency
+        if (this.isSourceInput) {
+            sourceViewFrequency = viewFrequency
+            sourceViewBandwidth = viewBandwidth
+        }
         this.isSourceInput = isSourceInput
         info.setInputInfo(name, details)
         updateFFT()
+    }
+
+    fun setDemodulatorText(text: String?) {
+        info.setDemodulatorText(text)
     }
 
     private fun resetFrequencyScale() {
@@ -265,27 +280,39 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         viewBandwidth = sampleRate.toDouble()
     }
 
-    fun updateFrequency(frequency: Long) {
-        this.frequency = frequency
-        info.setFrequency(frequency)
-        updateFFT()
-    }
+    fun update(frequency: Long, sampleRate: Int, realSamples: Boolean) {
+        var update = false
 
-    fun updateSampleRate(sampleRate: Int) {
-        this.sampleRate = sampleRate
-        info.setSampleRate(sampleRate)
-        resetFrequencyScale()
-        updateFFT()
-    }
+        if (this.frequency != frequency) {
+            this.frequency = frequency
+            info.setFrequency(frequency)
+            update = true
+        }
 
-    fun updateRealSamples(realSamples: Boolean) {
-        this.realSamples = realSamples
-        resetFrequencyScale()
-        updateFFT()
-    }
+        if (this.sampleRate != sampleRate) {
+            this.sampleRate = sampleRate
+            info.setSampleRate(sampleRate)
+            resetFrequencyScale()
+            update = true
+        }
 
-    fun setDemodulatorText(text: String?) {
-        info.setDemodulatorText(text)
+        if (this.realSamples != realSamples) {
+            this.realSamples = realSamples
+            resetFrequencyScale()
+            update = true
+        }
+
+        if (this.isSourceInput && !sourceViewBandwidth.isNaN()) {
+            viewFrequency = sourceViewFrequency
+            viewBandwidth = sourceViewBandwidth
+            sourceViewFrequency = Double.NaN
+            sourceViewBandwidth = Double.NaN
+            update = true
+        }
+
+        if (update) {
+            updateFFT()
+        }
     }
 
     fun updateFFT(magnitudes: FloatArray, count: Int, fftSize: Int) {
@@ -351,7 +378,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             fft.updateY(viewDBCenter - viewDBRange / 2, viewDBCenter + viewDBRange / 2)
         }
 
-        updateChannel()
+        if (hasChannel) {
+            updateChannel()
+        }
+
         requestRender()
     }
 
