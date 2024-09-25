@@ -14,7 +14,7 @@ import com.hypermagik.spectrum.lib.dsp.Delay
 import com.hypermagik.spectrum.lib.dsp.DifferentialDecoder
 import com.hypermagik.spectrum.lib.dsp.FIR
 import com.hypermagik.spectrum.lib.dsp.FIRC
-import com.hypermagik.spectrum.lib.dsp.MM
+import com.hypermagik.spectrum.lib.clock.MM
 import com.hypermagik.spectrum.lib.dsp.PLL
 import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.Shifter

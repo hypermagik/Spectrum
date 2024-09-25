@@ -7,7 +7,7 @@ import com.hypermagik.spectrum.lib.dsp.AGC
 import com.hypermagik.spectrum.lib.dsp.BinarySlicer
 import com.hypermagik.spectrum.lib.dsp.Costas
 import com.hypermagik.spectrum.lib.dsp.DifferentialDecoder
-import com.hypermagik.spectrum.lib.dsp.MM
+import com.hypermagik.spectrum.lib.clock.MM
 import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.Shifter
 import java.util.Locale
