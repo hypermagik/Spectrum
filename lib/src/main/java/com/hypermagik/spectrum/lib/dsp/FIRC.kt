@@ -7,13 +7,13 @@ class FIRC(val taps: Complex32Array, private val decimation: Int = 1, private va
     private var buffer = Complex32Array(0) { Complex32() }
     private var decimationCounter = 1
 
-    fun filter(input: Complex32Array, output: Complex32Array, length: Int = input.size): Int {
+    fun filter(input: Complex32Array, output: Complex32Array, length: Int = input.size, inputOffset: Int = 0): Int {
         if (buffer.size < length + taps.size) {
             buffer = Complex32Array(length + taps.size) { Complex32() }
         }
 
         for (i in 0 until length) {
-            buffer[taps.size - 1 + i].set(input[i])
+            buffer[taps.size - 1 + i].set(input[inputOffset + i])
         }
 
         var outputIndex = 0

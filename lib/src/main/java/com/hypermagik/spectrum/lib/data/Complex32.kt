@@ -56,6 +56,14 @@ data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
     }
 
     @kotlin.internal.InlineOnly
+    inline fun mul(re: Float, im: Float) {
+        val mre = this.re * re - this.im * im
+        val mim = this.re * im + this.im * re
+        this.re = mre
+        this.im = mim
+    }
+
+    @kotlin.internal.InlineOnly
     inline fun mul(constant: Float) {
         this.re *= constant
         this.im *= constant

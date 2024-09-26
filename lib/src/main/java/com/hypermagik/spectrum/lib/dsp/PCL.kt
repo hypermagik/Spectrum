@@ -8,12 +8,17 @@ class PCL {
     private var beta = 0.0f
 
     var phase: Float = 0.0f
-    private var minPhase: Float = -2 * PI.toFloat()
-    private var maxPhase: Float = 2 * PI.toFloat()
+    private var minPhase: Float = -PI.toFloat()
+    private var maxPhase: Float = PI.toFloat()
 
     var frequency: Float = 0.0f
     private var minFrequency: Float = -1.0f
     private var maxFrequency: Float = 1.0f
+
+    fun setAlpha(alpha: Float): PCL {
+        this.alpha = alpha
+        return this
+    }
 
     fun setAlphaBeta(alpha: Float, beta: Float): PCL {
         this.alpha = alpha
