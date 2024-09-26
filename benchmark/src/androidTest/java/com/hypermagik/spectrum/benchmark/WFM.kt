@@ -7,11 +7,11 @@ import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.demod.Quadrature
 import com.hypermagik.spectrum.lib.dsp.AGC
-import com.hypermagik.spectrum.lib.dsp.BinarySlicer
+import com.hypermagik.spectrum.lib.digital.BinarySlicer
 import com.hypermagik.spectrum.lib.dsp.Costas
 import com.hypermagik.spectrum.lib.dsp.Deemphasis
 import com.hypermagik.spectrum.lib.dsp.Delay
-import com.hypermagik.spectrum.lib.dsp.DifferentialDecoder
+import com.hypermagik.spectrum.lib.digital.DifferentialDecoder
 import com.hypermagik.spectrum.lib.dsp.FIR
 import com.hypermagik.spectrum.lib.dsp.FIRC
 import com.hypermagik.spectrum.lib.clock.MM

@@ -1,4 +1,4 @@
-package com.hypermagik.spectrum.lib.dsp
+package com.hypermagik.spectrum.lib.digital
 
 import com.hypermagik.spectrum.lib.data.Complex32Array
 

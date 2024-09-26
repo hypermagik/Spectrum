@@ -1,4 +1,4 @@
-package com.hypermagik.spectrum.lib.dsp
+package com.hypermagik.spectrum.lib.digital
 
 class DifferentialDecoder(private val modulus: Int = 2) {
     private var lastValue: Byte = 0
