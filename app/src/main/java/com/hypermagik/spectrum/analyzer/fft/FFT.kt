@@ -171,6 +171,14 @@ class FFT(context: Context, private val preferences: Preferences) {
         }
     }
 
+    fun reset() {
+        for (i in 0 until fftSize) {
+            val bufferIndex = (i * coordsPerVertex + 1) * Float.SIZE_BYTES
+            vertexBuffer.putFloat(bufferIndex, 0.0f)
+            peakHoldVertexBuffer.putFloat(bufferIndex, 0.0f)
+        }
+    }
+
     private fun updateFFTSize(size: Int) {
         if (fftSize != size) {
             fftSize = size

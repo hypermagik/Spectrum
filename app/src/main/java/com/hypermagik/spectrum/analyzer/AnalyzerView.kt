@@ -237,6 +237,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isSourceInput = false
         isRunning = true
 
+        fft.reset()
         info.start()
 
         if (isReady) {
@@ -269,6 +270,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         this.isSourceInput = isSourceInput
         info.setInputInfo(name, details)
         updateFFT()
+        fft.reset()
     }
 
     fun setDemodulatorText(text: String?) {
@@ -382,7 +384,9 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             updateChannel()
         }
 
-        requestRender()
+        if (!isRunning) {
+            requestRender()
+        }
     }
 
     private fun updateChannel() {

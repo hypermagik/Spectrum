@@ -277,7 +277,7 @@ class Info(context: Context) {
 
     fun setDemodulatorText(text: String?) {
         if (text != null) {
-            this.demodulatorText = text
+            demodulatorText = text
             isDirty = true
         }
     }
