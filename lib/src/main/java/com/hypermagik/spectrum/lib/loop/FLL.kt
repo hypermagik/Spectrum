@@ -1,7 +1,8 @@
-package com.hypermagik.spectrum.lib.dsp
+package com.hypermagik.spectrum.lib.loop
 
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
+import com.hypermagik.spectrum.lib.dsp.FIRC
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.sinc
 import kotlin.math.PI
 import kotlin.math.cos

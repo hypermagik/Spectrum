@@ -1,4 +1,4 @@
-package com.hypermagik.spectrum.lib.dsp
+package com.hypermagik.spectrum.lib.loop
 
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.step

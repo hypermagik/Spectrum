@@ -1,4 +1,4 @@
-package com.hypermagik.spectrum.lib.dsp
+package com.hypermagik.spectrum.lib.loop
 
 import kotlin.math.PI
 import kotlin.math.sqrt
