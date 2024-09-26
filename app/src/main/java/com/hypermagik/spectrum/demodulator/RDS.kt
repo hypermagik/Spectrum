@@ -210,11 +210,11 @@ class RDS(sampleRate: Int) {
             return
         }
 
-        val block = blocks[BlockType.A.ordinal]
-        val piCode = block shr POLYNOMIAL_LENGTH and 0xffff
-        val countryCode = piCode shr 12 and 0xf
-        val programCoverage = piCode shr 8 and 0xf
-        val programRefNumber = piCode and 0xff
+        // val block = blocks[BlockType.A.ordinal]
+        // val piCode = block shr POLYNOMIAL_LENGTH and 0xffff
+        // val countryCode = piCode shr 12 and 0xf
+        // val programCoverage = piCode shr 8 and 0xf
+        // val programRefNumber = piCode and 0xff
 
         // Log.d("RDS", "PI code: $piCode, Country code: $countryCode, program coverage: $programCoverage, program reference number: $programRefNumber")
     }
@@ -230,8 +230,8 @@ class RDS(sampleRate: Int) {
         groupType = data shr 12 and 0xf
         groupVersion = data shr 11 and 1
 
-        val trafficProgram = data shr 10 and 1
-        val programType = data shr 5 and 0x1f
+        // val trafficProgram = data shr 10 and 1
+        // val programType = data shr 5 and 0x1f
 
         // Log.d("RDS", "Group type: $groupType, group version: $groupVersion, traffic program: $trafficProgram, program type: $programType")
     }
@@ -251,14 +251,14 @@ class RDS(sampleRate: Int) {
 
     private fun decodeGroup0() {
         val blockB = blocks[BlockType.B.ordinal]
-        val blockC = blocks[BlockType.C.ordinal]
+        // val blockC = blocks[BlockType.C.ordinal]
         val blockD = blocks[BlockType.D.ordinal]
 
-        val trafficAnnouncement = blockB shr 14 and 1
-        val music = blockB shr 13 and 1
-        val diBit = blockB shr 12 and 1
+        // val trafficAnnouncement = blockB shr 14 and 1
+        // val music = blockB shr 13 and 1
+        // val diBit = blockB shr 12 and 1
         val offset = blockB shr 10 and 3
-        val diOffset = 3 - offset
+        // val diOffset = 3 - offset
         val psOffset = offset * 2
 
         if (blockAvailable[BlockType.D.ordinal]) {
@@ -348,7 +348,7 @@ class RDS(sampleRate: Int) {
         textChanged = true
     }
 
-    private fun getRadioText(): String? {
+    private fun getRadioText(): String {
         val hasProgramServiceName = programServiceName.any { it != ' ' }
         val hasRadioText = radioText.any { it != ' ' }
 
