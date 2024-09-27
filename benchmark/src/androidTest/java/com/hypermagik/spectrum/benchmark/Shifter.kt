@@ -27,26 +27,8 @@ class Shifter {
     }
 
     @Test
-    fun shifterSinCos() {
-        val uut = Shifter(1000000, -100001.0f, Shifter.Mode.SinCos)
-
-        benchmarkRule.measureRepeated {
-            uut.shift(samples, samples)
-        }
-    }
-
-    @Test
-    fun shifterMinimax() {
-        val uut = Shifter(1000000, -100001.0f, Shifter.Mode.Minimax)
-
-        benchmarkRule.measureRepeated {
-            uut.shift(samples, samples)
-        }
-    }
-
-    @Test
-    fun shifterLUT() {
-        val uut = Shifter(1000000, -100001.0f, Shifter.Mode.LUT)
+    fun shifter() {
+        val uut = Shifter(1000000, -100001.0f)
 
         benchmarkRule.measureRepeated {
             uut.shift(samples, samples)
