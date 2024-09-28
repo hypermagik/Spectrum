@@ -55,8 +55,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         private set
     var sampleRate = preferences.sourceSettings.sampleRate
         private set
-    var realSamples = false
-        private set
+    private var realSamples = false
 
     private var gain = PreferencesWrapper.Gain(preferences)
 
@@ -353,16 +352,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         val viewFrequency0 = frequency0 + viewBandwidth / 2.0
         val viewFrequency1 = frequency1 - viewBandwidth / 2.0
 
-        viewFrequency = if (viewFrequency0 != viewFrequency1) {
-            viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
-        } else {
-            viewFrequency.coerceIn(minFrequency.toDouble(), maxFrequency.toDouble())
+        if (viewBandwidth != sampleRate) {
+            viewFrequency = viewFrequency.coerceIn(viewFrequency0, viewFrequency1)
+        } else if (minFrequency != 0L && maxFrequency != 0L) {
+            viewFrequency = viewFrequency.coerceIn(minFrequency.toDouble(), maxFrequency.toDouble())
         }
 
-        steppedViewFrequency = if (viewFrequency0 != viewFrequency1) {
-            viewFrequency
-        } else {
+        steppedViewFrequency = if (viewBandwidth == sampleRate) {
             round(viewFrequency / preferences.frequencyStep) * preferences.frequencyStep
+        } else {
+            viewFrequency
         }
         steppedViewFrequency = steppedViewFrequency.coerceIn(viewFrequency0, viewFrequency1)
 
@@ -392,9 +391,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     }
 
     private fun updateChannel() {
-        val steppedChannelFrequency = round((frequency + channelFrequency) / preferences.frequencyStep) * preferences.frequencyStep
-        preferences.channelFrequency = (steppedChannelFrequency - frequency).toLong()
-        preferences.save()
+        val sourceFrequency = preferences.sourceSettings.frequency
+        val frequencyStep = if (isSourceInput) preferences.frequencyStep else min(preferences.frequencyStep, 1000)
+
+        val steppedChannelFrequency = round((sourceFrequency + channelFrequency) / frequencyStep) * frequencyStep
+        val relativeChannelFrequency = (steppedChannelFrequency - sourceFrequency).toLong()
+
+        if (preferences.channelFrequency != relativeChannelFrequency) {
+            preferences.channelFrequency = relativeChannelFrequency
+            preferences.save()
+        }
 
         synchronized(channel) {
             channel.setFrequency(steppedChannelFrequency, channelBandwidth)
