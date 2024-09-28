@@ -45,7 +45,7 @@ class RFIC internal constructor(private val nios: NIOS) {
 
     fun close(): Boolean {
         Log.i(TAG, "Closing RFIC")
-        return write(Constants.RFIC_CMD_INIT, Constants.CHANNEL_INVALID, Constants.RFIC_STATE_OFF.toLong())
+        return write(Constants.RFIC_CMD_INIT, Constants.CHANNEL_INVALID, Constants.RFIC_STATE_STANDBY.toLong())
     }
 
     fun enable(state: Int): Boolean {
@@ -117,6 +117,11 @@ class RFIC internal constructor(private val nios: NIOS) {
     fun setRxFilter(filter: Long): Boolean {
         Log.i(TAG, "Setting RFIC Rx filter to $filter")
         return write(Constants.RFIC_CMD_FILTER, Constants.CHANNEL_RX0, filter)
+    }
+
+    fun getTxFilter(): Long {
+        Log.i(TAG, "Reading RFIC Rx filter")
+        return read(Constants.RFIC_CMD_FILTER, Constants.CHANNEL_TX0) ?: -1
     }
 
     fun setTxFilter(filter: Long): Boolean {

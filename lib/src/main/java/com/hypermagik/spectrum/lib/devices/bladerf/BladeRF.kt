@@ -278,23 +278,50 @@ class BladeRF {
     fun setSampleRate(sampleRate: Long) {
         val rfic = rfic ?: return
 
+        if (rfic.getSampleRate() == sampleRate) {
+            return
+        }
+
         if (sampleRate < Constants.FIR_SAMPLE_RATE) {
             if (rfic.getSampleRate() > Constants.FIR_SAMPLE_RATE) {
                 rfic.setSampleRate(Constants.FIR_SAMPLE_RATE)
             }
-            if (!rfic.setRxFilter(Constants.RFIC_RXFIR_DEC4.toLong()) || !rfic.setTxFilter(Constants.RFIC_TXFIR_INT4.toLong())) {
-                Log.e(TAG, "Failed to set FIR filters to 4x decimate/interpolate")
+            if (rfic.getRxFilter() != Constants.RFIC_RXFIR_DEC4.toLong()) {
+                if (!rfic.setRxFilter(Constants.RFIC_RXFIR_DEC4.toLong())) {
+                    Log.e(TAG, "Failed to set FIR filters to 4x decimate")
+                }
+            }
+            if (rfic.getTxFilter() != Constants.RFIC_TXFIR_INT4.toLong()) {
+                if (!rfic.setTxFilter(Constants.RFIC_TXFIR_INT4.toLong())) {
+                    Log.e(TAG, "Failed to set FIR filters to 4x interpolate")
+                }
             }
         } else {
             if (rfic.getSampleRate() < Constants.FIR_SAMPLE_RATE) {
                 rfic.setSampleRate(Constants.FIR_SAMPLE_RATE)
             }
             if (sampleRate <= 61440000 / 2) {
-                if (!rfic.setRxFilter(Constants.RFIC_RXFIR_DEC2.toLong()) || !rfic.setTxFilter(Constants.RFIC_TXFIR_INT2.toLong())) {
-                    Log.e(TAG, "Failed to set FIR filters to 2x decimate/interpolate")
+                if (rfic.getRxFilter() != Constants.RFIC_RXFIR_DEC2.toLong()) {
+                    if (!rfic.setRxFilter(Constants.RFIC_RXFIR_DEC2.toLong())) {
+                        Log.e(TAG, "Failed to set FIR filters to 2x decimate")
+                    }
                 }
-            } else if (!rfic.setRxFilter(Constants.RFIC_RXFIR_DEC1.toLong()) || !rfic.setTxFilter(Constants.RFIC_TXFIR_INT1.toLong())) {
-                Log.e(TAG, "Failed to set FIR filters to 1x decimate/interpolate")
+                if (rfic.getTxFilter() != Constants.RFIC_TXFIR_INT2.toLong()) {
+                    if (!rfic.setTxFilter(Constants.RFIC_TXFIR_INT2.toLong())) {
+                        Log.e(TAG, "Failed to set FIR filters to 2x interpolate")
+                    }
+                }
+            } else {
+                if (rfic.getRxFilter() != Constants.RFIC_RXFIR_DEC1.toLong()) {
+                    if (!rfic.setRxFilter(Constants.RFIC_RXFIR_DEC1.toLong())) {
+                        Log.e(TAG, "Failed to set FIR filters to 1x decimate")
+                    }
+                }
+                if (rfic.getTxFilter() != Constants.RFIC_TXFIR_INT1.toLong()) {
+                    if (!rfic.setTxFilter(Constants.RFIC_TXFIR_INT1.toLong())) {
+                        Log.e(TAG, "Failed to set FIR filters to 1x interpolate")
+                    }
+                }
             }
         }
 
@@ -311,7 +338,9 @@ class BladeRF {
     fun getMaximumFrequency(): Long = Constants.MAX_FREQUENCY
 
     fun setFrequency(frequency: Long, silent: Boolean) {
-        rfic?.setFrequency(frequency, silent)
+        if (rfic?.getFrequency() != frequency) {
+            rfic?.setFrequency(frequency, silent)
+        }
     }
 
     fun getManualGain(): Boolean {
