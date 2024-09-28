@@ -52,12 +52,16 @@ class Constants {
 
         val demodulatorTypeToMenuItem = mapOf(
             DemodulatorType.None to R.id.menu_demodulator_none,
+            DemodulatorType.AM to R.id.menu_demodulator_am,
+            DemodulatorType.FM to R.id.menu_demodulator_fm,
             DemodulatorType.WFM to R.id.menu_demodulator_wfm,
             DemodulatorType.Tetra to R.id.menu_demodulator_tetra,
         )
 
         val demodulatorTypeToMenu = mapOf(
             DemodulatorType.None to R.menu.demodulator_none,
+            DemodulatorType.AM to R.menu.demodulator_am,
+            DemodulatorType.FM to R.menu.demodulator_fm,
             DemodulatorType.WFM to R.menu.demodulator_wfm,
             DemodulatorType.Tetra to R.menu.demodulator_tetra,
         )

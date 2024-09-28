@@ -55,6 +55,8 @@
 
     <string name="menu_demodulator">Demodulator</string>
     <string name="menu_demodulator_none">None</string>
+    <string name="menu_demodulator_am">AM</string>
+    <string name="menu_demodulator_fm">FM</string>
     <string name="menu_demodulator_wfm">Wideband FM</string>
     <string name="menu_demodulator_tetra">Tetra</string>
     <string name="menu_demodulator_audio_output">Audio output</string>

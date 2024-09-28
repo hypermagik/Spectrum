@@ -20,8 +20,10 @@ import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.slider.Slider
 import com.hypermagik.spectrum.analyzer.Analyzer
 import com.hypermagik.spectrum.databinding.ActivityMainBinding
+import com.hypermagik.spectrum.demodulator.AM
 import com.hypermagik.spectrum.demodulator.Demodulator
 import com.hypermagik.spectrum.demodulator.DemodulatorType
+import com.hypermagik.spectrum.demodulator.FM
 import com.hypermagik.spectrum.demodulator.Tetra
 import com.hypermagik.spectrum.demodulator.WFM
 import com.hypermagik.spectrum.lib.data.SampleBuffer
@@ -137,6 +139,8 @@ class MainActivity : AppCompatActivity() {
     private fun createDemodulator() {
         demodulator = when (preferences.demodulatorType) {
             DemodulatorType.None -> null
+            DemodulatorType.AM -> AM(preferences.demodulatorAudio)
+            DemodulatorType.FM -> FM(preferences.demodulatorAudio)
             DemodulatorType.WFM -> WFM(preferences.demodulatorAudio, preferences.demodulatorStereo, preferences.demodulatorRDS)
             DemodulatorType.Tetra -> Tetra()
         }

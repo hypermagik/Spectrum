@@ -61,6 +61,12 @@
                         android:id="@+id/menu_demodulator_none"
                         android:title="@string/menu_demodulator_none" />
                     <item
+                        android:id="@+id/menu_demodulator_am"
+                        android:title="@string/menu_demodulator_am" />
+                    <item
+                        android:id="@+id/menu_demodulator_fm"
+                        android:title="@string/menu_demodulator_fm" />
+                    <item
                         android:id="@+id/menu_demodulator_wfm"
                         android:title="@string/menu_demodulator_wfm" />
                     <item
