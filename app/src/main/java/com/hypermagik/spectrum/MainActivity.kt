@@ -728,10 +728,10 @@ class MainActivity : AppCompatActivity() {
 
         val channelBandwidth = demodulator?.getChannelBandwidth() ?: 0
 
-        if (preferences.channelFrequency < -preferences.sourceSettings.sampleRate + channelBandwidth) {
+        if (preferences.channelFrequency < -preferences.sourceSettings.sampleRate / 2 + channelBandwidth) {
             preferences.channelFrequency = 0
         }
-        if (preferences.channelFrequency > preferences.sourceSettings.sampleRate - channelBandwidth) {
+        if (preferences.channelFrequency > preferences.sourceSettings.sampleRate / 2 - channelBandwidth) {
             preferences.channelFrequency = 0
         }
 
