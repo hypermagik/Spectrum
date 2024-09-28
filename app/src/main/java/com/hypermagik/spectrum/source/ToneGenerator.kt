@@ -60,7 +60,7 @@ class ToneGenerator(private val preferences: Preferences, private val recorder: 
 
         for (i in signals.indices) {
             signals[i].setFrequency(initialSignalFrequencies[i] + initialFrequency - currentFrequency)
-            signals[i].setModulatedFrequency((modulatedFrequencies[i] * sampleRate / 1e6).toLong())
+            signals[i].setModulatedFrequency(modulatedFrequencies[i])
             signalGains[i] = Utils.db2mag(initialSignalGains[i] + preferences.sourceSettings.gain)
         }
 
