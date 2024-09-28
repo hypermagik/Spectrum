@@ -65,6 +65,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
     private var viewDBCenter = preferences.dbCenter
     private var viewDBRange = preferences.dbRange
 
+    private var steppedViewFrequency = viewFrequency
+
     private var sourceViewFrequency = Double.NaN
     private var sourceViewBandwidth = Double.NaN
 
@@ -357,7 +359,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             viewFrequency.coerceIn(minFrequency.toDouble(), maxFrequency.toDouble())
         }
 
-        var steppedViewFrequency = if (viewFrequency0 != viewFrequency1) {
+        steppedViewFrequency = if (viewFrequency0 != viewFrequency1) {
             viewFrequency
         } else {
             round(viewFrequency / preferences.frequencyStep) * preferences.frequencyStep
@@ -396,7 +398,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
         synchronized(channel) {
             channel.setFrequency(steppedChannelFrequency, channelBandwidth)
-            channel.setFrequencyRange(viewFrequency - viewBandwidth / 2, viewFrequency + viewBandwidth / 2)
+            channel.setFrequencyRange(steppedViewFrequency - viewBandwidth / 2, steppedViewFrequency + viewBandwidth / 2)
         }
     }
 
