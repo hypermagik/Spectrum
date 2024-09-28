@@ -3,7 +3,7 @@ package com.hypermagik.spectrum.demodulator
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleBuffer
-import com.hypermagik.spectrum.lib.dsp.AGC
+import com.hypermagik.spectrum.lib.dsp.FastAGC
 import com.hypermagik.spectrum.lib.digital.BinarySlicer
 import com.hypermagik.spectrum.lib.loop.Costas
 import com.hypermagik.spectrum.lib.digital.DifferentialDecoder
@@ -17,7 +17,7 @@ class RDS(sampleRate: Int) {
 
     private val shifter = Shifter(sampleRate, -(57000 + 2375 / 2.0f))
     private val resampler = Resampler(sampleRate, 2375)
-    private val agc = AGC(0.5f)
+    private val agc = FastAGC(0.5f)
     private val costas = Costas(0.1f)
     private val mm = MM(1187.5f, 2375.0f)
     private val differentialDecoder = DifferentialDecoder()

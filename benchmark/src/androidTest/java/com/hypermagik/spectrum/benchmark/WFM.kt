@@ -6,7 +6,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.demod.Quadrature
-import com.hypermagik.spectrum.lib.dsp.AGC
+import com.hypermagik.spectrum.lib.dsp.FastAGC
 import com.hypermagik.spectrum.lib.digital.BinarySlicer
 import com.hypermagik.spectrum.lib.loop.Costas
 import com.hypermagik.spectrum.lib.dsp.Deemphasis
@@ -84,7 +84,7 @@ class WFM {
 
         val rdsShifter = Shifter(sampleRate, -(57000 + 2375 / 2.0f))
         val rdsResampler = Resampler(sampleRate, 2375)
-        val rdsAGC = AGC(0.5f)
+        val rdsAGC = FastAGC(0.5f)
         val rdsCostas = Costas(0.1f)
         val rdsMM = MM(1187.5f, 2375.0f)
         val rdsDifferentialDecoder = DifferentialDecoder()

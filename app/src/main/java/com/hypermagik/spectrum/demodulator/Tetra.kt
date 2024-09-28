@@ -5,7 +5,7 @@ import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.digital.BitUnpacker
 import com.hypermagik.spectrum.lib.digital.DQPSK
 import com.hypermagik.spectrum.lib.digital.Tetra
-import com.hypermagik.spectrum.lib.dsp.AGC
+import com.hypermagik.spectrum.lib.dsp.FastAGC
 import com.hypermagik.spectrum.lib.loop.Costas
 import com.hypermagik.spectrum.lib.dsp.FIR
 import com.hypermagik.spectrum.lib.loop.FLL
@@ -24,7 +24,7 @@ class Tetra : Demodulator {
 
     private var shifter = Shifter(sampleRate, 0.0f)
     private var resampler = Resampler(sampleRate, channelSampleRate)
-    private val agc = AGC(2.0f, 1e6f, 0.02f)
+    private val agc = FastAGC(2.0f, 1e6f, 0.02f)
     private val fll = FLL(samplesPerSymbol, 0.006f, -PI.toFloat() / 2, PI.toFloat() / 2, 65, 0.35f)
     private val rrc = FIR(RootRaisedCosine.make(samplesPerSymbol, 65, 0.35f))
     private val fd = FD(0.00628f, samplesPerSymbol)
