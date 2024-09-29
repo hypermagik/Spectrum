@@ -270,8 +270,10 @@ class FFT(context: Context, private val preferences: Preferences) {
                 vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, peakHoldVertexBuffer
             )
 
+            GLES20.glLineWidth(2.0f)
             GLES20.glUniform4fv(vColor, 1, peakHoldColor, 0)
             GLES20.glDrawArrays(GLES20.GL_LINE_STRIP, 0, fftSize)
+            GLES20.glLineWidth(1.0f)
         }
 
         GLES20.glDisableVertexAttribArray(vPosition)
