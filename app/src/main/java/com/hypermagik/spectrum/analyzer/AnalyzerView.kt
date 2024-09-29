@@ -96,6 +96,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         scaleGestureDetector = ScaleGestureDetector(context, gestureHandler)
         gestureDetector = GestureDetector(context, gestureHandler)
         gestureDetector.setOnDoubleTapListener(gestureHandler)
+        gestureDetector.setIsLongpressEnabled(false)
 
         updateInfoBar()
     }
