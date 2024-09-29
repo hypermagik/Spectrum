@@ -9,7 +9,6 @@ import androidx.core.graphics.blue
 import androidx.core.graphics.green
 import androidx.core.graphics.red
 import com.hypermagik.spectrum.R
-import com.hypermagik.spectrum.utils.getFrequencyLabel
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 
@@ -34,8 +33,6 @@ class Channel(context: Context) {
     private var edgeDrawOrderBuffer: ByteBuffer
     private var centerDrawOrderBuffer: ByteBuffer
 
-    private var texture: Texture? = null
-
     private var fillColor: FloatArray
     private var edgeColor: FloatArray
     private var centerColor: FloatArray
@@ -50,17 +47,11 @@ class Channel(context: Context) {
 
     private val textPaint = Paint()
 
-    private var viewWidth = 0
-    private var viewHeight = 0
-    private val height = 20.0f * context.resources.displayMetrics.density
-
     private var viewMinFrequency = 0.0
     private var viewMaxFrequency = 0.0
 
     private var frequency = 0.0
     private var bandwidth = 0
-
-    private var isDirty = true
 
     init {
         var color = context.resources.getColor(R.color.fft_channel_fill, null)
@@ -101,21 +92,12 @@ class Channel(context: Context) {
     fun onSurfaceCreated(program: Int) {
         vPosition = GLES20.glGetAttribLocation(program, "vPosition")
         vColor = GLES20.glGetUniformLocation(program, "vColor")
-
-        texture = Texture(program)
     }
 
-    fun onSurfaceChanged(width: Int, height: Int, bottom: Float) {
-        viewWidth = width
-        viewHeight = height
+    fun setFrequency(frequency: Double, bandwidth: Int, viewMinFrequency: Double, viewMaxFrequency: Double) {
+        this.viewMinFrequency = viewMinFrequency
+        this.viewMaxFrequency = viewMaxFrequency
 
-        val top = height * (1.0f - bottom) - this.height.toInt() * 2
-        texture!!.setDimensions(viewWidth, this.height.toInt(), top.toInt(), 0, viewWidth, viewHeight)
-
-        setFrequency(frequency, bandwidth)
-    }
-
-    fun setFrequency(frequency: Double, bandwidth: Int) {
         if (bandwidth == 0 || viewMaxFrequency - viewMinFrequency == 0.0) {
             vertexBuffer.asFloatBuffer().put(vertices)
             return
@@ -133,25 +115,6 @@ class Channel(context: Context) {
         vertexBuffer.putFloat(6 * Float.SIZE_BYTES, (center + width / 2).toFloat())
         vertexBuffer.putFloat(8 * Float.SIZE_BYTES, center.toFloat())
         vertexBuffer.putFloat(10 * Float.SIZE_BYTES, center.toFloat())
-
-        texture?.apply {
-            val canvas = getCanvas()
-            canvas.drawColor(0, android.graphics.PorterDuff.Mode.CLEAR)
-
-            val text = getFrequencyLabel(frequency)
-            if (textPaint.measureText(text) * 1.2f < width * viewWidth) {
-                canvas.drawText(text, (center * viewWidth).toFloat(), height, textPaint)
-            }
-
-            isDirty = true
-        }
-    }
-
-    fun setFrequencyRange(viewMinFrequency: Double, viewMaxFrequency: Double) {
-        this.viewMinFrequency = viewMinFrequency
-        this.viewMaxFrequency = viewMaxFrequency
-
-        setFrequency(frequency, bandwidth)
     }
 
     fun draw() {
@@ -163,20 +126,17 @@ class Channel(context: Context) {
         GLES20.glDrawElements(GLES20.GL_TRIANGLE_FAN, fillDrawOrder.size, GLES20.GL_UNSIGNED_SHORT, fillDrawOrderBuffer)
 
         // Draw the lines.
+        GLES20.glLineWidth(2.0f)
+
         GLES20.glUniform4fv(vColor, 1, edgeColor, 0)
         GLES20.glDrawElements(GLES20.GL_LINES, edgeDrawOrder.size, GLES20.GL_UNSIGNED_SHORT, edgeDrawOrderBuffer)
 
         GLES20.glUniform4fv(vColor, 1, centerColor, 0)
         GLES20.glDrawElements(GLES20.GL_LINES, centerDrawOrder.size, GLES20.GL_UNSIGNED_SHORT, centerDrawOrderBuffer)
 
+        GLES20.glLineWidth(1.0f)
+
         GLES20.glDisableVertexAttribArray(vPosition)
-
-        if (isDirty) {
-            isDirty = false
-            texture!!.update()
-        }
-
-        texture!!.draw()
     }
 
     fun highlight(highlight: Boolean) {

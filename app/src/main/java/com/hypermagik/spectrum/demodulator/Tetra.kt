@@ -51,7 +51,8 @@ class Tetra : Demodulator {
     override fun getName(): String = "Tetra"
 
     private val outputs = mapOf(
-        1 to "FLL",
+        1 to "Channel",
+        2 to "FLL",
     )
 
     override fun getOutputCount(): Int = outputs.size
@@ -88,10 +89,14 @@ class Tetra : Demodulator {
         buffer.sampleCount = resampler.resample(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleRate = resampler.outputSampleRate
 
-        agc.process(buffer.samples, buffer.samples, buffer.sampleCount)
-
-        fll.process(buffer.samples, buffer.samples, buffer.sampleCount)
         if (output == 1) {
+            observe(buffer, true)
+        }
+
+        agc.process(buffer.samples, buffer.samples, buffer.sampleCount)
+        fll.process(buffer.samples, buffer.samples, buffer.sampleCount)
+
+        if (output == 2) {
             observe(buffer, true)
         }
 

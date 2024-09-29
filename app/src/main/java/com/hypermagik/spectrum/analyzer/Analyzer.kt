@@ -54,23 +54,23 @@ class Analyzer(context: Context, private val preferences: Preferences) {
         view.restoreInstanceState(savedInstanceState)
     }
 
-    fun setSourceInput(name: String, minFrequency: Long, maxFrequency: Long) {
-        view.setInputInfo("Source", name, minFrequency, maxFrequency, true)
+    fun setSourceInput(minFrequency: Long, maxFrequency: Long) {
+        view.setInputInfo(minFrequency, maxFrequency, true)
     }
 
-    fun setDemodulatorInput(name: String, details: String) {
-        view.setInputInfo(name, details, 0, 0, false)
+    fun setDemodulatorInput(name: String) {
+        view.setInputInfo(0, 0, false, name)
     }
 
     fun showSetFrequencyDialog() {
         view.showSetFrequencyDialog()
     }
 
-    fun start(channelBandwidth: Int) {
+    fun start(demodulatorName: String?, channelBandwidth: Int) {
         fpsLimit.update()
         throttle.setFPS(fpsLimit.value)
 
-        view.start(channelBandwidth)
+        view.start(demodulatorName, channelBandwidth)
     }
 
     fun stop(restart: Boolean) {

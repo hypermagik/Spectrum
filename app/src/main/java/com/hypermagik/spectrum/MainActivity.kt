@@ -101,7 +101,7 @@ class MainActivity : AppCompatActivity() {
         sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
 
         analyzer = Analyzer(this, preferences)
-        analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
+        analyzer.setSourceInput(source.getMinimumFrequency(), source.getMaximumFrequency())
 
         analyzerFrame = binding.appBarMain.analyzerFrame
         analyzerFrame.setBackgroundColor(resources.getColor(R.color.black, null))
@@ -743,7 +743,7 @@ class MainActivity : AppCompatActivity() {
 
         demodulator?.setFrequency(channelFrequency)
 
-        analyzer.start(channelBandwidth)
+        analyzer.start(demodulator?.getName(), channelBandwidth)
 
         while (state == State.Running) {
             var samples: SampleBuffer?
@@ -766,9 +766,9 @@ class MainActivity : AppCompatActivity() {
                 if (analyzerInput != this.analyzerInput) {
                     analyzerInput = this.analyzerInput
                     if (analyzerInput == 0) {
-                        analyzer.setSourceInput(source.getShortName(), source.getMinimumFrequency(), source.getMaximumFrequency())
+                        analyzer.setSourceInput(source.getMinimumFrequency(), source.getMaximumFrequency())
                     } else {
-                        analyzer.setDemodulatorInput(demodulator!!.getName(), demodulator!!.getOutputName(analyzerInput))
+                        analyzer.setDemodulatorInput(demodulator!!.getOutputName(analyzerInput))
                     }
                 }
 

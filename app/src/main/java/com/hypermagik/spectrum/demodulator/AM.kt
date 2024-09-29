@@ -23,7 +23,7 @@ class AM(audio: Boolean) : Demodulator {
     private var audioSink: AudioSink? = null
 
     private val outputs = mapOf(
-        1 to "LPF",
+        1 to "Channel",
         2 to "Audio"
     )
 

@@ -4,6 +4,7 @@ import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
+import android.graphics.Rect
 import android.os.Bundle
 import com.hypermagik.spectrum.R
 import java.text.DecimalFormat
@@ -24,9 +25,12 @@ class Info(context: Context) {
     private val height = HEIGHT * context.resources.displayMetrics.density
 
     private val textSize = 18.0f * context.resources.displayMetrics.density
-    private val textY1 = (6.0f + 14.0f) * context.resources.displayMetrics.density
-    private val textY1s = (6.0f + 6.0f) * context.resources.displayMetrics.density
-    private val textY2 = height - 6.0f * context.resources.displayMetrics.density
+    private val textPadding = 6.0f * context.resources.displayMetrics.density
+    private val textY1 = textPadding + 14.0f * context.resources.displayMetrics.density
+    private val textY1s = textPadding + 6.0f * context.resources.displayMetrics.density
+    private val textY2 = height - textPadding
+    private val textY2m: Float
+    private val textY2u: Float
     private var textY = textY1
 
     private val demodulatorTextSize = 11.0f * context.resources.displayMetrics.density
@@ -44,9 +48,10 @@ class Info(context: Context) {
     private var gain = 0
     private var fftSize = 0
     private var sampleRate = 0
-    private var inputName = "Source"
-    private var inputDetails = ""
-    private var demodulatorText = ""
+    private var analyzerInput: String? = null
+    private var channelFrequency = 0L
+    private var demodulatorName: String? = null
+    private var demodulatorText: String? = null
 
     private var referenceTime = System.nanoTime()
     private var frameCounter = 0
@@ -57,6 +62,14 @@ class Info(context: Context) {
 
     init {
         paint.typeface = context.resources.getFont(R.font.cursed)
+        paint.textSize = 2 * textSize / 3
+
+        val bounds = Rect()
+        paint.getTextBounds("0", 0, 1, bounds)
+
+        val padding = (height - 3 * bounds.height() - 2 * textPadding) / 2
+        textY2m = textY2 - bounds.height() - padding
+        textY2u = textY2m - bounds.height() - padding
 
         demodulatorTextPaint.color = Color.WHITE
         demodulatorTextPaint.textSize = demodulatorTextSize
@@ -144,9 +157,6 @@ class Info(context: Context) {
         text = " DB"
         putText(canvas, text, textX, textSize / 2, textColor, Paint.Align.LEFT)
 
-        textX = texture.width.toFloat() - spacer
-        putText(canvas, inputName, textX, textSize, textColor, Paint.Align.RIGHT)
-
         textX = spacer
         textY = textY2
 
@@ -182,20 +192,42 @@ class Info(context: Context) {
         putText(canvas, text, textX, textSize / 2, if (showFPS) textColor else shadowColor, Paint.Align.LEFT)
 
         textX = texture.width.toFloat() - spacer
-        putText(canvas, inputDetails, textX, textSize, textColor, Paint.Align.RIGHT)
 
-        if (demodulatorText.isNotBlank()) {
+        text = "000.000.000.000"
+        putText(canvas, text, textX, textY2u, 2 * textSize / 3, shadowColor, Paint.Align.RIGHT)
+
+        if (channelFrequency != 0L) {
+            text = DecimalFormat("###,###,###,###", decimalSymbols).format(channelFrequency)
+            putText(canvas, text, textX, textY2u, 2 * textSize / 3, textColor, Paint.Align.RIGHT)
+        }
+
+        demodulatorName?.run {
+            putText(canvas, this, textX, textY2m, 2 * textSize / 3, textColor, Paint.Align.RIGHT)
+        } ?: run {
+            putText(canvas, "No demodulator", textX, textY2m, 2 * textSize / 3, shadowColor, Paint.Align.RIGHT)
+        }
+
+        analyzerInput?.run {
+            putText(canvas, this, textX, textY2, 2 * textSize / 3, textColor, Paint.Align.RIGHT)
+        } ?: run {
+            putText(canvas, "Source", textX, textY2, 2 * textSize / 3, if (channelFrequency == 0L) shadowColor else textColor, Paint.Align.RIGHT)
+        }
+
+        demodulatorText?.run {
             textX = texture.width.toFloat() - spacer
             textY = demodulatorTextY
-            canvas.drawText(demodulatorText.trim(), textX, textY, demodulatorTextPaint)
+            canvas.drawText(trim(), textX, textY, demodulatorTextPaint)
         }
 
         texture.update()
     }
 
-    fun start() {
+    fun start(demodulatorName: String?) {
         frameCounter = 0
         referenceTime = System.nanoTime()
+        analyzerInput = ""
+        channelFrequency = 0
+        this.demodulatorName = demodulatorName
         demodulatorText = ""
         isRunning = true
         isDirty = true
@@ -215,8 +247,8 @@ class Info(context: Context) {
         bundle.putInt("gain", gain)
         bundle.putInt("fftSize", fftSize)
         bundle.putInt("sampleRate", sampleRate)
-        bundle.putString("inputName", inputName)
-        bundle.putString("inputDetails", inputDetails)
+        bundle.putString("analyzerInput", analyzerInput)
+        bundle.putString("demodulatorName", demodulatorName)
         bundle.putString("demodulatorText", demodulatorText)
     }
 
@@ -226,8 +258,8 @@ class Info(context: Context) {
         gain = bundle.getInt("gain")
         fftSize = bundle.getInt("fftSize")
         sampleRate = bundle.getInt("sampleRate")
-        inputName = bundle.getString("inputName", inputName)
-        inputDetails = bundle.getString("inputDetails", inputDetails)
+        analyzerInput = bundle.getString("analyzerInput", analyzerInput)
+        demodulatorName = bundle.getString("demodulatorName", demodulatorName)
         demodulatorText = bundle.getString("demodulatorText", demodulatorText)
         isDirty = true
     }
@@ -267,10 +299,16 @@ class Info(context: Context) {
         }
     }
 
-    fun setInputInfo(name: String, details: String) {
-        if (inputName != name || inputDetails != details) {
-            inputName = name
-            inputDetails = details
+    fun setAnalyzerInput(output: String?) {
+        if (analyzerInput != output) {
+            analyzerInput = output
+            isDirty = true
+        }
+    }
+
+    fun setChannelFrequency(channelFrequency: Long) {
+        if (this.channelFrequency != channelFrequency) {
+            this.channelFrequency = channelFrequency
             isDirty = true
         }
     }

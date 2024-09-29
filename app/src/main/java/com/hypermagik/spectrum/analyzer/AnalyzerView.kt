@@ -161,7 +161,6 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         fft.onSurfaceChanged(width, height, fftTop, fftBottom)
 
         waterfall.onSurfaceChanged(height, fftBottom)
-        channel.onSurfaceChanged(width, height, fftBottom)
 
         updateFFT()
 
@@ -200,6 +199,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         bundle.putBoolean("isFrequencyLocked", isFrequencyLocked)
         bundle.putBoolean("isSourceInput", isSourceInput)
         bundle.putDouble("viewFrequency", viewFrequency)
+        bundle.putDouble("steppedViewFrequency", steppedViewFrequency)
         bundle.putDouble("viewBandwidth", viewBandwidth)
         bundle.putDouble("channelFrequency", channelFrequency)
         bundle.putInt("channelBandwidth", channelBandwidth)
@@ -216,6 +216,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isFrequencyLocked = bundle.getBoolean("isFrequencyLocked")
         isSourceInput = bundle.getBoolean("isSourceInput")
         viewFrequency = bundle.getDouble("viewFrequency")
+        steppedViewFrequency = bundle.getDouble("steppedViewFrequency")
         viewBandwidth = bundle.getDouble("viewBandwidth")
         channelFrequency = bundle.getDouble("channelFrequency")
         channelBandwidth = bundle.getInt("channelBandwidth")
@@ -226,7 +227,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         updateChannel()
     }
 
-    fun start(channelBandwidth: Int) {
+    fun start(demodulatorName: String?, channelBandwidth: Int) {
         Log.d(TAG, "Starting")
 
         this.channelFrequency = preferences.channelFrequency.toDouble()
@@ -239,13 +240,16 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         isRunning = true
 
         fft.reset()
-        info.start()
+        info.start(demodulatorName)
 
         if (isReady) {
             updateFFT()
         }
 
-        updateChannel()
+        if (hasChannel) {
+            updateChannel()
+        }
+
         updateInfoBar()
     }
 
@@ -261,7 +265,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
     }
 
-    fun setInputInfo(name: String, details: String, minimumFrequency: Long, maximumFrequency: Long, isSourceInput: Boolean) {
+    fun setInputInfo(minimumFrequency: Long, maximumFrequency: Long, isSourceInput: Boolean, inputName: String? = null) {
         minFrequency = minimumFrequency
         maxFrequency = maximumFrequency
         if (this.isSourceInput) {
@@ -269,7 +273,7 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
             sourceViewBandwidth = viewBandwidth
         }
         this.isSourceInput = isSourceInput
-        info.setInputInfo(name, details)
+        info.setAnalyzerInput(inputName)
         updateFFT()
         fft.reset()
     }
@@ -392,9 +396,8 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
 
     private fun updateChannel() {
         val sourceFrequency = preferences.sourceSettings.frequency
-        val frequencyStep = if (isSourceInput) preferences.frequencyStep else min(preferences.frequencyStep, 1000)
 
-        val steppedChannelFrequency = round((sourceFrequency + channelFrequency) / frequencyStep) * frequencyStep
+        val steppedChannelFrequency = round((sourceFrequency + channelFrequency) / preferences.frequencyStep) * preferences.frequencyStep
         val relativeChannelFrequency = (steppedChannelFrequency - sourceFrequency).toLong()
 
         if (preferences.channelFrequency != relativeChannelFrequency) {
@@ -403,9 +406,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         }
 
         synchronized(channel) {
-            channel.setFrequency(steppedChannelFrequency, channelBandwidth)
-            channel.setFrequencyRange(steppedViewFrequency - viewBandwidth / 2, steppedViewFrequency + viewBandwidth / 2)
+            channel.setFrequency(steppedChannelFrequency, channelBandwidth, steppedViewFrequency - viewBandwidth / 2, steppedViewFrequency + viewBandwidth / 2)
         }
+
+        info.setChannelFrequency(steppedChannelFrequency.toLong())
     }
 
     private fun highlightChannel(highlight: Boolean) {

@@ -45,12 +45,12 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
     private var audioSink: AudioSink? = null
 
     private val outputs = mapOf(
-        1 to "LPF",
+        1 to "Channel",
         2 to "Quadrature",
         3 to "Audio"
     )
 
-    override fun getName(): String = "WFM"
+    override fun getName(): String = "Wideband FM"
 
     override fun getOutputCount(): Int = outputs.size
     override fun getOutputName(output: Int): String = outputs[output]!!
