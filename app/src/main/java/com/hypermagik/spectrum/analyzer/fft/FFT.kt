@@ -98,17 +98,13 @@ class FFT(context: Context, private val preferences: Preferences) {
 
         peakHoldVertexBuffer.rewind()
 
-        val vdoCapacity = (fftSize - 1) * 6 /* vertices */ * Int.SIZE_BYTES
+        val vdoCapacity = fftSize * 2 /* vertices */ * Int.SIZE_BYTES
         fillDrawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
 
         // Fill triangles.
-        for (i in 0 until fftSize - 1) {
-            fillDrawOrderBuffer.putInt(i)
+        for (i in 0 until fftSize) {
             fillDrawOrderBuffer.putInt(i + fftSize)
-            fillDrawOrderBuffer.putInt(i + 1 + fftSize)
             fillDrawOrderBuffer.putInt(i)
-            fillDrawOrderBuffer.putInt(i + 1 + fftSize)
-            fillDrawOrderBuffer.putInt(i + 1)
         }
 
         fillDrawOrderBuffer.rewind()
@@ -251,13 +247,11 @@ class FFT(context: Context, private val preferences: Preferences) {
         GLES20.glUniform1f(uFFTMaxDB, maxDB)
 
         GLES20.glEnableVertexAttribArray(vPosition)
-        GLES20.glVertexAttribPointer(
-            vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, vertexBuffer
-        )
+        GLES20.glVertexAttribPointer(vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, vertexBuffer)
 
         // Draw fill area below the lines.
         GLES20.glUniform4fv(vColor, 1, fillColor, 0)
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, (fftSize - 1) * 6, GLES20.GL_UNSIGNED_INT, fillDrawOrderBuffer)
+        GLES20.glDrawElements(GLES20.GL_TRIANGLE_STRIP, fftSize * 2, GLES20.GL_UNSIGNED_INT, fillDrawOrderBuffer)
 
         // Draw the FFT lines.
         GLES20.glUniform4fv(vColor, 1, color, 0)
@@ -266,9 +260,7 @@ class FFT(context: Context, private val preferences: Preferences) {
         // Draw the FFT hold peaks.
         if (preferences.peakHoldEnabled) {
             GLES20.glEnableVertexAttribArray(vPosition)
-            GLES20.glVertexAttribPointer(
-                vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, peakHoldVertexBuffer
-            )
+            GLES20.glVertexAttribPointer(vPosition, coordsPerVertex, GLES20.GL_FLOAT, false, Float.SIZE_BYTES * coordsPerVertex, peakHoldVertexBuffer)
 
             GLES20.glLineWidth(2.0f)
             GLES20.glUniform4fv(vColor, 1, peakHoldColor, 0)
