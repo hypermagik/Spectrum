@@ -62,12 +62,13 @@ class MainActivity : AppCompatActivity() {
     enum class State { Stopped, Stopping, Restarting, Running }
 
     private var state = State.Stopped
-    private var startOnResume = false
+    private var startSourceOnResume = false
 
-    enum class RecordingState { Starting, Running, Stopping, Stopped }
+    enum class RecordingState { Running, Stopping, Stopped }
 
     private var recorder = IQRecorder(this, preferences)
     private var recordingState = RecordingState.Stopped
+    private var startRecordingOnResume = false
 
     private val getIQFileContent = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? -> onIQFileSelected(uri) }
     private val getRecordLocationContent = registerForActivityResult(ActivityResultContracts.OpenDocumentTree()) { uri: Uri? -> onRecordLocationSelected(uri) }
@@ -108,13 +109,13 @@ class MainActivity : AppCompatActivity() {
         analyzerFrame.addView(analyzer.view)
 
         if (savedInstanceState != null) {
-            startOnResume = savedInstanceState.getBoolean("startOnResume", false)
+            startSourceOnResume = savedInstanceState.getBoolean("startSourceOnResume", false)
             analyzerInput = savedInstanceState.getInt("analyzerInput", analyzerInput)
         }
 
         if (intent.action == Intent.ACTION_VIEW) {
             onIQFileSelected(intent.data)
-            startOnResume = true
+            startSourceOnResume = true
         }
     }
 
@@ -149,15 +150,20 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
 
-        if (startOnResume) {
-            startOnResume = false
+        if (startSourceOnResume) {
+            startSourceOnResume = false
             start()
+        }
+
+        if (startRecordingOnResume) {
+            startRecordingOnResume = false
+            startRecorder()
         }
     }
 
     override fun onPause() {
         if (state == State.Running) {
-            startOnResume = true
+            startSourceOnResume = true
             stop(false)
         }
 
@@ -166,7 +172,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         if (state == State.Running) {
-            startOnResume = true
+            startSourceOnResume = true
             stop(false)
         }
 
@@ -175,7 +181,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putBoolean("startOnResume", startOnResume)
+        outState.putBoolean("startSourceOnResume", startSourceOnResume)
         outState.putInt("analyzerInput", analyzerInput)
         analyzer.saveInstanceState(outState)
         preferences.saveNow()
@@ -465,10 +471,6 @@ class MainActivity : AppCompatActivity() {
 
         preferences.recordLocation = uri.toString()
         preferences.save()
-
-        if (recordingState == RecordingState.Starting) {
-            startRecorder()
-        }
     }
 
     private fun showRecorderSettings() {
@@ -506,7 +508,7 @@ class MainActivity : AppCompatActivity() {
             recordingState = RecordingState.Stopping
         } else if (recordingState == RecordingState.Stopped) {
             if (preferences.recordLocation == null) {
-                recordingState = RecordingState.Starting
+                startRecordingOnResume = true
                 openRecordLocation()
             } else {
                 startRecorder()
@@ -515,6 +517,10 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startRecorder() {
+        if (preferences.recordLocation == null) {
+            return
+        }
+
         var error: String?
 
         try {
@@ -538,8 +544,6 @@ class MainActivity : AppCompatActivity() {
 
     private fun checkRecorderState() {
         when (recordingState) {
-            RecordingState.Starting -> return
-
             RecordingState.Running -> {
                 if (!recorder.isRecording()) {
                     recordingState = RecordingState.Stopped
