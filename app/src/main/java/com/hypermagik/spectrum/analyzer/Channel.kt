@@ -109,12 +109,14 @@ class Channel(context: Context) {
         val center = (frequency - viewMinFrequency) / (viewMaxFrequency - viewMinFrequency)
         val width = bandwidth.toDouble() / (viewMaxFrequency - viewMinFrequency)
 
-        vertexBuffer.putFloat(0 * Float.SIZE_BYTES, (center - width / 2).toFloat())
-        vertexBuffer.putFloat(2 * Float.SIZE_BYTES, (center - width / 2).toFloat())
-        vertexBuffer.putFloat(4 * Float.SIZE_BYTES, (center + width / 2).toFloat())
-        vertexBuffer.putFloat(6 * Float.SIZE_BYTES, (center + width / 2).toFloat())
-        vertexBuffer.putFloat(8 * Float.SIZE_BYTES, center.toFloat())
-        vertexBuffer.putFloat(10 * Float.SIZE_BYTES, center.toFloat())
+        vertices[0] = (center - width / 2).toFloat()
+        vertices[2] = (center - width / 2).toFloat()
+        vertices[4] = (center + width / 2).toFloat()
+        vertices[6] = (center + width / 2).toFloat()
+        vertices[8] = center.toFloat()
+        vertices[10] = center.toFloat()
+
+        vertexBuffer.asFloatBuffer().put(vertices)
     }
 
     fun draw() {

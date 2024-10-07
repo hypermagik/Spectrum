@@ -19,11 +19,11 @@ import javax.microedition.khronos.opengles.GL10
 class Waterfall(private val context: Context, private val preferences: Preferences) {
     private var useFloatTexture = false
 
-    private var vPosition: Int = 0
-    private var aTexCoord: Int = 0
-    private var uSampleTexture: Int = 0
-    private var uWaterfallOffset: Int = 0
-    private var uWaterfallHeight: Int = 0
+    private var vPosition = 0
+    private var aTexCoord = 0
+    private var uSampleTexture = 0
+    private var uWaterfallOffset = 0
+    private var uWaterfallHeight = 0
 
     private val vertices = floatArrayOf(
         0.0f, 0.5f,
@@ -44,7 +44,7 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     )
     private var texCoordsBuffer: ByteBuffer
 
-    private var textures: IntArray = IntArray(2)
+    private var textures = IntArray(2)
 
     private var fftSize = preferences.fftSize
     private var sampleBuffer: ByteBuffer
@@ -58,18 +58,18 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
     private var viewHeight = 0
     private var currentLine = 0
 
-    private var isVisible: Boolean = context.resources.configuration.orientation == ORIENTATION_PORTRAIT
+    private var isVisible = context.resources.configuration.orientation == ORIENTATION_PORTRAIT
     private var isDirty = true
 
     init {
         vertexBuffer = ByteBuffer.allocateDirect(vertices.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        vertexBuffer.asFloatBuffer().apply { put(vertices) }
+        vertexBuffer.asFloatBuffer().put(vertices)
 
         drawOrderBuffer = ByteBuffer.allocateDirect(drawOrder.size * Short.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        drawOrderBuffer.asShortBuffer().apply { put(drawOrder) }
+        drawOrderBuffer.asShortBuffer().put(drawOrder)
 
         texCoordsBuffer = ByteBuffer.allocateDirect(texCoords.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        texCoordsBuffer.asFloatBuffer().apply { put(texCoords) }
+        texCoordsBuffer.asFloatBuffer().put(texCoords)
 
         sampleBuffer = ByteBuffer.allocateDirect(fftSize * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
     }
@@ -148,10 +148,8 @@ class Waterfall(private val context: Context, private val preferences: Preferenc
         }
 
         sampleBuffer.rewind()
-
-        for (i in 0 until fftSize) {
-            sampleBuffer.putFloat(magnitudes[i])
-        }
+        sampleBuffer.asFloatBuffer().put(magnitudes, 0, size)
+        sampleBuffer.position(size)
     }
 
     fun draw() {

@@ -32,10 +32,12 @@ class Peaks(context: Context, private val fft: FFT) {
     )
     private val drawOrder = shortArrayOf(0, 1, 2, 3)
 
-    private var vertexBuffer: ByteBuffer = ByteBuffer.allocateDirect(4 * 3 * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-    private var textures = IntArray(1) { GLES20.GL_NONE }
+    private var vertexArray = FloatArray(4 * 3)
+    private var vertexBuffer = ByteBuffer.allocateDirect(vertexArray.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
+    private var textures = IntArray(1) { GLES20.GL_NONE }
     private val textureSize = (60.0f * context.resources.displayMetrics.density).toInt()
+
     private var bitmap = Bitmap.createBitmap(textureSize, textureSize, Bitmap.Config.ARGB_8888)
     private val canvas = Canvas(bitmap)
     private val paint = Paint()
@@ -54,10 +56,10 @@ class Peaks(context: Context, private val fft: FFT) {
 
     init {
         coordBuffer = ByteBuffer.allocateDirect(coords.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        coordBuffer.asFloatBuffer().apply { put(coords) }
+        coordBuffer.asFloatBuffer().put(coords)
 
         drawOrderBuffer = ByteBuffer.allocateDirect(drawOrder.size * Short.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        drawOrderBuffer.asShortBuffer().apply { put(drawOrder) }
+        drawOrderBuffer.asShortBuffer().put(drawOrder)
 
         bitmap.eraseColor(Color.TRANSPARENT)
 
@@ -128,19 +130,20 @@ class Peaks(context: Context, private val fft: FFT) {
 
         val x = peakIndex.toFloat() / (fft.fftSize - 1)
 
-        vertexBuffer.putFloat(x - halfWidth)
-        vertexBuffer.putFloat(peakMagnitude * halfHeight)
-        vertexBuffer.putFloat(3.0f)
-        vertexBuffer.putFloat(x - halfWidth)
-        vertexBuffer.putFloat(peakMagnitude / halfHeight)
-        vertexBuffer.putFloat(3.0f)
-        vertexBuffer.putFloat(x + halfWidth)
-        vertexBuffer.putFloat(peakMagnitude / halfHeight)
-        vertexBuffer.putFloat(3.0f)
-        vertexBuffer.putFloat(x + halfWidth)
-        vertexBuffer.putFloat(peakMagnitude * halfHeight)
-        vertexBuffer.putFloat(3.0f)
-        vertexBuffer.rewind()
+        vertexArray[0] = x - halfWidth
+        vertexArray[1] = peakMagnitude * halfHeight
+        vertexArray[2] = 3.0f
+        vertexArray[3] = x - halfWidth
+        vertexArray[4] = peakMagnitude / halfHeight
+        vertexArray[5] = 3.0f
+        vertexArray[6] = x + halfWidth
+        vertexArray[7] = peakMagnitude / halfHeight
+        vertexArray[8] = 3.0f
+        vertexArray[9] = x + halfWidth
+        vertexArray[10] = peakMagnitude * halfHeight
+        vertexArray[11] = 3.0f
+
+        vertexBuffer.asFloatBuffer().put(vertexArray)
 
         isDirty = true
     }

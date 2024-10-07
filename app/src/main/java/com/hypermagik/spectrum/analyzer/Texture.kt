@@ -16,9 +16,9 @@ class Texture(program: Int) {
     private lateinit var bitmap: Bitmap
     private var canvas = Canvas()
 
-    private var vPosition: Int = 0
-    private var aTexCoord: Int = 0
-    private var uSampleTexture: Int = 0
+    private var vPosition = 0
+    private var aTexCoord = 0
+    private var uSampleTexture = 0
 
     private val vertices = floatArrayOf(
         0.0f, 1.0f,
@@ -38,7 +38,7 @@ class Texture(program: Int) {
     private var coordsBuffer: ByteBuffer
     private val drawOrderBuffer: ByteBuffer
 
-    private var textures: IntArray = IntArray(1) { GLES20.GL_NONE }
+    private var textures = IntArray(1) { GLES20.GL_NONE }
 
     init {
         vPosition = GLES20.glGetAttribLocation(program, "vPosition")
@@ -46,13 +46,13 @@ class Texture(program: Int) {
         uSampleTexture = GLES20.glGetUniformLocation(program, "sampleTexture")
 
         vertexBuffer = ByteBuffer.allocateDirect(vertices.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        vertexBuffer.asFloatBuffer().apply { put(vertices) }
+        vertexBuffer.asFloatBuffer().put(vertices)
 
         coordsBuffer = ByteBuffer.allocateDirect(coords.size * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        coordsBuffer.asFloatBuffer().apply { put(coords) }
+        coordsBuffer.asFloatBuffer().put(coords)
 
         drawOrderBuffer = ByteBuffer.allocateDirect(drawOrder.size * Short.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        drawOrderBuffer.asShortBuffer().apply { put(drawOrder) }
+        drawOrderBuffer.asShortBuffer().put(drawOrder)
 
         GLES20.glGenTextures(1, textures, 0)
     }

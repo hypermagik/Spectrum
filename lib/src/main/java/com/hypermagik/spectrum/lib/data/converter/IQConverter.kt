@@ -6,6 +6,6 @@ import java.nio.ByteBuffer
 interface IQConverter {
     fun getSampleSize(): Int
 
-    fun convert(b: ByteBuffer, c: Complex32Array)
-    fun convertWithLUT(b: ByteBuffer, c: Complex32Array)
+    fun convert(input: ByteBuffer, output: Complex32Array)
+    fun convertWithLUT(input: ByteBuffer, output: Complex32Array)
 }

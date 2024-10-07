@@ -4,8 +4,10 @@ import android.content.Context
 import android.net.Uri
 import android.os.ParcelFileDescriptor
 import androidx.documentfile.provider.DocumentFile
+import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleType
+import com.hypermagik.spectrum.lib.utils.toArray
 import java.io.FileOutputStream
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
@@ -15,6 +17,9 @@ class IQRecorder(private val context: Context, private val preferences: Preferen
     private var fd: ParcelFileDescriptor? = null
     private var stream: FileOutputStream? = null
     private var channel: FileChannel? = null
+
+    private val array = FloatArray(Complex32.MAX_ARRAY_SIZE * 2)
+    private val buffer = ByteBuffer.allocateDirect(Complex32.MAX_ARRAY_SIZE * 2 * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
     fun start(sampleType: SampleType): String? {
         val fileName = String.format("${preferences.sourceSettings.frequency}Hz_${preferences.sourceSettings.sampleRate}Sps_${sampleType}_${System.currentTimeMillis()}.iq")
@@ -52,13 +57,11 @@ class IQRecorder(private val context: Context, private val preferences: Preferen
     fun record(samples: Complex32Array) {
         val channel = channel ?: return
 
-        val buffer = ByteBuffer.allocateDirect(samples.size * 2 * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
-        for (sample in samples) {
-            buffer.putFloat(sample.re)
-            buffer.putFloat(sample.im)
-        }
+        samples.toArray(array)
 
-        buffer.rewind()
+        buffer.limit(samples.size * 2 * Float.SIZE_BYTES).rewind()
+        buffer.asFloatBuffer().put(array, 0, samples.size * 2).rewind()
+
         channel.write(buffer)
 
         if (channel.position() >= preferences.recordLimit) {

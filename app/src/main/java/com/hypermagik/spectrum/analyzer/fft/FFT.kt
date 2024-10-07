@@ -17,24 +17,28 @@ class FFT(context: Context, private val preferences: Preferences) {
     val grid = Grid(context, this)
     private val peaks = Peaks(context, this)
 
-    private var vPosition: Int = 0
-    private var vColor: Int = 0
+    private var vPosition = 0
+    private var vColor = 0
 
-    private var uFFTSize: Int = 0
-    private var uFFTXScale: Int = 0
-    private var uFFTXTranslate: Int = 0
-    private var uFFTMinY: Int = 0
-    private var uFFTMaxY: Int = 0
-    private var uFFTMinDB: Int = 0
-    private var uFFTMaxDB: Int = 0
+    private var uFFTSize = 0
+    private var uFFTXScale = 0
+    private var uFFTXTranslate = 0
+    private var uFFTMinY = 0
+    private var uFFTMaxY = 0
+    private var uFFTMinDB = 0
+    private var uFFTMaxDB = 0
 
     val coordsPerVertex = 3
 
     private var color: FloatArray
     private var fillColor: FloatArray
     private var peakHoldColor: FloatArray
+
+    private lateinit var vertexArray: FloatArray
     private lateinit var vertexBuffer: ByteBuffer
+    private lateinit var peakHoldVertexArray: FloatArray
     private lateinit var peakHoldVertexBuffer: ByteBuffer
+
     private lateinit var fillDrawOrderBuffer: ByteBuffer
 
     var fftSize = preferences.fftSize
@@ -69,34 +73,36 @@ class FFT(context: Context, private val preferences: Preferences) {
     }
 
     private fun createBuffers() {
-        val vboCapacity = fftSize * coordsPerVertex * 2 /* (n, 0) for fill */ * Float.SIZE_BYTES
-        vertexBuffer = ByteBuffer.allocateDirect(vboCapacity).order(ByteOrder.nativeOrder())
+        val vboCapacity = fftSize * coordsPerVertex * 2 /* (n, 0) for fill */
+        vertexArray = FloatArray(vboCapacity)
+        vertexBuffer = ByteBuffer.allocateDirect(vboCapacity * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
         for (i in 0 until fftSize) {
             // Initialize to zero samples.
-            vertexBuffer.putFloat(i.toFloat())
-            vertexBuffer.putFloat(0.0f)
-            vertexBuffer.putFloat(1.0f)
+            vertexArray[3 * i + 0] = i.toFloat()
+            vertexArray[3 * i + 1] = 0.0f
+            vertexArray[3 * i + 2] = 1.0f
         }
 
         // Extra vertices at (i, yMin) for drawing fill area.
         for (i in 0 until fftSize) {
-            vertexBuffer.putFloat(1.0f * i / (fftSize - 1))
-            vertexBuffer.putFloat(minY)
-            vertexBuffer.putFloat(2.0f)
+            vertexArray[3 * (fftSize + i) + 0] = 1.0f * i / (fftSize - 1)
+            vertexArray[3 * (fftSize + i) + 1] = minY
+            vertexArray[3 * (fftSize + i) + 2] = 2.0f
         }
 
-        vertexBuffer.rewind()
+        vertexBuffer.asFloatBuffer().put(vertexArray)
 
-        peakHoldVertexBuffer = ByteBuffer.allocateDirect(vboCapacity / 2).order(ByteOrder.nativeOrder())
+        peakHoldVertexArray = FloatArray(vboCapacity / 2)
+        peakHoldVertexBuffer = ByteBuffer.allocateDirect(vboCapacity / 2 * Float.SIZE_BYTES).order(ByteOrder.nativeOrder())
 
         for (i in 0 until fftSize) {
-            peakHoldVertexBuffer.putFloat(i.toFloat())
-            peakHoldVertexBuffer.putFloat(0.0f)
-            peakHoldVertexBuffer.putFloat(1.0f)
+            peakHoldVertexArray[3 * i + 0] = i.toFloat()
+            peakHoldVertexArray[3 * i + 1] = 0.0f
+            peakHoldVertexArray[3 * i + 2] = 1.0f
         }
 
-        peakHoldVertexBuffer.rewind()
+        peakHoldVertexBuffer.asFloatBuffer().put(peakHoldVertexArray)
 
         val vdoCapacity = fftSize * 2 /* vertices */ * Int.SIZE_BYTES
         fillDrawOrderBuffer = ByteBuffer.allocateDirect(vdoCapacity).order(ByteOrder.nativeOrder())
@@ -142,36 +148,37 @@ class FFT(context: Context, private val preferences: Preferences) {
     }
 
     fun saveInstanceState(bundle: Bundle) {
-        val vertices = FloatArray(fftSize * coordsPerVertex)
-        vertexBuffer.asFloatBuffer().get(vertices)
-        bundle.putFloatArray("vertices", vertices)
-
-        val peakHoldVertices = FloatArray(fftSize * coordsPerVertex)
-        peakHoldVertexBuffer.asFloatBuffer().get(peakHoldVertices)
-        bundle.putFloatArray("peakHoldVertices", peakHoldVertices)
+        bundle.putFloatArray("vertexArray", vertexArray)
+        bundle.putFloatArray("peakHoldVertexArray", peakHoldVertexArray)
     }
 
     fun restoreInstanceState(bundle: Bundle) {
-        val restoredVertices = bundle.getFloatArray("vertices")
-        val restoredPeakHoldVertices = bundle.getFloatArray("peakHoldVertices")
+        val restoredVertexArray = bundle.getFloatArray("vertexArray")
+        val restoredPeakHoldVertexArray = bundle.getFloatArray("peakHoldVertexArray")
 
-        if (restoredVertices != null) {
-            updateFFTSize(restoredVertices.size / coordsPerVertex)
+        if (restoredVertexArray != null) {
+            updateFFTSize(restoredVertexArray.size / coordsPerVertex / 2)
 
             // Restore from saved state.
-            vertexBuffer.asFloatBuffer().put(restoredVertices)
+            vertexArray = restoredVertexArray
+            vertexBuffer.asFloatBuffer().put(vertexArray)
 
-            restoredPeakHoldVertices?.also {
-                peakHoldVertexBuffer.asFloatBuffer().put(it)
+            restoredPeakHoldVertexArray?.also {
+                peakHoldVertexArray = restoredPeakHoldVertexArray
+                peakHoldVertexBuffer.asFloatBuffer().put(peakHoldVertexArray)
             }
         }
     }
 
     fun reset() {
         for (i in 0 until fftSize) {
-            val bufferIndex = (i * coordsPerVertex + 1) * Float.SIZE_BYTES
-            vertexBuffer.putFloat(bufferIndex, 0.0f)
-            peakHoldVertexBuffer.putFloat(bufferIndex, 0.0f)
+            val bufferIndex = i * coordsPerVertex + 1
+
+            vertexArray[bufferIndex] = 0.0f
+            peakHoldVertexArray[bufferIndex] = 0.0f
+
+            vertexBuffer.asFloatBuffer().put(vertexArray)
+            peakHoldVertexBuffer.asFloatBuffer().put(peakHoldVertexArray)
         }
     }
 
@@ -198,21 +205,25 @@ class FFT(context: Context, private val preferences: Preferences) {
 
         // Scaling is done in the vertex shader.
         for (i in 0 until size) {
-            val bufferIndex = (i * coordsPerVertex + 1) * Float.SIZE_BYTES
+            val bufferIndex = i * coordsPerVertex + 1
             val magnitude = magnitudes[i]
 
-            vertexBuffer.putFloat(bufferIndex, magnitude)
+            vertexArray[bufferIndex] = magnitude
 
             if (peakHoldEnabled) {
-                var peak = peakHoldVertexBuffer.getFloat(bufferIndex)
+                var peak = peakHoldVertexArray[bufferIndex]
                 if (peak.isNaN() || peak.isInfinite()) {
                     peak = magnitude
                 }
-                peakHoldVertexBuffer.putFloat(bufferIndex, max(peak * peakHoldDecay, magnitude))
+                peakHoldVertexArray[bufferIndex] = max(peak * peakHoldDecay, magnitude)
             }
         }
 
-        vertexBuffer.rewind()
+        vertexBuffer.asFloatBuffer().put(vertexArray)
+
+        if (peakHoldEnabled) {
+            peakHoldVertexBuffer.asFloatBuffer().put(peakHoldVertexArray)
+        }
 
         if (preferences.peakIndicatorEnabled) {
             peaks.update()

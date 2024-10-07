@@ -3,6 +3,7 @@ package com.hypermagik.spectrum
 import android.app.Activity
 import android.util.Log
 import com.hypermagik.spectrum.demodulator.DemodulatorType
+import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.Window
 import com.hypermagik.spectrum.source.SourceType
@@ -161,7 +162,7 @@ class Preferences(private val activity: Activity?) {
     }
 
     fun getSampleFifoBufferSize(): Int {
-        var size = 128 * 1024
+        var size = Complex32.MAX_ARRAY_SIZE
         // At least 120 buffers per second.
         while (sourceSettings.sampleRate / size < 120) {
             size /= 2

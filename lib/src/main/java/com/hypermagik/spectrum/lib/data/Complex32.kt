@@ -11,6 +11,10 @@ data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
     constructor(c: Complex32) : this(c.re, c.im)
     constructor(re: Double, im: Double) : this(re.toFloat(), im.toFloat())
 
+    companion object {
+        const val MAX_ARRAY_SIZE = 128 * 1024
+    }
+
     @kotlin.internal.InlineOnly
     inline fun zero() {
         this.re = 0.0f
