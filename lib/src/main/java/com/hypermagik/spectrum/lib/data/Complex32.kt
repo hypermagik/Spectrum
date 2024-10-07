@@ -49,18 +49,20 @@ data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
 
     @kotlin.internal.InlineOnly
     inline fun mul(c: Complex32) {
-        val mre = this.re * c.re - this.im * c.im
-        val mim = this.re * c.im + this.im * c.re
-        this.re = mre
-        this.im = mim
+        val s1 = this.re * c.re
+        val s2 = this.im * c.im
+        val s3 = (this.re + this.im) * (c.re + c.im)
+        this.re = s1 - s2
+        this.im = s3 - s1 - s2
     }
 
     @kotlin.internal.InlineOnly
     inline fun mul(re: Float, im: Float) {
-        val mre = this.re * re - this.im * im
-        val mim = this.re * im + this.im * re
-        this.re = mre
-        this.im = mim
+        val s1 = this.re * re
+        val s2 = this.im * im
+        val s3 = (this.re + this.im) * (re + im)
+        this.re = s1 - s2
+        this.im = s3 - s1 - s2
     }
 
     @kotlin.internal.InlineOnly
@@ -83,10 +85,11 @@ data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
 
     @kotlin.internal.InlineOnly
     inline fun setmul(c1: Complex32, c2: Complex32) {
-        val mre = c1.re * c2.re - c1.im * c2.im
-        val mim = c1.re * c2.im + c1.im * c2.re
-        this.re = mre
-        this.im = mim
+        val s1 = c1.re * c2.re
+        val s2 = c1.im * c2.im
+        val s3 = (c1.re + c1.im) * (c2.re + c2.im)
+        this.re = s1 - s2
+        this.im = s3 - s1 - s2
     }
 
     @kotlin.internal.InlineOnly
@@ -97,18 +100,20 @@ data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
 
     @kotlin.internal.InlineOnly
     inline fun setmul(c: Complex32, re: Float, im: Float) {
-        val mre = c.re * re - c.im * im
-        val mim = c.re * im + c.im * re
-        this.re = mre
-        this.im = mim
+        val s1 = c.re * re
+        val s2 = c.im * im
+        val s3 = (c.re + c.im) * (re + im)
+        this.re = s1 - s2
+        this.im = s3 - s1 - s2
     }
 
     @kotlin.internal.InlineOnly
     inline fun setmulconj(c1: Complex32, c2: Complex32) {
-        val mre = c1.re * c2.re + c1.im * c2.im
-        val mim = c1.im * c2.re - c1.re * c2.im
-        this.re = mre
-        this.im = mim
+        val s1 = c1.re * c2.re
+        val s2 = c1.im * c2.im
+        val s3 = (c1.re + c1.im) * (c2.re - c2.im)
+        this.re = s1 + s2
+        this.im = s3 - s1 + s2
     }
 
     @kotlin.internal.InlineOnly
@@ -119,10 +124,11 @@ data class Complex32(@JvmField var re: Float, @JvmField var im: Float) {
 
     @kotlin.internal.InlineOnly
     inline fun addmul(c1: Complex32, c2: Complex32) {
-        val mre = c1.re * c2.re - c1.im * c2.im
-        val mim = c1.re * c2.im + c1.im * c2.re
-        this.re += mre
-        this.im += mim
+        val s1 = c1.re * c2.re
+        val s2 = c1.im * c2.im
+        val s3 = (c1.re + c1.im) * (c2.re + c2.im)
+        this.re += s1 - s2
+        this.im += s3 - s1 - s2
     }
 
     @kotlin.internal.InlineOnly
