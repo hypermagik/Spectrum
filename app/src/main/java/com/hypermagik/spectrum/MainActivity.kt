@@ -28,6 +28,7 @@ import com.hypermagik.spectrum.demodulator.Tetra
 import com.hypermagik.spectrum.demodulator.WFM
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.data.SampleFIFO
+import com.hypermagik.spectrum.lib.gpu.GLES
 import com.hypermagik.spectrum.source.BladeRF
 import com.hypermagik.spectrum.source.IQFile
 import com.hypermagik.spectrum.source.RTLSDR
@@ -612,8 +613,6 @@ class MainActivity : AppCompatActivity() {
             sampleFifo = SampleFIFO(sampleFifoSize, preferences.getSampleFifoBufferSize())
         }
 
-        createDemodulator()
-
         analyzerInput = 0
 
         Runtime.getRuntime().gc()
@@ -732,6 +731,11 @@ class MainActivity : AppCompatActivity() {
 
         var analyzerInput = -1
 
+        if (GLES.INSTANCE.isAvailable()) {
+            GLES.INSTANCE.makeCurrent(this)
+        }
+
+        createDemodulator()
         demodulator?.start()
 
         val channelBandwidth = demodulator?.getChannelBandwidth() ?: 0

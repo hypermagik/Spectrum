@@ -26,11 +26,11 @@ project("spectrum")
 # used in the AndroidManifest.xml file.
 file(GLOB_RECURSE TETRA_SOURCES osmo-tetra/*.c)
 
-add_library(${CMAKE_PROJECT_NAME} SHARED Tetra.cpp ${TETRA_SOURCES})
+add_library(${CMAKE_PROJECT_NAME} SHARED GLES.cpp Tetra.cpp ${TETRA_SOURCES})
 
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "osmo-tetra")
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
-target_link_libraries(${CMAKE_PROJECT_NAME} android log)
+target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3)
