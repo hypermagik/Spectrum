@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
 
     private lateinit var source: Source
 
-    private val sampleFifoSize = 32
+    private val sampleFifoSize = 8
     private lateinit var sampleFifo: SampleFIFO
 
     private lateinit var analyzer: Analyzer
