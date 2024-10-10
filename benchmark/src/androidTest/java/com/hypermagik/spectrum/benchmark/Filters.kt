@@ -99,7 +99,7 @@ class Filters {
 
     @Test
     fun resampler9taps1024to1000() {
-        val uut = Resampler(1024000, 1000000, 9)
+        val uut = Resampler(1024000, 1000000, false, 9)
 
         benchmarkRule.measureRepeated {
             uut.resample(samples, samples)
@@ -108,7 +108,7 @@ class Filters {
 
     @Test
     fun resampler25taps1024to1000() {
-        val uut = Resampler(1024000, 1000000, 25)
+        val uut = Resampler(1024000, 1000000, false, 25)
 
         benchmarkRule.measureRepeated {
             uut.resample(samples, samples)

@@ -75,6 +75,10 @@
                 </group>
             </menu>
         </item>
+        <item
+            android:id="@+id/menu_demodulator_gpu_offload"
+        android:checkable="true"
+            android:title="@string/menu_demodulator_gpu_offload" />
     </group>
     <item
         android:orderInCategory="91"

@@ -16,14 +16,14 @@ import com.hypermagik.spectrum.lib.dsp.Taps
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
 import com.hypermagik.spectrum.utils.TAG
 
-class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulator {
+class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean, private val gpuOffload: Boolean) : Demodulator {
     private var sampleRate = 1000000
+    private var shiftFrequency = 0.0f
 
     private val quadratureRate = 250000
     private val quadratureDeviation = 75000
 
-    private var shifter = Shifter(sampleRate, 0.0f)
-    private var resampler = Resampler(sampleRate, quadratureRate)
+    private var resampler = Resampler(sampleRate, quadratureRate, gpuOffload)
     private var quadrature = Quadrature(quadratureRate, quadratureDeviation)
     private var lowPassFIR = FIR(Taps.halfBand(), 2, true)
 
@@ -70,7 +70,8 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
     override fun getChannelBandwidth(): Int = quadratureRate
 
     override fun setFrequency(frequency: Long) {
-        shifter.update(-frequency.toFloat())
+        shiftFrequency = frequency.toFloat()
+        resampler.setShiftFrequency(-shiftFrequency)
     }
 
     override fun start() {
@@ -79,6 +80,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
 
     override fun stop() {
         audioSink?.stop()
+        resampler.close()
     }
 
     override fun demodulate(buffer: SampleBuffer, output: Int, observe: (samples: SampleBuffer, preserveSamples: Boolean) -> Unit) {
@@ -89,15 +91,15 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
         if (sampleRate != buffer.sampleRate) {
             Log.d(TAG, "Sample rate changed from $sampleRate to ${buffer.sampleRate}")
             sampleRate = buffer.sampleRate
-            shifter = Shifter(sampleRate, shifter.frequency)
-            resampler = Resampler(sampleRate, quadratureRate)
-        }
 
-        shifter.shift(buffer.samples, buffer.samples)
-        buffer.frequency += -shifter.frequency.toLong()
+            resampler.close()
+            resampler = Resampler(sampleRate, quadratureRate, gpuOffload)
+            resampler.setShiftFrequency(-shiftFrequency)
+        }
 
         buffer.sampleCount = resampler.resample(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleRate = resampler.outputSampleRate
+        buffer.frequency -= shiftFrequency.toLong()
 
         if (output == 1) {
             observe(buffer, true)

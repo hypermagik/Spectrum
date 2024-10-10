@@ -59,6 +59,7 @@
     <string name="menu_demodulator_fm">FM</string>
     <string name="menu_demodulator_wfm">Wideband FM</string>
     <string name="menu_demodulator_tetra">Tetra</string>
+    <string name="menu_demodulator_gpu_offload">GPU offload</string>
     <string name="menu_demodulator_audio_output">Audio output</string>
     <string name="menu_demodulator_stereo">Stereo</string>
     <string name="menu_demodulator_rds">RDS</string>

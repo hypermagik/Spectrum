@@ -56,6 +56,7 @@ class MainActivity : AppCompatActivity() {
     private var demodulator: Demodulator? = null
 
     private var analyzerInput = 0
+    private var gpuOffloadAvailable = false
 
     private var sourceThread: Thread? = null
     private var workerThread: Thread? = null
@@ -118,6 +119,8 @@ class MainActivity : AppCompatActivity() {
             onIQFileSelected(intent.data)
             startSourceOnResume = true
         }
+
+        thread { gpuOffloadAvailable = GLES.INSTANCE.isAvailable() }.join()
     }
 
     private fun createSource(force: Boolean = false) {
@@ -143,7 +146,13 @@ class MainActivity : AppCompatActivity() {
             DemodulatorType.None -> null
             DemodulatorType.AM -> AM(preferences.demodulatorAudio)
             DemodulatorType.FM -> FM(preferences.demodulatorAudio)
-            DemodulatorType.WFM -> WFM(preferences.demodulatorAudio, preferences.demodulatorStereo, preferences.demodulatorRDS)
+            DemodulatorType.WFM -> WFM(
+                preferences.demodulatorAudio,
+                preferences.demodulatorStereo,
+                preferences.demodulatorRDS,
+                preferences.demodulatorGPUOffload
+            )
+
             DemodulatorType.Tetra -> Tetra()
         }
     }
@@ -195,7 +204,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun toast(message: String) {
         toast.cancel()
-        toast = Toast.makeText(this, message, Toast.LENGTH_SHORT).also { it.show() }
+        if (message.isNotBlank()) {
+            toast = Toast.makeText(this, message, Toast.LENGTH_SHORT).also { it.show() }
+        }
     }
 
     private fun updateActionBarSubtitle() {
@@ -276,6 +287,11 @@ class MainActivity : AppCompatActivity() {
 
         Constants.demodulatorTypeToMenuItem[preferences.demodulatorType]?.also {
             menu.findItem(it)?.setChecked(true)
+        }
+
+        menu.findItem(R.id.menu_demodulator_gpu_offload)?.apply {
+            isEnabled = gpuOffloadAvailable
+            isChecked = preferences.demodulatorGPUOffload
         }
 
         menu.findItem(R.id.menu_demodulator_audio_output)?.setChecked(preferences.demodulatorAudio)
@@ -368,6 +384,12 @@ class MainActivity : AppCompatActivity() {
             }
             item.setChecked(true)
             invalidateOptionsMenu()
+        } else if (item.itemId == R.id.menu_demodulator_gpu_offload) {
+            restartIfRunning {
+                preferences.demodulatorGPUOffload = !preferences.demodulatorGPUOffload
+                preferences.saveNow()
+            }
+            item.setChecked(preferences.demodulatorGPUOffload)
         } else if (item.itemId == R.id.menu_demodulator_audio_output) {
             restartIfRunning {
                 preferences.demodulatorAudio = !preferences.demodulatorAudio

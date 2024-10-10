@@ -41,6 +41,7 @@ class Preferences(private val activity: Activity?) {
 
     var demodulatorType = DemodulatorType.None
 
+    var demodulatorGPUOffload = false
     var demodulatorAudio = false
     var demodulatorStereo = false
     var demodulatorRDS = false
@@ -89,6 +90,7 @@ class Preferences(private val activity: Activity?) {
             recordLocation = getString("recordLocation", recordLocation)
             recordLimit = getLong("recordLimit", recordLimit)
             demodulatorType = DemodulatorType.entries.toTypedArray()[getInt("demodulatorType", demodulatorType.ordinal)]
+            demodulatorGPUOffload = getBoolean("demodulatorGPUOffload", demodulatorGPUOffload)
             demodulatorAudio = getBoolean("demodulatorAudio", demodulatorAudio)
             demodulatorStereo = getBoolean("demodulatorStereo", demodulatorStereo)
             demodulatorRDS = getBoolean("demodulatorRDS", demodulatorRDS)
@@ -130,6 +132,7 @@ class Preferences(private val activity: Activity?) {
             putString("recordLocation", recordLocation)
             putLong("recordLimit", recordLimit)
             putInt("demodulatorType", demodulatorType.ordinal)
+            putBoolean("demodulatorGPUOffload", demodulatorGPUOffload)
             putBoolean("demodulatorAudio", demodulatorAudio)
             putBoolean("demodulatorStereo", demodulatorStereo)
             putBoolean("demodulatorRDS", demodulatorRDS)
