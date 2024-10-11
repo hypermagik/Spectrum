@@ -3,7 +3,9 @@ package com.hypermagik.spectrum.lib.data
 class SampleFIFO(bufferCount: Int, val bufferSize: Int) {
     private val queue = Array(bufferCount) { SampleBuffer(bufferSize) }
 
+    @Volatile
     private var popIndex = 0
+    @Volatile
     private var pushIndex = 0
 
     fun getPopBuffer(): SampleBuffer? {

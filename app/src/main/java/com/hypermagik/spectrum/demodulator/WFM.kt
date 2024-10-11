@@ -1,5 +1,6 @@
 package com.hypermagik.spectrum.demodulator
 
+import android.util.Log
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleBuffer
@@ -13,6 +14,7 @@ import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.Shifter
 import com.hypermagik.spectrum.lib.dsp.Taps
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
+import com.hypermagik.spectrum.utils.TAG
 
 class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean) : Demodulator {
     private var sampleRate = 1000000
@@ -85,6 +87,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean)
         }
 
         if (sampleRate != buffer.sampleRate) {
+            Log.d(TAG, "Sample rate changed from $sampleRate to ${buffer.sampleRate}")
             sampleRate = buffer.sampleRate
             shifter = Shifter(sampleRate, shifter.frequency)
             resampler = Resampler(sampleRate, quadratureRate)
