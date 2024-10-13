@@ -6,6 +6,7 @@ import com.hypermagik.spectrum.demodulator.DemodulatorType
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.Window
+import com.hypermagik.spectrum.lib.gpu.GPUAPI
 import com.hypermagik.spectrum.source.SourceType
 import com.hypermagik.spectrum.utils.TAG
 import java.util.Timer
@@ -41,7 +42,7 @@ class Preferences(private val activity: Activity?) {
 
     var demodulatorType = DemodulatorType.None
 
-    var demodulatorGPUOffload = false
+    var demodulatorGPUAPI = GPUAPI.None
     var demodulatorAudio = false
     var demodulatorStereo = false
     var demodulatorRDS = false
@@ -90,7 +91,7 @@ class Preferences(private val activity: Activity?) {
             recordLocation = getString("recordLocation", recordLocation)
             recordLimit = getLong("recordLimit", recordLimit)
             demodulatorType = DemodulatorType.entries.toTypedArray()[getInt("demodulatorType", demodulatorType.ordinal)]
-            demodulatorGPUOffload = getBoolean("demodulatorGPUOffload", demodulatorGPUOffload)
+            demodulatorGPUAPI = GPUAPI.entries.toTypedArray()[getInt("demodulatorGPUAPI", demodulatorGPUAPI.ordinal)]
             demodulatorAudio = getBoolean("demodulatorAudio", demodulatorAudio)
             demodulatorStereo = getBoolean("demodulatorStereo", demodulatorStereo)
             demodulatorRDS = getBoolean("demodulatorRDS", demodulatorRDS)
@@ -132,7 +133,7 @@ class Preferences(private val activity: Activity?) {
             putString("recordLocation", recordLocation)
             putLong("recordLimit", recordLimit)
             putInt("demodulatorType", demodulatorType.ordinal)
-            putBoolean("demodulatorGPUOffload", demodulatorGPUOffload)
+            putInt("demodulatorGPUAPI", demodulatorGPUAPI.ordinal)
             putBoolean("demodulatorAudio", demodulatorAudio)
             putBoolean("demodulatorStereo", demodulatorStereo)
             putBoolean("demodulatorRDS", demodulatorRDS)

@@ -14,16 +14,17 @@ import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.Shifter
 import com.hypermagik.spectrum.lib.dsp.Taps
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
+import com.hypermagik.spectrum.lib.gpu.GPUAPI
 import com.hypermagik.spectrum.utils.TAG
 
-class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean, private val gpuOffload: Boolean) : Demodulator {
+class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean, private val gpuAPI: GPUAPI) : Demodulator {
     private var sampleRate = 1000000
     private var shiftFrequency = 0.0f
 
     private val quadratureRate = 250000
     private val quadratureDeviation = 75000
 
-    private var resampler = Resampler(sampleRate, quadratureRate, gpuOffload)
+    private var resampler = Resampler(sampleRate, quadratureRate, gpuAPI)
     private var quadrature = Quadrature(quadratureRate, quadratureDeviation)
     private var lowPassFIR = FIR(Taps.halfBand(), 2, true)
 
@@ -93,7 +94,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean,
             sampleRate = buffer.sampleRate
 
             resampler.close()
-            resampler = Resampler(sampleRate, quadratureRate, gpuOffload)
+            resampler = Resampler(sampleRate, quadratureRate, gpuAPI)
             resampler.setShiftFrequency(-shiftFrequency)
         }
 

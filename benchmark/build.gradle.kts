@@ -16,7 +16,6 @@ android {
         //testInstrumentationRunnerArguments["androidx.benchmark.profiling.mode"] = "StackSampling"
     }
 
-    testBuildType = "release"
     buildTypes {
         debug {
             isMinifyEnabled = false
@@ -26,6 +25,8 @@ android {
             isDefault = true
         }
     }
+
+    testBuildType = "release"
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
@@ -40,7 +41,6 @@ android {
 dependencies {
     androidTestImplementation(libs.androidx.runner)
     androidTestImplementation(libs.androidx.junit)
-//    androidTestImplementation(libs.junit)
     androidTestImplementation(libs.androidx.benchmark.junit4)
     androidTestImplementation(project(":lib"))
 }

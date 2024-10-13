@@ -77,8 +77,23 @@
         </item>
         <item
             android:id="@+id/menu_demodulator_gpu_offload"
-        android:checkable="true"
-            android:title="@string/menu_demodulator_gpu_offload" />
+            android:title="@string/menu_demodulator_gpu_offload">
+            <menu>
+                <group
+                    android:id="@+id/menu_demodulator_gpu_offload_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_demodulator_gpu_offload_none"
+                        android:title="@string/menu_demodulator_gpu_offload_none" />
+                    <item
+                        android:id="@+id/menu_demodulator_gpu_offload_gles"
+                        android:title="@string/menu_demodulator_gpu_offload_gles" />
+                    <item
+                        android:id="@+id/menu_demodulator_gpu_offload_vulkan"
+                        android:title="@string/menu_demodulator_gpu_offload_vulkan" />
+                </group>
+            </menu>
+        </item>
     </group>
     <item
         android:orderInCategory="91"

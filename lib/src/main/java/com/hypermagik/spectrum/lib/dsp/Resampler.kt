@@ -4,14 +4,19 @@ import android.util.Log
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.gcd
 import com.hypermagik.spectrum.lib.gpu.GLESShiftDecimator
+import com.hypermagik.spectrum.lib.gpu.GPUAPI
+import com.hypermagik.spectrum.lib.gpu.VulkanShiftDecimator
 import kotlin.math.abs
 import kotlin.math.floor
 import kotlin.math.log2
 import kotlin.math.min
 import kotlin.math.round
 
-class Resampler(private val inputSampleRate: Int, val outputSampleRate: Int, gpuOffload: Boolean = false, numTaps: Int = 9) {
+class Resampler(private val inputSampleRate: Int, val outputSampleRate: Int, gpuAPI: GPUAPI = GPUAPI.None, numTaps: Int = 9) {
+    enum class Type { CPU, GLES, VK }
+
     private var glesShiftDecimator: GLESShiftDecimator? = null
+    private var vkShiftDecimator: VulkanShiftDecimator? = null
 
     private var shifter: Shifter? = null
     private var decimator: Decimator? = null
@@ -26,8 +31,10 @@ class Resampler(private val inputSampleRate: Int, val outputSampleRate: Int, gpu
         var interpolatorSampleRate = inputSampleRate.toDouble()
 
         if (inputSampleRate > outputSampleRate && decimatorPower > 0) {
-            if (gpuOffload && GLESShiftDecimator.isAvailable(decimatorRatio)) {
+            if (gpuAPI == GPUAPI.GLES && GLESShiftDecimator.isAvailable(decimatorRatio)) {
                 glesShiftDecimator = GLESShiftDecimator(inputSampleRate, decimatorRatio)
+            } else if (gpuAPI == GPUAPI.Vulkan && VulkanShiftDecimator.isAvailable(decimatorRatio)) {
+                vkShiftDecimator = VulkanShiftDecimator(inputSampleRate, decimatorRatio)
             } else {
                 decimator = Decimator(decimatorRatio)
             }
@@ -62,6 +69,8 @@ class Resampler(private val inputSampleRate: Int, val outputSampleRate: Int, gpu
     fun setShiftFrequency(shiftFrequency: Float) {
         if (glesShiftDecimator != null) {
             glesShiftDecimator!!.setShiftFrequency(shiftFrequency)
+        } else if (vkShiftDecimator != null) {
+            vkShiftDecimator!!.setShiftFrequency(shiftFrequency)
         } else if (shifter == null) {
             shifter = Shifter(inputSampleRate, shiftFrequency)
         } else {
@@ -74,6 +83,8 @@ class Resampler(private val inputSampleRate: Int, val outputSampleRate: Int, gpu
 
         if (glesShiftDecimator != null) {
             outputLength = glesShiftDecimator!!.decimate(input, output, length)
+        } else if (vkShiftDecimator != null) {
+            outputLength = vkShiftDecimator!!.decimate(input, output, length)
         } else {
             shifter?.run { shift(input, input, length) }
             decimator?.run { outputLength = decimate(input, output, outputLength) }
@@ -86,5 +97,6 @@ class Resampler(private val inputSampleRate: Int, val outputSampleRate: Int, gpu
 
     fun close() {
         glesShiftDecimator?.close()
+        vkShiftDecimator?.close()
     }
 }

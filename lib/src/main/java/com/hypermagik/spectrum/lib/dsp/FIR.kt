@@ -5,7 +5,7 @@ import com.hypermagik.spectrum.lib.data.Complex32Array
 
 class FIR(private val taps: FloatArray, val decimation: Int = 1, private val half: Boolean = false) {
     private var buffer = Complex32Array(0) { Complex32() }
-    private var decimationCounter = 1
+    private var decimationCounter = 0
 
     fun filter(input: Complex32Array, output: Complex32Array, length: Int = input.size): Int {
         if (buffer.size < length + taps.size) {

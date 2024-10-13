@@ -29,6 +29,7 @@ import com.hypermagik.spectrum.demodulator.WFM
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.data.SampleFIFO
 import com.hypermagik.spectrum.lib.gpu.GLES
+import com.hypermagik.spectrum.lib.gpu.Vulkan
 import com.hypermagik.spectrum.source.BladeRF
 import com.hypermagik.spectrum.source.IQFile
 import com.hypermagik.spectrum.source.RTLSDR
@@ -56,7 +57,8 @@ class MainActivity : AppCompatActivity() {
     private var demodulator: Demodulator? = null
 
     private var analyzerInput = 0
-    private var gpuOffloadAvailable = false
+    private var glesOffloadAvailable = false
+    private var vulkanOffloadAvailable = false
 
     private var sourceThread: Thread? = null
     private var workerThread: Thread? = null
@@ -120,7 +122,10 @@ class MainActivity : AppCompatActivity() {
             startSourceOnResume = true
         }
 
-        thread { gpuOffloadAvailable = GLES.INSTANCE.isAvailable() }.join()
+        thread { glesOffloadAvailable = GLES.INSTANCE.isAvailable() }.join()
+
+        Vulkan.init(this)
+        vulkanOffloadAvailable = Vulkan.isAvailable()
     }
 
     private fun createSource(force: Boolean = false) {
@@ -150,7 +155,7 @@ class MainActivity : AppCompatActivity() {
                 preferences.demodulatorAudio,
                 preferences.demodulatorStereo,
                 preferences.demodulatorRDS,
-                preferences.demodulatorGPUOffload
+                preferences.demodulatorGPUAPI
             )
 
             DemodulatorType.Tetra -> Tetra()
@@ -289,9 +294,14 @@ class MainActivity : AppCompatActivity() {
             menu.findItem(it)?.setChecked(true)
         }
 
-        menu.findItem(R.id.menu_demodulator_gpu_offload)?.apply {
-            isEnabled = gpuOffloadAvailable
-            isChecked = preferences.demodulatorGPUOffload
+        Constants.gpuAPIToMenuItem[preferences.demodulatorGPUAPI]?.also {
+            menu.findItem(it)?.setChecked(true)
+        }
+        menu.findItem(R.id.menu_demodulator_gpu_offload_gles)?.apply {
+            isEnabled = glesOffloadAvailable
+        }
+        menu.findItem(R.id.menu_demodulator_gpu_offload_vulkan)?.apply {
+            isEnabled = vulkanOffloadAvailable
         }
 
         menu.findItem(R.id.menu_demodulator_audio_output)?.setChecked(preferences.demodulatorAudio)
@@ -384,12 +394,13 @@ class MainActivity : AppCompatActivity() {
             }
             item.setChecked(true)
             invalidateOptionsMenu()
-        } else if (item.itemId == R.id.menu_demodulator_gpu_offload) {
+        } else if (item.groupId == R.id.menu_demodulator_gpu_offload_group) {
             restartIfRunning {
-                preferences.demodulatorGPUOffload = !preferences.demodulatorGPUOffload
+                val gpuAPI = Constants.gpuAPIToMenuItem.filterValues { it == item.itemId }.keys.first()
+                preferences.demodulatorGPUAPI = gpuAPI
                 preferences.saveNow()
             }
-            item.setChecked(preferences.demodulatorGPUOffload)
+            item.setChecked(true)
         } else if (item.itemId == R.id.menu_demodulator_audio_output) {
             restartIfRunning {
                 preferences.demodulatorAudio = !preferences.demodulatorAudio

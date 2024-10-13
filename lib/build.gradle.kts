@@ -12,6 +12,10 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         consumerProguardFiles("consumer-rules.pro")
+
+        shaders {
+            glslcArgs += listOf("-c", "-O")
+        }
     }
 
     buildTypes {
@@ -20,6 +24,8 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
+    testBuildType = "release"
 
     externalNativeBuild {
         cmake {
@@ -40,9 +46,6 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-    implementation(libs.material)
+    androidTestImplementation(libs.androidx.runner)
     androidTestImplementation(libs.androidx.junit)
 }

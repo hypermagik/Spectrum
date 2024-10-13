@@ -4,7 +4,8 @@ import android.opengl.GLES31
 import android.opengl.GLU
 import android.util.Log
 
-var GL_DEBUG = true
+var GL_DEBUG = false
+var VK_DEBUG = false
 
 inline fun <R> checkGLError(block: () -> R): R {
     val v = block()

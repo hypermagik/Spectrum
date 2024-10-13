@@ -3,6 +3,7 @@ package com.hypermagik.spectrum
 import com.hypermagik.spectrum.demodulator.DemodulatorType
 import com.hypermagik.spectrum.lib.data.SampleType
 import com.hypermagik.spectrum.lib.dsp.Window
+import com.hypermagik.spectrum.lib.gpu.GPUAPI
 import com.hypermagik.spectrum.source.SourceType
 
 class Constants {
@@ -64,6 +65,12 @@ class Constants {
             DemodulatorType.FM to R.menu.demodulator_fm,
             DemodulatorType.WFM to R.menu.demodulator_wfm,
             DemodulatorType.Tetra to R.menu.demodulator_tetra,
+        )
+
+        val gpuAPIToMenuItem = mapOf(
+            GPUAPI.None to R.id.menu_demodulator_gpu_offload_none,
+            GPUAPI.GLES to R.id.menu_demodulator_gpu_offload_gles,
+            GPUAPI.Vulkan to R.id.menu_demodulator_gpu_offload_vulkan,
         )
 
         val fftSizeToMenuItem = mapOf(

@@ -24,13 +24,19 @@ project("spectrum")
 # System.loadLibrary() and pass the name of the library defined here;
 # for GameActivity/NativeActivity derived applications, the same library name must be
 # used in the AndroidManifest.xml file.
+file(GLOB_RECURSE VULKAN_SOURCES vulkan/*.cpp)
 file(GLOB_RECURSE TETRA_SOURCES osmo-tetra/*.c)
 
-add_library(${CMAKE_PROJECT_NAME} SHARED GLES.cpp Tetra.cpp ${TETRA_SOURCES})
+add_library(${CMAKE_PROJECT_NAME} SHARED
+        GLES.cpp
+        Vulkan.cpp ${VULKAN_SOURCES} VulkanShiftDecimator.cpp
+        Tetra.cpp ${TETRA_SOURCES})
 
-target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "osmo-tetra")
+target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" "osmo-tetra")
+
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Werror=return-type")
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
-target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3)
+target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3 vulkan)

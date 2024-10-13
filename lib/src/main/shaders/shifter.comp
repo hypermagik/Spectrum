@@ -1,0 +1,35 @@
+#version 450
+#pragma shader_stage(compute)
+
+precision highp float;
+
+layout (std430) buffer;
+layout (local_size_x_id = 0) in;
+
+layout (set = 0, binding = 0) buffer Input { float inBuffer[]; };
+
+layout (push_constant) uniform PushConstant {
+    int offset;
+    float phi;
+    float omega;
+};
+
+#define M_2PI 6.283185307179586
+
+void main() {
+    int i = int(gl_GlobalInvocationID.x);
+
+    int reIndex = 2 * (i + offset) + 0;
+    int imIndex = 2 * (i + offset) + 1;
+
+    float re = inBuffer[reIndex];
+    float im = inBuffer[imIndex];
+
+    float rotation = mod(phi + omega * float(i), M_2PI);
+
+    float cosA = cos(rotation);
+    float sinA = sin(rotation);
+
+    inBuffer[reIndex] = re * cosA - im * sinA;
+    inBuffer[imIndex] = re * sinA + im * cosA;
+}

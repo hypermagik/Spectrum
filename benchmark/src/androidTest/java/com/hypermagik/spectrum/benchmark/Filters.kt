@@ -8,6 +8,7 @@ import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.dsp.Decimator
 import com.hypermagik.spectrum.lib.dsp.FIR
 import com.hypermagik.spectrum.lib.dsp.Resampler
+import com.hypermagik.spectrum.lib.gpu.GPUAPI
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -99,7 +100,7 @@ class Filters {
 
     @Test
     fun resampler9taps1024to1000() {
-        val uut = Resampler(1024000, 1000000, false, 9)
+        val uut = Resampler(1024000, 1000000, GPUAPI.None, 9)
 
         benchmarkRule.measureRepeated {
             uut.resample(samples, samples)
@@ -108,7 +109,7 @@ class Filters {
 
     @Test
     fun resampler25taps1024to1000() {
-        val uut = Resampler(1024000, 1000000, false, 25)
+        val uut = Resampler(1024000, 1000000, GPUAPI.None, 25)
 
         benchmarkRule.measureRepeated {
             uut.resample(samples, samples)
