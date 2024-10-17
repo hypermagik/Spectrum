@@ -31,25 +31,38 @@ namespace Vulkan::DSP {
         unique_ptrs<Buffer> tapBuffers;
         unique_ptrs<Buffer> inputBuffers;
 
+        static constexpr size_t paramsBufferSize = F2B(2 + 1 + 16);
+
+        std::unique_ptr<Buffer> paramsBuffers[numBuffers];
         std::unique_ptr<Buffer> stagingBuffers[numBuffers];
         std::unique_ptr<Buffer> outputBuffers[numBuffers];
 
+        void *pParamsBuffers[numBuffers];
         void *pStagingBuffers[numBuffers];
         void *pOutputBuffers[numBuffers];
 
         std::unique_ptr<Pipelines::Shifter> shifters[numBuffers];
         unique_ptrs<Pipelines::Decimator> decimators[numBuffers];
 
+        static constexpr size_t numStages = 3;
+
         std::unique_ptr<VulkanFence> fences[numBuffers];
-        std::unique_ptr<VulkanSemaphore> semaphores[numBuffers][2];
-        std::unique_ptr<VulkanCommandBuffer> commandBuffers[numBuffers][3];
+        std::unique_ptr<VulkanSemaphore> semaphores[numBuffers][numStages - 1];
+        std::unique_ptr<VulkanCommandBuffer> commandBuffers[numBuffers][numStages];
 
         bool firstSubmit = true;
+        bool Submit();
 
         struct Counters {
             const bool enable = true;
 
             int counter = 0;
+
+            struct Stage {
+                float timeMin = MAXFLOAT;
+                float timeMax = 0.0f;
+                float timeSum = 0.0f;
+            } stages[numStages];
 
             timespec waitTimestamp[2];
             unsigned long fenceWaitTimeMin = LONG_MAX;

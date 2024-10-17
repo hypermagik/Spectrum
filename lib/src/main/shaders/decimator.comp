@@ -6,13 +6,11 @@ precision highp float;
 layout (std430) buffer;
 layout (local_size_x_id = 0) in;
 
-layout (set = 0, binding = 0) readonly buffer Taps { float taps[]; };
-layout (set = 0, binding = 1) readonly buffer Input { float inBuffer[]; };
-layout (set = 0, binding = 2) writeonly buffer Output { float outBuffer[]; };
-
-layout (push_constant) uniform PushConstants {
-    int offset;
-};
+layout (set = 0, binding = 0) readonly buffer Params { float phi; float omega; int shifterOffset; int offset[16]; };
+layout (set = 0, binding = 1) readonly buffer Taps { float taps[]; };
+layout (set = 0, binding = 2) readonly buffer Input { float inBuffer[]; };
+layout (set = 0, binding = 3) writeonly buffer Output { float outBuffer[]; };
+layout (push_constant) uniform PushConstants { int index; };
 
 void main() {
     int i = int(gl_GlobalInvocationID.x) * 2;
@@ -33,6 +31,6 @@ void main() {
         j += 2;
     }
 
-    outBuffer[i + 2 * offset + 0] = re;
-    outBuffer[i + 2 * offset + 1] = im;
+    outBuffer[i + 2 * offset[index] + 0] = re;
+    outBuffer[i + 2 * offset[index] + 1] = im;
 }

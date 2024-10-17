@@ -5,11 +5,12 @@
 namespace Vulkan::DSP::Pipelines {
     static constexpr const char *SHADER_FILE = "shaders/decimator.comp.spv";
 
-    std::unique_ptr<Decimator> Decimator::create(const Context *context, uint32_t workGroupSize, const Buffer *taps, const Buffer *in) {
-        auto pipeline = std::make_unique<Decimator>(context, workGroupSize);
+    std::unique_ptr<Decimator> Decimator::create(const Context *context, uint32_t workGroupSize, unsigned index,
+                                                 const Buffer *paramsBuffer, const Buffer *tapsBuffer, const Buffer *inBuffer, const Buffer *outBuffer) {
+        auto pipeline = std::make_unique<Decimator>(context, workGroupSize, index);
         const bool success = pipeline->createDescriptorSet() &&
                              pipeline->createComputePipeline(SHADER_FILE) &&
-                             pipeline->updateDescriptorSets(taps, in);
+                             pipeline->updateDescriptorSets(paramsBuffer, tapsBuffer, inBuffer, outBuffer);
         return success ? std::move(pipeline) : nullptr;
     }
 
@@ -36,6 +37,13 @@ namespace Vulkan::DSP::Pipelines {
                         .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
                         .pImmutableSamplers = nullptr,
                 },
+                {
+                        .binding = 3,
+                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                        .descriptorCount = 1,
+                        .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+                        .pImmutableSamplers = nullptr,
+                },
         };
         VK_CHECK(Pipeline::createDescriptorSet(layoutBinding));
         return true;
@@ -51,7 +59,7 @@ namespace Vulkan::DSP::Pipelines {
         return true;
     }
 
-    bool Decimator::updateDescriptorSets(const Buffer *taps, const Buffer *in) {
+    bool Decimator::updateDescriptorSets(const Buffer *paramsBuffer, const Buffer *tapsBuffer, const Buffer *inBuffer, const Buffer *outBuffer) {
         std::vector<VkWriteDescriptorSet> descriptorSet = {
                 {
                         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -62,7 +70,7 @@ namespace Vulkan::DSP::Pipelines {
                         .descriptorCount = 1,
                         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                         .pImageInfo = nullptr,
-                        .pBufferInfo = &taps->descriptor(),
+                        .pBufferInfo = &paramsBuffer->descriptor(),
                         .pTexelBufferView = nullptr,
                 },
                 {
@@ -74,17 +82,9 @@ namespace Vulkan::DSP::Pipelines {
                         .descriptorCount = 1,
                         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                         .pImageInfo = nullptr,
-                        .pBufferInfo = &in->descriptor(),
+                        .pBufferInfo = &tapsBuffer->descriptor(),
                         .pTexelBufferView = nullptr,
-                }
-        };
-        vkUpdateDescriptorSets(context->device(), (uint32_t) descriptorSet.size(), descriptorSet.data(), 0, nullptr);
-
-        return true;
-    }
-
-    void Decimator::setOutput(const Buffer *out, unsigned offset) {
-        std::vector<VkWriteDescriptorSet> descriptorSet = {
+                },
                 {
                         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
                         .pNext = nullptr,
@@ -94,22 +94,31 @@ namespace Vulkan::DSP::Pipelines {
                         .descriptorCount = 1,
                         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                         .pImageInfo = nullptr,
-                        .pBufferInfo = &out->descriptor(),
+                        .pBufferInfo = &inBuffer->descriptor(),
+                        .pTexelBufferView = nullptr,
+                },
+                {
+                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        .pNext = nullptr,
+                        .dstSet = vkDescriptorSet,
+                        .dstBinding = 3,
+                        .dstArrayElement = 0,
+                        .descriptorCount = 1,
+                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                        .pImageInfo = nullptr,
+                        .pBufferInfo = &outBuffer->descriptor(),
                         .pTexelBufferView = nullptr,
                 }
         };
         vkUpdateDescriptorSets(context->device(), (uint32_t) descriptorSet.size(), descriptorSet.data(), 0, nullptr);
 
-        pushConstants.offset = offset;
+        return true;
     }
 
     void Decimator::recordComputeCommands(VkCommandBuffer commandBuffer, size_t numOutputSamples) {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
-
         vkCmdPushConstants(commandBuffer, vkPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(PushConstants), &pushConstants);
-
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipelineLayout, 0, 1, &vkDescriptorSet, 0, nullptr);
-
         vkCmdDispatch(commandBuffer, numOutputSamples / workGroupSize, 1, 1);
     }
 }

@@ -5,20 +5,20 @@
 
 namespace Vulkan::DSP::Pipelines {
     struct Decimator : Pipeline {
-        static std::unique_ptr<Decimator> create(const Context *context, uint32_t workGroupSize, const Buffer *taps, const Buffer *in);
+        static std::unique_ptr<Decimator> create(const Context *context, uint32_t workGroupSize, unsigned index,
+                                                 const Buffer *paramsBuffer, const Buffer *tapsBuffer, const Buffer *inBuffer, const Buffer *outBuffer);
 
-        Decimator(const Context *context, uint32_t workGroupSize) : Pipeline(context, workGroupSize), pushConstants{0} {}
+        Decimator(const Context *context, uint32_t workGroupSize, unsigned index) : Pipeline(context, workGroupSize), pushConstants{index} {}
 
-        void setOutput(const Buffer *out, unsigned offset);
         void recordComputeCommands(VkCommandBuffer commandBuffer, size_t numOutputSamples);
 
     protected:
         bool createDescriptorSet();
         bool createComputePipeline(const char *shader);
-        bool updateDescriptorSets(const Buffer *taps, const Buffer *in);
+        bool updateDescriptorSets(const Buffer *paramsBuffer, const Buffer *tapsBuffer, const Buffer *inBuffer, const Buffer *outBuffer);
 
         struct PushConstants {
-            unsigned offset;
+            unsigned index;
         } pushConstants [[gnu::packed]];
     };
 }

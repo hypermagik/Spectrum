@@ -5,11 +5,11 @@
 namespace Vulkan::DSP::Pipelines {
     static constexpr const char *SHADER_FILE = "shaders/shifter.comp.spv";
 
-    std::unique_ptr<Shifter> Shifter::create(const Context *context, uint32_t workGroupSize, const Buffer *buffer, unsigned offset) {
-        auto pipeline = std::make_unique<Shifter>(context, workGroupSize, offset);
+    std::unique_ptr<Shifter> Shifter::create(const Context *context, uint32_t workGroupSize, const Buffer *paramsBuffer, const Buffer *inoutBuffer) {
+        auto pipeline = std::make_unique<Shifter>(context, workGroupSize);
         const bool success = pipeline->createDescriptorSet() &&
                              pipeline->createComputePipeline(SHADER_FILE) &&
-                             pipeline->updateDescriptorSets(buffer);
+                             pipeline->updateDescriptorSets(paramsBuffer, inoutBuffer);
         return success ? std::move(pipeline) : nullptr;
     }
 
@@ -22,22 +22,24 @@ namespace Vulkan::DSP::Pipelines {
                         .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
                         .pImmutableSamplers = nullptr,
                 },
+                {
+                        .binding = 1,
+                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                        .descriptorCount = 1,
+                        .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
+                        .pImmutableSamplers = nullptr,
+                },
         };
         VK_CHECK(Pipeline::createDescriptorSet(layoutBinding));
         return true;
     }
 
     bool Shifter::createComputePipeline(const char *shader) {
-        const VkPushConstantRange pushConstantRange = {
-                .stageFlags = VK_SHADER_STAGE_COMPUTE_BIT,
-                .offset = 0,
-                .size = sizeof(PushConstants),
-        };
-        VK_CHECK(Pipeline::createComputePipeline(shader, &pushConstantRange));
+        VK_CHECK(Pipeline::createComputePipeline(shader, nullptr));
         return true;
     }
 
-    bool Shifter::updateDescriptorSets(const Buffer *buffer) {
+    bool Shifter::updateDescriptorSets(const Buffer *paramsBuffer, const Buffer *inoutBuffer) {
         std::vector<VkWriteDescriptorSet> descriptorSet = {
                 {
                         .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
@@ -48,7 +50,19 @@ namespace Vulkan::DSP::Pipelines {
                         .descriptorCount = 1,
                         .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
                         .pImageInfo = nullptr,
-                        .pBufferInfo = &buffer->descriptor(),
+                        .pBufferInfo = &paramsBuffer->descriptor(),
+                        .pTexelBufferView = nullptr,
+                },
+                {
+                        .sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET,
+                        .pNext = nullptr,
+                        .dstSet = vkDescriptorSet,
+                        .dstBinding = 1,
+                        .dstArrayElement = 0,
+                        .descriptorCount = 1,
+                        .descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
+                        .pImageInfo = nullptr,
+                        .pBufferInfo = &inoutBuffer->descriptor(),
                         .pTexelBufferView = nullptr,
                 }
         };
@@ -56,15 +70,9 @@ namespace Vulkan::DSP::Pipelines {
         return true;
     }
 
-    void Shifter::recordComputeCommands(VkCommandBuffer commandBuffer, size_t numSamples, float phi, float omega) {
+    void Shifter::recordComputeCommands(VkCommandBuffer commandBuffer, size_t numSamples) {
         vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipeline);
-
-        pushConstants.phi = phi;
-        pushConstants.omega = omega;
-        vkCmdPushConstants(commandBuffer, vkPipelineLayout, VK_SHADER_STAGE_COMPUTE_BIT, 0, sizeof(PushConstants), &pushConstants);
-
         vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, vkPipelineLayout, 0, 1, &vkDescriptorSet, 0, nullptr);
-
         vkCmdDispatch(commandBuffer, numSamples / workGroupSize, 1, 1);
     }
 }

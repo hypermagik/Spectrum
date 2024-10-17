@@ -17,6 +17,7 @@ namespace Vulkan {
         Context(AAssetManager *assetManager) : assetManager(assetManager) {}
 
         VkDevice device() const { return vkDevice; }
+        VkQueue queue(size_t index) const { return vkQueues.at(index); }
         VkQueryPool queryPool() const { return vkQueryPool; }
         VkCommandPool commandPool() const { return vkCommandPool; }
         VkDescriptorPool descriptorPool() const { return vkDescriptorPool; }
@@ -31,7 +32,7 @@ namespace Vulkan {
         bool createCommandBuffer(VkCommandBuffer *commandBuffer) const;
 
         static bool beginCommandBuffer(VkCommandBuffer *commandBuffer);
-        bool endAndSubmitCommandBuffer(VkCommandBuffer commandBuffer, VkSemaphore *waitSemaphore, VkSemaphore *signalSemaphore, VkFence fence, size_t queueIndex) const;
+        bool submitCommandBuffer(VkCommandBuffer commandBuffer, VkFence fence, size_t queueIndex) const;
         bool queueWaitIdle(size_t queueIndex) const;
 
         static void addStageBarrier(VkCommandBuffer *commandBuffer, VkPipelineStageFlags stageFlags);
@@ -50,7 +51,7 @@ namespace Vulkan {
         uint32_t instanceVersion = 0;
         VulkanInstance vkInstance;
 
-        VkPhysicalDevice vkPhysicalDevice = VK_NULL_HANDLE;
+        VkPhysicalDevice vkPhysicalDevice { VK_NULL_HANDLE };
         VkPhysicalDeviceProperties vkPhysicalDeviceProperties;
         VkPhysicalDeviceMemoryProperties vkPhysicalDeviceMemoryProperties;
 
@@ -60,7 +61,7 @@ namespace Vulkan {
 
         VulkanDevice vkDevice;
         std::vector<VkQueue> vkQueues;
-        VkQueryPool vkQueryPool;
+        VkQueryPool vkQueryPool { VK_NULL_HANDLE };
         VulkanDescriptorPool vkDescriptorPool { VK_NULL_HANDLE };
         VulkanCommandPool vkCommandPool { VK_NULL_HANDLE };
    };

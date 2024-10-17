@@ -168,7 +168,7 @@ namespace Vulkan {
                     .sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO,
                     .pNext = nullptr,
                     .queryType = VK_QUERY_TYPE_TIMESTAMP,
-                    .queryCount = 256,
+                    .queryCount = 32,
             };
             vkCreateQueryPool(vkDevice, &queryPoolCreateInfo, nullptr, &vkQueryPool);
         }
@@ -182,14 +182,16 @@ namespace Vulkan {
         const std::vector<VkDescriptorPoolSize> poolSizes = {
                 {
                         .type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER,
-                        .descriptorCount = 1 /* shifter */ + 2 * 16 /* decimator in+out */ + 16 /* buffer update */,
+                        .descriptorCount = 2 * 2 /* 2 x shifter x params+in/out */ +
+                                           2 * 16 * 4 /* 2 x 16 decimators x params+taps+in+out */,
                 },
         };
         const VkDescriptorPoolCreateInfo poolCreateInfo = {
                 .sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO,
                 .pNext = nullptr,
                 .flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT,
-                .maxSets = 1 /* shifter */ + 16 /* decimators */ + 16 /* buffer updates */,
+                .maxSets = 2 /* shifter */ +
+                           2 * 16 /* decimators */,
                 .poolSizeCount = (uint32_t) poolSizes.size(),
                 .pPoolSizes = poolSizes.data(),
         };
@@ -339,7 +341,7 @@ namespace Vulkan {
         const VkCommandBufferBeginInfo beginInfo = {
                 .sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO,
                 .pNext = nullptr,
-                .flags = VK_COMMAND_BUFFER_USAGE_ONE_TIME_SUBMIT_BIT,
+                .flags = 0,
                 .pInheritanceInfo = nullptr,
         };
         VK_CALL(vkBeginCommandBuffer, *commandBuffer, &beginInfo);
@@ -347,30 +349,25 @@ namespace Vulkan {
         return true;
     }
 
-    bool Context::endAndSubmitCommandBuffer(VkCommandBuffer commandBuffer, VkSemaphore *waitSemaphore, VkSemaphore *signalSemaphore, VkFence fence,
-                                            size_t queueIndex) const {
-        VK_CALL(vkEndCommandBuffer, commandBuffer);
-
-        VkPipelineStageFlags stageFlags[] = {VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT};
-
+    bool Context::submitCommandBuffer(VkCommandBuffer commandBuffer, VkFence fence, size_t queueIndex) const {
         const VkSubmitInfo submitInfo = {
                 .sType = VK_STRUCTURE_TYPE_SUBMIT_INFO,
                 .pNext = nullptr,
-                .waitSemaphoreCount = waitSemaphore == nullptr ? 0 : 1u,
-                .pWaitSemaphores = waitSemaphore,
-                .pWaitDstStageMask = stageFlags,
+                .waitSemaphoreCount = 0,
+                .pWaitSemaphores = nullptr,
+                .pWaitDstStageMask = nullptr,
                 .commandBufferCount = 1,
                 .pCommandBuffers = &commandBuffer,
-                .signalSemaphoreCount = signalSemaphore == nullptr ? 0 : 1u,
-                .pSignalSemaphores = signalSemaphore,
+                .signalSemaphoreCount = 0,
+                .pSignalSemaphores = nullptr,
         };
-        VK_CALL(vkQueueSubmit, vkQueues[queueIndex % vkQueues.size()], 1, &submitInfo, fence);
+        VK_CALL(vkQueueSubmit, vkQueues.at(queueIndex), 1, &submitInfo, fence);
 
         return true;
     }
 
     bool Context::queueWaitIdle(size_t queueIndex) const {
-        VK_CALL(vkQueueWaitIdle, vkQueues[queueIndex % vkQueues.size()]);
+        VK_CALL(vkQueueWaitIdle, vkQueues.at(queueIndex));
         return true;
     }
 }

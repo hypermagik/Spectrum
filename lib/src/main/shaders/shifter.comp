@@ -6,21 +6,16 @@ precision highp float;
 layout (std430) buffer;
 layout (local_size_x_id = 0) in;
 
-layout (set = 0, binding = 0) buffer Input { float inBuffer[]; };
-
-layout (push_constant) uniform PushConstant {
-    int offset;
-    float phi;
-    float omega;
-};
+layout (set = 0, binding = 0) buffer Params { float phi; float omega; int shifterOffset; int offset[16]; };
+layout (set = 0, binding = 1) buffer Input { float inBuffer[]; };
 
 #define M_2PI 6.283185307179586
 
 void main() {
     int i = int(gl_GlobalInvocationID.x);
 
-    int reIndex = 2 * (i + offset) + 0;
-    int imIndex = 2 * (i + offset) + 1;
+    int reIndex = 2 * (i + shifterOffset) + 0;
+    int imIndex = 2 * (i + shifterOffset) + 1;
 
     float re = inBuffer[reIndex];
     float im = inBuffer[imIndex];
