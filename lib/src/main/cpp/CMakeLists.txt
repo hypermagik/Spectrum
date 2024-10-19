@@ -32,9 +32,16 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         Vulkan.cpp ${VULKAN_SOURCES} VulkanShiftDecimator.cpp
         Tetra.cpp ${TETRA_SOURCES})
 
+# Additional include directories.
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" "osmo-tetra")
 
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Werror=return-type")
+# Treat most warnings as errors.
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wall" "-Werror")
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-variable")
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-but-set-variable")
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-const-variable")
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-function")
+target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-label")
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this

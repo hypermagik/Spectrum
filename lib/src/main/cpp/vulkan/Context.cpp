@@ -100,23 +100,22 @@ namespace Vulkan {
             vkGetPhysicalDeviceQueueFamilyProperties(device, &numQueueFamilies, queueFamilies.data());
 
             uint32_t computeQFI = 0;
-            bool hasQFI = false;
+            uint32_t queueCount = 0;
 
             for (uint32_t i = 0; i < queueFamilies.size(); i++) {
-                if (queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) {
+                if ((queueFamilies[i].queueFlags & VK_QUEUE_COMPUTE_BIT) != 0 && queueFamilies[i].queueCount > queueCount) {
                     computeQFI = i;
-                    hasQFI = true;
-                    break;
+                    queueCount = queueFamilies[i].queueCount;
                 }
             }
 
-            if (!hasQFI) {
+            if (queueCount == 0) {
                 continue;
             }
 
             vkPhysicalDevice = device;
             queueFamilyIndex = computeQFI;
-            vkQueues.resize(std::min(maxQueueCount, queueFamilies[computeQFI].queueCount), VK_NULL_HANDLE);
+            vkQueues.resize(std::min(maxQueueCount, queueCount), VK_NULL_HANDLE);
             break;
         }
 
