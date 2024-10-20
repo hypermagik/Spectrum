@@ -1,6 +1,7 @@
 package com.hypermagik.spectrum.demodulator
 
 import android.util.Log
+import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.data.Complex32
 import com.hypermagik.spectrum.lib.data.Complex32Array
 import com.hypermagik.spectrum.lib.data.SampleBuffer
@@ -9,22 +10,21 @@ import com.hypermagik.spectrum.lib.dsp.Deemphasis
 import com.hypermagik.spectrum.lib.dsp.Delay
 import com.hypermagik.spectrum.lib.dsp.FIR
 import com.hypermagik.spectrum.lib.dsp.FIRC
-import com.hypermagik.spectrum.lib.loop.PLL
 import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.Shifter
 import com.hypermagik.spectrum.lib.dsp.Taps
 import com.hypermagik.spectrum.lib.dsp.Utils.Companion.toRadians
-import com.hypermagik.spectrum.lib.gpu.GPUAPI
+import com.hypermagik.spectrum.lib.loop.PLL
 import com.hypermagik.spectrum.utils.TAG
 
-class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean, private val gpuAPI: GPUAPI) : Demodulator {
+class WFM(private val preferences: Preferences) : Demodulator {
     private var sampleRate = 1000000
     private var shiftFrequency = 0.0f
 
     private val quadratureRate = 250000
     private val quadratureDeviation = 75000
 
-    private var resampler = Resampler(sampleRate, quadratureRate, gpuAPI)
+    private var resampler = Resampler(sampleRate, quadratureRate, preferences.demodulatorGPUAPI)
     private var quadrature = Quadrature(quadratureRate, quadratureDeviation)
     private var lowPassFIR = FIR(Taps.halfBand(), 2, true)
 
@@ -59,11 +59,11 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean,
     override fun getOutputName(output: Int): String = outputs[output]!!
 
     init {
-        if (audio) {
+        if (preferences.demodulatorAudio) {
             audioSink = AudioSink(31250, 0.5f)
         }
 
-        if (rds) {
+        if (preferences.demodulatorRDS) {
             rdsDemodulator = RDS(quadratureRate)
         }
     }
@@ -94,7 +94,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean,
             sampleRate = buffer.sampleRate
 
             resampler.close()
-            resampler = Resampler(sampleRate, quadratureRate, gpuAPI)
+            resampler = Resampler(sampleRate, quadratureRate, preferences.demodulatorGPUAPI)
             resampler.setShiftFrequency(-shiftFrequency)
         }
 
@@ -118,7 +118,7 @@ class WFM(private val audio: Boolean, private val stereo: Boolean, rds: Boolean,
             observe(buffer, true)
         }
 
-        if (audio && stereo) {
+        if (preferences.demodulatorAudio && preferences.demodulatorStereo) {
             if (buffers[0].size < buffer.sampleCount) {
                 buffers = arrayOf(
                     Complex32Array(buffer.sampleCount) { Complex32() },

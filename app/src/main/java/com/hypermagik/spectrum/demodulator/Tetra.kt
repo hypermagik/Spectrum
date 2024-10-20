@@ -1,29 +1,31 @@
 package com.hypermagik.spectrum.demodulator
 
+import android.util.Log
+import com.hypermagik.spectrum.Preferences
 import com.hypermagik.spectrum.lib.clock.FD
 import com.hypermagik.spectrum.lib.data.SampleBuffer
 import com.hypermagik.spectrum.lib.digital.BitUnpacker
 import com.hypermagik.spectrum.lib.digital.DQPSK
 import com.hypermagik.spectrum.lib.digital.Tetra
-import com.hypermagik.spectrum.lib.dsp.FastAGC
-import com.hypermagik.spectrum.lib.loop.Costas
 import com.hypermagik.spectrum.lib.dsp.FIR
-import com.hypermagik.spectrum.lib.loop.FLL
+import com.hypermagik.spectrum.lib.dsp.FastAGC
 import com.hypermagik.spectrum.lib.dsp.Resampler
 import com.hypermagik.spectrum.lib.dsp.RootRaisedCosine
-import com.hypermagik.spectrum.lib.dsp.Shifter
+import com.hypermagik.spectrum.lib.loop.Costas
+import com.hypermagik.spectrum.lib.loop.FLL
+import com.hypermagik.spectrum.utils.TAG
 import java.util.Locale
 import kotlin.math.PI
 
-class Tetra : Demodulator {
+class Tetra(private val preferences: Preferences) : Demodulator {
     private var sampleRate = 1000000
     private var channelSampleRate = 36000
+    private var shiftFrequency = 0.0f
 
     private var symbolRate = 18000
     private val samplesPerSymbol = channelSampleRate / symbolRate
 
-    private var shifter = Shifter(sampleRate, 0.0f)
-    private var resampler = Resampler(sampleRate, channelSampleRate)
+    private var resampler = Resampler(sampleRate, channelSampleRate, preferences.demodulatorGPUAPI)
     private val agc = FastAGC(2.0f, 1e6f, 0.02f)
     private val fll = FLL(samplesPerSymbol, 0.006f, -PI.toFloat() / 2, PI.toFloat() / 2, 65, 0.35f)
     private val rrc = FIR(RootRaisedCosine.make(samplesPerSymbol, 65, 0.35f))
@@ -61,7 +63,8 @@ class Tetra : Demodulator {
     override fun getChannelBandwidth(): Int = channelSampleRate
 
     override fun setFrequency(frequency: Long) {
-        shifter.update(-frequency.toFloat())
+        shiftFrequency = frequency.toFloat()
+        resampler.setShiftFrequency(-shiftFrequency)
     }
 
     override fun start() {
@@ -70,6 +73,7 @@ class Tetra : Demodulator {
 
     override fun stop() {
         stack.stop()
+        resampler.close()
     }
 
     override fun demodulate(buffer: SampleBuffer, output: Int, observe: (samples: SampleBuffer, preserveSamples: Boolean) -> Unit) {
@@ -78,16 +82,17 @@ class Tetra : Demodulator {
         }
 
         if (sampleRate != buffer.sampleRate) {
+            Log.d(TAG, "Sample rate changed from $sampleRate to ${buffer.sampleRate}")
             sampleRate = buffer.sampleRate
-            shifter = Shifter(sampleRate, shifter.frequency)
-            resampler = Resampler(sampleRate, channelSampleRate)
-        }
 
-        shifter.shift(buffer.samples, buffer.samples)
-        buffer.frequency += -shifter.frequency.toLong()
+            resampler.close()
+            resampler = Resampler(sampleRate, channelSampleRate, preferences.demodulatorGPUAPI)
+            resampler.setShiftFrequency(-shiftFrequency)
+        }
 
         buffer.sampleCount = resampler.resample(buffer.samples, buffer.samples, buffer.sampleCount)
         buffer.sampleRate = resampler.outputSampleRate
+        buffer.frequency -= shiftFrequency.toLong()
 
         if (output == 1) {
             observe(buffer, true)

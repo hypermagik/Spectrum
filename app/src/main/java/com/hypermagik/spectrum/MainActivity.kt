@@ -149,16 +149,10 @@ class MainActivity : AppCompatActivity() {
     private fun createDemodulator() {
         demodulator = when (preferences.demodulatorType) {
             DemodulatorType.None -> null
-            DemodulatorType.AM -> AM(preferences.demodulatorAudio)
-            DemodulatorType.FM -> FM(preferences.demodulatorAudio)
-            DemodulatorType.WFM -> WFM(
-                preferences.demodulatorAudio,
-                preferences.demodulatorStereo,
-                preferences.demodulatorRDS,
-                preferences.demodulatorGPUAPI
-            )
-
-            DemodulatorType.Tetra -> Tetra()
+            DemodulatorType.AM -> AM(preferences)
+            DemodulatorType.FM -> FM(preferences)
+            DemodulatorType.WFM -> WFM(preferences)
+            DemodulatorType.Tetra -> Tetra(preferences)
         }
     }
 
