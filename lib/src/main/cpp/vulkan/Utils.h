@@ -16,6 +16,14 @@
         }                                                                       \
     } while (0)
 
+#define VK_CHECK_NULL(condition)                                                \
+    do {                                                                        \
+        if (!(condition)) {                                                     \
+            LOGE("Check failed at %s:%u - %s", __FILE__, __LINE__, #condition); \
+            return nullptr;                                                     \
+        }                                                                       \
+    } while (0)
+
 #define VK_CALL(vkMethod, ...)                                                                            \
     do {                                                                                                  \
         auto _result = vkMethod(__VA_ARGS__);                                                             \

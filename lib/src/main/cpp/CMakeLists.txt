@@ -11,6 +11,14 @@ cmake_minimum_required(VERSION 3.22.1)
 # build script scope).
 project("spectrum")
 
+# Treat most warnings as errors.
+add_compile_options("-Wall" "-Werror")
+add_compile_options("-Wno-unused-variable")
+add_compile_options("-Wno-unused-but-set-variable")
+add_compile_options("-Wno-unused-const-variable")
+add_compile_options("-Wno-unused-function")
+add_compile_options("-Wno-unused-label")
+
 # Creates and names a library, sets it as either STATIC
 # or SHARED, and provides the relative paths to its source code.
 # You can define multiple libraries, and CMake builds them for you.
@@ -29,24 +37,26 @@ file(GLOB_RECURSE TETRA_SOURCES osmo-tetra/*.c)
 
 add_library(${CMAKE_PROJECT_NAME} SHARED
         GLES.cpp
-        Vulkan.cpp ${VULKAN_SOURCES} VulkanShiftDecimator.cpp
+        Vulkan.cpp VulkanShiftDecimator.cpp ${VULKAN_SOURCES}
         Tetra.cpp ${TETRA_SOURCES})
 
 # Disable Vulkan prototypes.
 target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE "VK_NO_PROTOTYPES")
-
 # Additional include directories.
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" "osmo-tetra")
-
-# Treat most warnings as errors.
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wall" "-Werror")
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-variable")
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-but-set-variable")
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-const-variable")
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-function")
-target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-label")
 
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
-target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3)
+target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3 vulkan-loader)
+
+# Vulkan loader.
+add_library(vulkan-loader SHARED vulkan-loader/Loader.cpp)
+target_link_libraries(vulkan-loader android log)
+
+# Vulkan loader hook.
+if (CMAKE_ANDROID_ARCH STREQUAL "arm64")
+    add_library(vulkan-loader-hook SHARED vulkan-loader/Hook.c)
+    target_link_libraries(vulkan-loader-hook android log vulkan-loader)
+    target_link_options(vulkan-loader-hook PRIVATE -z global)
+endif()
