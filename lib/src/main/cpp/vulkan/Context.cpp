@@ -82,6 +82,8 @@ namespace Vulkan {
         };
         VK_CALL(vkCreateInstance, &createInfo, nullptr, vkInstance);
 
+        VK_CHECK(initializePFN((VkInstance) vkInstance));
+
         return true;
     }
 

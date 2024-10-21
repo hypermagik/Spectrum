@@ -32,6 +32,9 @@ add_library(${CMAKE_PROJECT_NAME} SHARED
         Vulkan.cpp ${VULKAN_SOURCES} VulkanShiftDecimator.cpp
         Tetra.cpp ${TETRA_SOURCES})
 
+# Disable Vulkan prototypes.
+target_compile_definitions(${CMAKE_PROJECT_NAME} PRIVATE "VK_NO_PROTOTYPES")
+
 # Additional include directories.
 target_include_directories(${CMAKE_PROJECT_NAME} PRIVATE "${CMAKE_SOURCE_DIR}" "osmo-tetra")
 
@@ -46,4 +49,4 @@ target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE "-Wno-unused-label")
 # Specifies libraries CMake should link to your target library. You
 # can link libraries from various origins, such as libraries defined in this
 # build script, prebuilt third-party libraries, or Android system libraries.
-target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3 vulkan)
+target_link_libraries(${CMAKE_PROJECT_NAME} android log EGL GLESv3)
