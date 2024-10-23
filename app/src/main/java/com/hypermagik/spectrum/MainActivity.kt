@@ -40,7 +40,7 @@ import com.hypermagik.spectrum.utils.TAG
 import java.text.DecimalFormat
 import kotlin.concurrent.thread
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
     private lateinit var binding: ActivityMainBinding
     private lateinit var toast: Toast
     private lateinit var analyzerFrame: FrameLayout
@@ -460,7 +460,28 @@ class MainActivity : AppCompatActivity() {
         } else if (item.itemId == R.id.menu_recorder_settings) {
             showRecorderSettings()
         }
+
+        if (item.groupId == R.id.menu_demodulator_settings_group ||
+            item.groupId == R.id.menu_fft_size_group ||
+            item.groupId == R.id.menu_fft_window_group ||
+            item.groupId == R.id.menu_peak_hold_group ||
+            item.groupId == R.id.menu_peak_hold_decay_group ||
+            item.groupId == R.id.menu_wf_speed_group ||
+            item.groupId == R.id.menu_wf_colormap_group) {
+            return keepMenuOpen(item)
+        }
+
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun onMenuItemActionExpand(p0: MenuItem): Boolean = false
+    override fun onMenuItemActionCollapse(p0: MenuItem): Boolean = false
+
+    private fun keepMenuOpen(item: MenuItem): Boolean {
+        item.setShowAsAction(MenuItem.SHOW_AS_ACTION_COLLAPSE_ACTION_VIEW)
+        item.setActionView(analyzer.view)
+        item.setOnActionExpandListener(this)
+        return false
     }
 
     private fun openIQFile() {

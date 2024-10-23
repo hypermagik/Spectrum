@@ -3,7 +3,7 @@
     <item
         android:enabled="false"
         android:title="@string/menu_demodulator_wfm_settings" />
-    <group android:id="@+id/demodulator_group">
+    <group android:id="@+id/menu_demodulator_settings_group">
         <item
             android:id="@+id/menu_demodulator_audio_output"
             android:checkable="true"
