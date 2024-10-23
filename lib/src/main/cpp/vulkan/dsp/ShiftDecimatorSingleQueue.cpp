@@ -16,7 +16,7 @@ namespace Vulkan::DSP {
             auto buffer = Buffer::create(
                     context, F2B(taps[i].size()),
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK(buffer != nullptr);
             buffer->copyFrom(taps[i].data(), 0, F2B(taps[i].size()));
             tapBuffers.emplace_back(std::move(buffer));
@@ -24,7 +24,7 @@ namespace Vulkan::DSP {
             buffer = Buffer::create(
                     context, S2B(taps[i].size() - 1 + (MAX_SAMPLE_ARRAY_SIZE >> i)),
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | (i == 0 ? VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT : 0));
             VK_CHECK(buffer != nullptr);
             inputBuffers.emplace_back(std::move(buffer));
         }
@@ -32,13 +32,13 @@ namespace Vulkan::DSP {
         paramsBuffer = Buffer::create(
                 context, paramsBufferSize,
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         VK_CHECK(paramsBuffer != nullptr);
 
         outputBuffer = Buffer::create(
                 context, S2B(MAX_SAMPLE_ARRAY_SIZE >> tapBuffers.size()),
                 VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_CACHED_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
         VK_CHECK(outputBuffer != nullptr);
 
         shifter = Pipelines::Shifter::create(context, groupSize, paramsBuffer.get(), inputBuffers[0].get());
@@ -98,6 +98,7 @@ namespace Vulkan::DSP {
         }
 
         memcpy(pInputBuffer, samples, S2B(sampleCount));
+        inputBuffers[0]->flush(BOF(tapBuffers[0]), S2B(sampleCount));
 
         // Stage 1 - shifter and first decimator.
         if (commandBuffers[bufferIndex][0] == nullptr) {

@@ -16,7 +16,7 @@ namespace Vulkan::DSP {
             auto buffer = Buffer::create(
                     context, F2B(taps[i].size()),
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK(buffer != nullptr);
             buffer->copyFrom(taps[i].data(), 0, F2B(taps[i].size()));
             tapBuffers.emplace_back(std::move(buffer));
@@ -33,13 +33,13 @@ namespace Vulkan::DSP {
             paramsBuffers[i] = Buffer::create(
                     context, paramsBufferSize,
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK(paramsBuffers[i] != nullptr);
 
             stagingBuffers[i] = Buffer::create(
                     context, S2B(MAX_SAMPLE_ARRAY_SIZE),
                     VK_BUFFER_USAGE_STORAGE_BUFFER_BIT | VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
-                    VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
+                    VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT | VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT);
             VK_CHECK(stagingBuffers[i] != nullptr);
 
             outputBuffers[i] = Buffer::create(
