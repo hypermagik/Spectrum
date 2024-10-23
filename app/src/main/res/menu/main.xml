@@ -28,7 +28,9 @@
     <group
         android:id="@+id/source_group"
         android:orderInCategory="11">
-        <item android:title="@string/source">
+        <item
+            android:id="@+id/menu_source"
+            android:title="@string/source">
             <menu>
                 <group
                     android:id="@+id/menu_source_type_group"
@@ -52,7 +54,9 @@
     <group
         android:id="@+id/demodulator_group"
         android:orderInCategory="21">
-        <item android:title="@string/menu_demodulator">
+        <item
+            android:id="@+id/menu_demodulator"
+            android:title="@string/menu_demodulator">
             <menu>
                 <group
                     android:id="@+id/menu_demodulator_group"
@@ -95,68 +99,217 @@
             </menu>
         </item>
     </group>
-    <item
-        android:orderInCategory="91"
-        android:title="@string/frequency_step"
-        app:showAsAction="never">
-        <menu>
-            <group
-                android:id="@+id/menu_frequency_step_group"
-                android:checkableBehavior="single">
+    <group
+        android:id="@+id/settings_group"
+        android:orderInCategory="31">
+        <item
+            android:title="@string/menu_fft"
+            app:showAsAction="never">
+            <menu>
                 <item
-                    android:id="@+id/menu_fstep_1"
-                    android:title="@string/menu_fstep_1" />
+                    android:enabled="false"
+                    android:title="@string/menu_fft_size" />
+                <group
+                    android:id="@+id/menu_fft_size_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_fft_256"
+                        android:title="@string/menu_fft_256" />
+                    <item
+                        android:id="@+id/menu_fft_512"
+                        android:title="@string/menu_fft_512" />
+                    <item
+                        android:id="@+id/menu_fft_1024"
+                        android:title="@string/menu_fft_1024" />
+                    <item
+                        android:id="@+id/menu_fft_2048"
+                        android:title="@string/menu_fft_2048" />
+                    <item
+                        android:id="@+id/menu_fft_4096"
+                        android:title="@string/menu_fft_4096" />
+                    <item
+                        android:id="@+id/menu_fft_8192"
+                        android:title="@string/menu_fft_8192" />
+                    <item
+                        android:id="@+id/menu_fft_16384"
+                        android:title="@string/menu_fft_16384" />
+                </group>
                 <item
-                    android:id="@+id/menu_fstep_10"
-                    android:title="@string/menu_fstep_10" />
+                    android:enabled="false"
+                    android:title="@string/menu_fft_window" />
+                <group
+                    android:id="@+id/menu_fft_window_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_fft_flat_top"
+                        android:title="@string/menu_fft_flat_top" />
+                    <item
+                        android:id="@+id/menu_fft_blackman_harris"
+                        android:title="@string/menu_fft_blackman_harris" />
+                    <item
+                        android:id="@+id/menu_fft_hamming"
+                        android:title="@string/menu_fft_hamming" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:title="@string/menu_peak_hold"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/menu_peak_hold_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_peak_hold"
+                        android:checkable="true"
+                        android:title="@string/menu_peak_hold" />
+                    <item
+                        android:id="@+id/menu_peak_indicator"
+                        android:checkable="true"
+                        android:title="@string/menu_peak_indicator" />
+                </group>
                 <item
-                    android:id="@+id/menu_fstep_100"
-                    android:title="@string/menu_fstep_100" />
+                    android:enabled="false"
+                    android:title="@string/menu_peak_hold_decay" />
+                <group
+                    android:id="@+id/menu_peak_hold_decay_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_10"
+                        android:title="@string/menu_peak_hold_decay_10" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_20"
+                        android:title="@string/menu_peak_hold_decay_20" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_30"
+                        android:title="@string/menu_peak_hold_decay_30" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_40"
+                        android:title="@string/menu_peak_hold_decay_40" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_50"
+                        android:title="@string/menu_peak_hold_decay_50" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_60"
+                        android:title="@string/menu_peak_hold_decay_60" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_70"
+                        android:title="@string/menu_peak_hold_decay_70" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_80"
+                        android:title="@string/menu_peak_hold_decay_80" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_90"
+                        android:title="@string/menu_peak_hold_decay_90" />
+                    <item
+                        android:id="@+id/menu_peak_hold_decay_100"
+                        android:title="@string/menu_peak_hold_decay_100" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:title="@string/menu_wf"
+            app:showAsAction="never">
+            <menu>
                 <item
-                    android:id="@+id/menu_fstep_1000"
-                    android:title="@string/menu_fstep_1000" />
+                    android:enabled="false"
+                    android:title="@string/menu_wf_speed" />
+                <group
+                    android:id="@+id/menu_wf_speed_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_wf_speed_1x"
+                        android:title="@string/menu_wf_speed_1x" />
+                    <item
+                        android:id="@+id/menu_wf_speed_2x"
+                        android:title="@string/menu_wf_speed_2x" />
+                    <item
+                        android:id="@+id/menu_wf_speed_4x"
+                        android:title="@string/menu_wf_speed_4x" />
+                </group>
                 <item
-                    android:id="@+id/menu_fstep_10000"
-                    android:title="@string/menu_fstep_10000" />
-                <item
-                    android:id="@+id/menu_fstep_100000"
-                    android:title="@string/menu_fstep_100000" />
-            </group>
-        </menu>
-    </item>
-    <item
-        android:orderInCategory="92"
-        android:title="@string/fps_limit"
-        app:showAsAction="never">
-        <menu>
-            <group
-                android:id="@+id/menu_fps_limit_group"
-                android:checkableBehavior="single">
-                <item
-                    android:id="@+id/menu_fps_10"
-                    android:title="@string/menu_fps_10" />
-                <item
-                    android:id="@+id/menu_fps_20"
-                    android:title="@string/menu_fps_20" />
-                <item
-                    android:id="@+id/menu_fps_30"
-                    android:title="@string/menu_fps_30" />
-                <item
-                    android:id="@+id/menu_fps_60"
-                    android:title="@string/menu_fps_60" />
-                <item
-                    android:id="@+id/menu_fps_120"
-                    android:title="@string/menu_fps_120" />
-                <item
-                    android:id="@+id/menu_fps_unlimited"
-                    android:title="@string/menu_fps_unlimited" />
-            </group>
-        </menu>
-    </item>
-    <group android:id="@+id/settings_group">
+                    android:enabled="false"
+                    android:title="@string/menu_wf_colormap" />
+                <group
+                    android:id="@+id/menu_wf_colormap_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_wf_colormap_classic"
+                        android:title="@string/menu_wf_colormap_classic" />
+                    <item
+                        android:id="@+id/menu_wf_colormap_classic_green"
+                        android:title="@string/menu_wf_colormap_classic_green" />
+                    <item
+                        android:id="@+id/menu_wf_colormap_gqrx"
+                        android:title="@string/menu_wf_colormap_gqrx" />
+                    <item
+                        android:id="@+id/menu_wf_colormap_vivid"
+                        android:title="@string/menu_wf_colormap_vivid" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:title="@string/frequency_step"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/menu_frequency_step_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_fstep_1"
+                        android:title="@string/menu_fstep_1" />
+                    <item
+                        android:id="@+id/menu_fstep_10"
+                        android:title="@string/menu_fstep_10" />
+                    <item
+                        android:id="@+id/menu_fstep_100"
+                        android:title="@string/menu_fstep_100" />
+                    <item
+                        android:id="@+id/menu_fstep_1000"
+                        android:title="@string/menu_fstep_1000" />
+                    <item
+                        android:id="@+id/menu_fstep_10000"
+                        android:title="@string/menu_fstep_10000" />
+                    <item
+                        android:id="@+id/menu_fstep_100000"
+                        android:title="@string/menu_fstep_100000" />
+                </group>
+            </menu>
+        </item>
+        <item
+            android:title="@string/fps_limit"
+            app:showAsAction="never">
+            <menu>
+                <group
+                    android:id="@+id/menu_fps_limit_group"
+                    android:checkableBehavior="single">
+                    <item
+                        android:id="@+id/menu_fps_10"
+                        android:title="@string/menu_fps_10" />
+                    <item
+                        android:id="@+id/menu_fps_20"
+                        android:title="@string/menu_fps_20" />
+                    <item
+                        android:id="@+id/menu_fps_30"
+                        android:title="@string/menu_fps_30" />
+                    <item
+                        android:id="@+id/menu_fps_60"
+                        android:title="@string/menu_fps_60" />
+                    <item
+                        android:id="@+id/menu_fps_120"
+                        android:title="@string/menu_fps_120" />
+                    <item
+                        android:id="@+id/menu_fps_unlimited"
+                        android:title="@string/menu_fps_unlimited" />
+                </group>
+            </menu>
+        </item>
+    </group>
+    <group
+        android:id="@+id/recorder_settings_group"
+        android:orderInCategory="32">
         <item
             android:id="@+id/menu_recorder_settings"
-            android:orderInCategory="93"
             android:title="@string/action_recorder_settings"
             app:showAsAction="never" />
     </group>

@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group
-        android:id="@+id/source_group"
-        android:orderInCategory="12">
+    <item
+        android:enabled="false"
+        android:title="@string/menu_source_iq_file_settings" />
+    <group android:id="@+id/source_group">
         <item android:title="@string/menu_sample_type">
             <menu>
                 <group

@@ -228,10 +228,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
         menu.setGroupDividerEnabled(true)
         menuInflater.inflate(R.menu.main, menu)
-        Constants.sourceTypeToMenu[source.getType()]?.also { menuInflater.inflate(it, menu) }
-        Constants.demodulatorTypeToMenu[preferences.demodulatorType]?.also { menuInflater.inflate(it, menu) }
-        menuInflater.inflate(R.menu.fft, menu)
-        menuInflater.inflate(R.menu.waterfall, menu)
+        Constants.sourceTypeToMenu[source.getType()]?.also { menuInflater.inflate(it, menu.findItem(R.id.menu_source).subMenu) }
+        Constants.demodulatorTypeToMenu[preferences.demodulatorType]?.also { menuInflater.inflate(it, menu.findItem(R.id.menu_demodulator).subMenu) }
         updateOptionsMenu()
         return true
     }

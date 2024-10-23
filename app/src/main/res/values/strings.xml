@@ -15,9 +15,13 @@
 
     <string name="source">Source</string>
     <string name="menu_source_tone_generator">Tone generator</string>
+    <string name="menu_source_tone_generator_settings">Tone generator settings</string>
     <string name="menu_source_iq_file">IQ file</string>
+    <string name="menu_source_iq_file_settings">IQ file settings</string>
     <string name="menu_source_bladerf">bladeRF 2.0</string>
+    <string name="menu_source_bladerf_settings">bladeRF 2.0 settings</string>
     <string name="menu_source_rtlsdr">RTL-SDR</string>
+    <string name="menu_source_rtlsdr_settings">RTL-SDR settings</string>
 
     <string name="frequency">Frequency</string>
     <string name="set_frequency">Set frequency</string>
@@ -56,8 +60,11 @@
     <string name="menu_demodulator">Demodulator</string>
     <string name="menu_demodulator_none">None</string>
     <string name="menu_demodulator_am">AM</string>
+    <string name="menu_demodulator_am_settings">AM settings</string>
     <string name="menu_demodulator_fm">FM</string>
+    <string name="menu_demodulator_fm_settings">FM settings</string>
     <string name="menu_demodulator_wfm">Wideband FM</string>
+    <string name="menu_demodulator_wfm_settings">Wideband FM settings</string>
     <string name="menu_demodulator_tetra">Tetra</string>
     <string name="menu_demodulator_gpu_offload">GPU offload</string>
     <string name="menu_demodulator_gpu_offload_none">None</string>
@@ -67,6 +74,7 @@
     <string name="menu_demodulator_stereo">Stereo</string>
     <string name="menu_demodulator_rds">RDS</string>
 
+    <string name="menu_fft">FFT</string>
     <string name="menu_fft_size">FFT size</string>
     <string name="menu_fft_window">FFT window</string>
     <string name="menu_fft_256">256</string>
@@ -96,6 +104,7 @@
 
     <string name="menu_peak_indicator">Peak indicator</string>
 
+    <string name="menu_wf">Waterfall</string>
     <string name="menu_wf_speed">Waterfall speed</string>
     <string name="menu_wf_speed_1x">1x</string>
     <string name="menu_wf_speed_2x">2x</string>

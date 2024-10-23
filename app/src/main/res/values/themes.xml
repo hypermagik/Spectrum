@@ -11,11 +11,16 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:statusBarColor">@color/dark</item>
         <item name="android:navigationBarColor">@color/black</item>
+        <item name="android:itemTextAppearance">@style/Theme.Spectrum.ItemTextAppearance</item>
     </style>
 
     <style name="Theme.Spectrum.NoActionBar">
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="listPreferredItemHeightSmall">40dp</item>
+    </style>
+
+    <style name="Theme.Spectrum.ItemTextAppearance">
+        <item name="android:textColor">@color/item_text</item>
     </style>
 </resources>

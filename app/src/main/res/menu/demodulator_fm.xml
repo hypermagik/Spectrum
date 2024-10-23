@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-    <group
-        android:id="@+id/demodulator_group"
-        android:orderInCategory="22">
+    <item
+        android:enabled="false"
+        android:title="@string/menu_demodulator_fm_settings" />
+    <group android:id="@+id/demodulator_group">
         <item
             android:id="@+id/menu_demodulator_audio_output"
             android:checkable="true"
