@@ -52,6 +52,8 @@ class Info(context: Context) {
     private var channelFrequency = 0L
     private var demodulatorName: String? = null
     private var demodulatorText: String? = null
+    private var averageWorkerUsage = 0.0
+    private var maxWorkerUsage = 0.0
 
     private var referenceTime = System.nanoTime()
     private var frameCounter = 0
@@ -131,6 +133,13 @@ class Info(context: Context) {
 
         paint.color = borderColor
         canvas.drawLine(0.0f, height - 1, texture.width.toFloat(), height - 1, paint)
+
+        if (isRunning) {
+            paint.color = Color.YELLOW
+            canvas.drawLine(0.0f, height - 1, texture.width * maxWorkerUsage.toFloat().coerceIn(0.0f, 1.0f), height - 1, paint)
+            paint.color = textColor
+            canvas.drawLine(0.0f, height - 1, texture.width * averageWorkerUsage.toFloat().coerceIn(0.0f, 1.0f), height - 1, paint)
+        }
 
         paint.textSize = textSize / 2
         val spacer = paint.measureText(" ")
@@ -316,6 +325,14 @@ class Info(context: Context) {
     fun setDemodulatorText(text: String?) {
         if (text != null) {
             demodulatorText = text
+            isDirty = true
+        }
+    }
+
+    fun setWorkerUsage(averageUsage: Double, maxUsage: Double) {
+        if (averageWorkerUsage != averageUsage || maxWorkerUsage != maxUsage) {
+            averageWorkerUsage = averageUsage
+            maxWorkerUsage = maxUsage
             isDirty = true
         }
     }

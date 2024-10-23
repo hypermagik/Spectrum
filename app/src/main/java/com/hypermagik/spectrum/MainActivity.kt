@@ -799,6 +799,10 @@ class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
 
         analyzer.start(demodulator?.getName(), channelBandwidth)
 
+        val samplesInterval = 1_000_000_000.0 * preferences.getSampleFifoBufferSize() / preferences.sourceSettings.sampleRate
+        val demodulatorTime = LongArray(preferences.sourceSettings.sampleRate / preferences.getSampleFifoBufferSize())
+        var timeIndex = 0
+
         while (state == State.Running) {
             var samples: SampleBuffer?
 
@@ -817,6 +821,8 @@ class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
             }
 
             if (samples != null) {
+                val t1 = System.nanoTime()
+
                 if (analyzerInput != this.analyzerInput) {
                     analyzerInput = this.analyzerInput
                     if (analyzerInput == 0) {
@@ -851,6 +857,13 @@ class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
                 }
 
                 sampleFifo.pop()
+
+                demodulatorTime[timeIndex] = System.nanoTime() - t1
+
+                if (++timeIndex == demodulatorTime.size) {
+                    timeIndex = 0
+                    analyzer.setWorkerUsage(demodulatorTime.average() / samplesInterval, demodulatorTime.max() / samplesInterval)
+                }
             }
         }
 

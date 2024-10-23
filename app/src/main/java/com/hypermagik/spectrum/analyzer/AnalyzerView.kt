@@ -283,6 +283,10 @@ class AnalyzerView(context: Context, private val preferences: Preferences) :
         info.setDemodulatorText(text)
     }
 
+    fun setWorkerUsage(averageUsage: Double, maxUsage: Double) {
+        info.setWorkerUsage(averageUsage, maxUsage)
+    }
+
     private fun resetFrequencyScale() {
         viewFrequency = frequency.toDouble()
         viewBandwidth = sampleRate.toDouble()

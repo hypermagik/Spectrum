@@ -125,4 +125,8 @@ class Analyzer(context: Context, private val preferences: Preferences) {
     fun setDemodulatorText(text: String?) {
         view.setDemodulatorText(text)
     }
+
+    fun setWorkerUsage(averageUsage: Double, maxUsage: Double) {
+        view.setWorkerUsage(averageUsage, maxUsage)
+    }
 }
