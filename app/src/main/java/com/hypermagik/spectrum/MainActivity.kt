@@ -1,11 +1,14 @@
 package com.hypermagik.spectrum
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.hardware.usb.UsbManager
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
+import android.os.PerformanceHintManager
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -39,6 +42,7 @@ import com.hypermagik.spectrum.source.ToneGenerator
 import com.hypermagik.spectrum.utils.TAG
 import java.text.DecimalFormat
 import kotlin.concurrent.thread
+
 
 class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
     private lateinit var binding: ActivityMainBinding
@@ -467,7 +471,8 @@ class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
             item.groupId == R.id.menu_peak_hold_group ||
             item.groupId == R.id.menu_peak_hold_decay_group ||
             item.groupId == R.id.menu_wf_speed_group ||
-            item.groupId == R.id.menu_wf_colormap_group) {
+            item.groupId == R.id.menu_wf_colormap_group
+        ) {
             return keepMenuOpen(item)
         }
 
@@ -803,6 +808,13 @@ class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
         val demodulatorTime = LongArray(preferences.sourceSettings.sampleRate / preferences.getSampleFifoBufferSize())
         var timeIndex = 0
 
+        var hintSession: PerformanceHintManager.Session? = null
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            @SuppressLint("WrongConstant")
+            val performanceHintManager = this.getSystemService(Context.PERFORMANCE_HINT_SERVICE) as PerformanceHintManager
+            hintSession = performanceHintManager.createHintSession(intArrayOf(android.os.Process.myTid()), samplesInterval.toLong())
+        }
+
         while (state == State.Running) {
             var samples: SampleBuffer?
 
@@ -858,7 +870,12 @@ class MainActivity : AppCompatActivity(), MenuItem.OnActionExpandListener {
 
                 sampleFifo.pop()
 
-                demodulatorTime[timeIndex] = System.nanoTime() - t1
+                val duration = System.nanoTime() - t1
+                demodulatorTime[timeIndex] = duration
+
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                    hintSession?.reportActualWorkDuration(duration)
+                }
 
                 if (++timeIndex == demodulatorTime.size) {
                     timeIndex = 0
