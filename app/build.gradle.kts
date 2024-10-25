@@ -15,12 +15,25 @@ android {
         versionName = "1.0"
     }
 
+    signingConfigs {
+        create("spectrum") {
+            storeFile = file("spectrum.jks")
+            storePassword = "spectrum"
+            keyAlias = "spectrum"
+            keyPassword = "spectrum"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = signingConfigs.getByName("spectrum")
+        }
+
+        debug {
+            signingConfig = signingConfigs.getByName("spectrum")
         }
     }
 
