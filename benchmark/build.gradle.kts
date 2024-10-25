@@ -17,25 +17,16 @@ android {
     }
 
     buildTypes {
+        release {
+            isDefault = true
+        }
         debug {
             isMinifyEnabled = false
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "benchmark-proguard-rules.pro")
         }
-        release {
-            isDefault = true
-        }
     }
 
     testBuildType = "release"
-
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    kotlinOptions {
-        jvmTarget = "1.8"
-    }
 }
 
 dependencies {
