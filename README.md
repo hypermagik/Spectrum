@@ -10,6 +10,7 @@ It displays the RF spectrum, allowing you to visualize the signal strength.
 - GPU accelerated UI with FFT and waterfall views capable of rendering at 120 FPS.
 - Adjustable FFT size and window function, peak detection and hold, waterfall speed and color, etc.
 - AM, FM and wideband FM demodulators with audio output and RDS.
+- GPU accelerated signal processing with GLES 3.2 and Vulkan backends.
 
 ## Screenshots
 
